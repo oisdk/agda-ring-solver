@@ -10,7 +10,7 @@ open import Data.List as List using (_∷_; []; List)
 open import Data.Vec as Vec using (_∷_; []; Vec)
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.Product
-open import Polynomials.Irrelevant.Product
+open import Data.Product.Irrelevant
 open import Function
 open import Data.Fin as Fin using (Fin)
 

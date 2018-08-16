@@ -1,6 +1,6 @@
 {-# OPTIONS --without-K #-}
 
-module Polynomials.Irrelevant.Product where
+module Data.Product.Irrelevant where
 
 open import Level
 open import Function
