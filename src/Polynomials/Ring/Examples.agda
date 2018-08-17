@@ -1,3 +1,5 @@
+{-# OPTIONS --without-K #-}
+
 module Polynomials.Ring.Examples where
 
 open import Data.Nat as ℕ using (ℕ; suc; zero)

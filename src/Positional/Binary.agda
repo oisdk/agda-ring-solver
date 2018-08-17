@@ -1,3 +1,5 @@
+{-# OPTIONS --without-K #-}
+
 module Positional.Binary where
 
 open import Data.List as List using (List; []; _∷_)
