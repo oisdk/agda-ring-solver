@@ -1,16 +1,17 @@
 {-# OPTIONS --without-K #-}
 
-open import Algebra using (CommutativeSemiring)
+open import Algebra
 open import Relation.Binary
 open import Algebra.FunctionProperties
+open import Algebra.Solver.Ring.AlmostCommutativeRing
 
 -- Some specialised tools for equaltional reasoning.
-module Polynomials.CommutativeSemiring.Reasoning
+module Polynomials.Ring.Reasoning
   {a ℓ}
-  (commutativeSemiring : CommutativeSemiring a ℓ)
+  (ring : AlmostCommutativeRing a ℓ)
   where
 
-open CommutativeSemiring commutativeSemiring
+open AlmostCommutativeRing ring
 import Relation.Binary.PropositionalEquality as ≡
 open import Relation.Nullary
 open import Relation.Binary.EqReasoning setoid public

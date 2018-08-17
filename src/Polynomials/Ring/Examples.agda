@@ -1,11 +1,14 @@
-module Polynomials.CommutativeSemiring.Examples where
+module Polynomials.Ring.Examples where
 
 open import Data.Nat as ℕ using (ℕ; suc; zero)
-import Data.Nat.Properties
-open import Polynomials.CommutativeSemiring.Expr Data.Nat.Properties.commutativeSemiring ℕ._≟_
-open import Algebra using (CommutativeSemiring)
-open CommutativeSemiring Data.Nat.Properties.commutativeSemiring
+open import Data.Nat.Properties
+import Algebra.Solver.Ring.AlmostCommutativeRing as ACR
+import Level
 open import Relation.Binary.PropositionalEquality using (_≡_)
+NatRing : ACR.AlmostCommutativeRing Level.zero Level.zero
+NatRing = ACR.fromCommutativeSemiring *-+-commutativeSemiring
+open ACR.AlmostCommutativeRing NatRing
+open import Polynomials.Ring.Expr rawRing (_≡ 0) (λ x → x ℕ.≟ 0) NatRing (ACR.-raw-almostCommutative⟶ NatRing) (λ x z → z)
 
 lem3 : (x : ℕ) → (2 * (x + 4) ≡ 8 + 2 * x)
 lem3 = solve 1 (λ x' → Κ 2 ⊗ (x' ⊕ Κ 4) ⊜ Κ 8 ⊕ Κ 2 ⊗ x') refl

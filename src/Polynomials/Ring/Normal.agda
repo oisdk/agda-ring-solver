@@ -1,8 +1,10 @@
 {-# OPTIONS --without-K #-}
 
 open import Algebra
-open import Relation.Binary
+open import Algebra.Solver.Ring.AlmostCommutativeRing
+open import Relation.Binary hiding (Decidable)
 open import Relation.Nullary
+open import Relation.Unary
 open import Level using (_⊔_; Lift; lift; lower)
 open import Data.Empty
 open import Data.Unit using (⊤; tt)
@@ -15,13 +17,14 @@ open import Function
 open import Data.Fin as Fin using (Fin)
 
 -- Multivariate polynomials.
-module Polynomials.CommutativeSemiring.Normal
+module Polynomials.Ring.Normal
   {a ℓ}
-  (commutativeSemiring : CommutativeSemiring a ℓ)
-  (_≟C_ : Decidable (CommutativeSemiring._≈_ commutativeSemiring))
+  (coeff : RawRing a)
+  (Zero-C : Pred (RawRing.Carrier coeff) ℓ)
+  (zero-c? : Decidable Zero-C)
   where
 
-open CommutativeSemiring commutativeSemiring hiding (zero)
+open RawRing coeff
 
 ----------------------------------------------------------------------
 -- Definitions
@@ -57,7 +60,7 @@ mutual
   Coeff i = Σ~[ x ∈ Poly i ] ¬ Zero i x
 
   Zero : ∀ n → Poly n → Set ℓ
-  Zero zero (lift x) = x ≈ 0#
+  Zero zero (lift x) = Zero-C x
   Zero (suc n) [] = Lift ℓ ⊤
   Zero (suc n) (x ∷ xs) = Lift ℓ ⊥
 
@@ -70,7 +73,7 @@ mutual
 
 -- Decision procedure for Zero
 zero? : ∀ {n} → (p : Poly n) → Dec (Zero n p)
-zero? {zero} (lift x) = x ≟C 0#
+zero? {zero} (lift x) = zero-c? x
 zero? {suc n} [] = yes (lift tt)
 zero? {suc n} (x ∷ xs) = no lower
 
@@ -189,18 +192,3 @@ mutual
 ι : ∀ {n} → Fin n → Poly n
 ι Fin.zero = (κ 1# , 1) ∷↓ []
 ι (Fin.suc x) = (ι x , 0) ∷↓ []
-
--- Exponentiation
-infixr 8 _^_
-_^_ : Carrier → ℕ → Carrier
-x ^ zero = 1#
-x ^ suc n = x * x ^ n
-
--- Evaluation
-⟦_⟧ : ∀ {n} → Poly n → Vec Carrier n → Carrier
-⟦_⟧ {zero} (lift x) [] = x
-⟦_⟧ {suc n} x (y ∷ ρ) = List.foldr coeff-eval 0# x
-  where
-  coeff-eval : Coeff n × ℕ → Carrier → Carrier
-  coeff-eval (c ,~ _ , p) xs = (⟦ c ⟧ ρ + xs * y) * y ^ p
-

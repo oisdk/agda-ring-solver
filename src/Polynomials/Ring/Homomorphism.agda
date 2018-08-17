@@ -1,20 +1,29 @@
 {-# OPTIONS --without-K #-}
 
-open import Algebra using (CommutativeSemiring)
-open import Relation.Binary
+open import Algebra
+open import Relation.Binary hiding (Decidable)
+open import Relation.Unary
+open import Algebra.Solver.Ring.AlmostCommutativeRing
 
 ----------------------------------------------------------------------
 -- Homomorphism
 ----------------------------------------------------------------------
-module Polynomials.CommutativeSemiring.Homomorphism
-  {a ℓ}
-  (commutativeSemiring : CommutativeSemiring a ℓ)
-  (_≟C_ : Decidable (CommutativeSemiring._≈_ commutativeSemiring))
+module Polynomials.Ring.Homomorphism
+  {r₁ r₂ r₃ r₄}
+  (coeff : RawRing r₁)
+  (Zero-C : Pred (RawRing.Carrier coeff) r₂)
+  (zero-c? : Decidable Zero-C)
+  (ring : AlmostCommutativeRing r₃ r₄)
+  (morphism : coeff -Raw-AlmostCommutative⟶ ring)
+  (Zero-C⟶Zero-R : ∀ x → Zero-C x → AlmostCommutativeRing._≈_ ring (_-Raw-AlmostCommutative⟶_.⟦_⟧ morphism x) (AlmostCommutativeRing.0# ring))
   where
 
-open CommutativeSemiring commutativeSemiring
-open import Polynomials.CommutativeSemiring.Reasoning commutativeSemiring
-open import Polynomials.CommutativeSemiring.Normal commutativeSemiring _≟C_
+open AlmostCommutativeRing ring
+open import Polynomials.Ring.Reasoning ring
+open import Polynomials.Ring.Normal coeff Zero-C zero-c?
+open import Polynomials.Ring.Semantics coeff Zero-C zero-c? ring morphism
+open _-Raw-AlmostCommutative⟶_ morphism renaming (⟦_⟧ to ⟦_⟧ᵣ)
+module Raw = RawRing coeff
 
 open import Relation.Nullary
 open import Data.Nat as ℕ using (ℕ; suc; zero)
@@ -52,7 +61,7 @@ pow-hom i [] ρ Ρ = zeroˡ (ρ ^ i)
 pow-hom i ((x , j) ∷ xs) ρ Ρ = *-assoc _ (ρ ^ j) (ρ ^ i) ︔ *≫ pow-add ρ j i
 
 zero-hom : ∀ {n} (p : Poly n) → Zero n p → (Ρ : Vec Carrier n) → ⟦ p ⟧ Ρ ≈ 0#
-zero-hom {zero} (lift p) p=0 [] = p=0
+zero-hom {zero} (lift p) p=0 [] = Zero-C⟶Zero-R p p=0
 zero-hom {suc n} [] p=0 (x ∷ Ρ) = refl
 zero-hom {suc n} (x ∷ p) (lift ()) Ρ
 
@@ -82,7 +91,7 @@ mutual
         → (ys : Poly n)
         → (Ρ : Vec Carrier n)
         → ⟦ xs ⊞ ys ⟧ Ρ ≈ ⟦ xs ⟧ Ρ + ⟦ ys ⟧ Ρ
-  ⊞-hom {ℕ.zero} xs ys [] = refl
+  ⊞-hom {ℕ.zero} xs ys [] = +-homo _ _
   ⊞-hom {suc n} xs ys (ρ ∷ Ρ) = ⊞-coeffs-hom xs ys ρ Ρ
 
   ⊞-coeffs-hom : ∀ {n}
@@ -227,7 +236,7 @@ mutual
         → (ys : Poly n)
         → (Ρ : Vec Carrier n)
         → ⟦ xs ⊠ ys ⟧ Ρ ≈ ⟦ xs ⟧ Ρ * ⟦ ys ⟧ Ρ
-  ⊠-hom {ℕ.zero} xs ys [] = refl
+  ⊠-hom {ℕ.zero} xs ys [] = *-homo _ _
   ⊠-hom {suc n} xs ys (ρ ∷ Ρ) = ⊠-coeffs-hom xs ys ρ Ρ
 
   ⊠-coeffs-hom : ∀ {n}
@@ -279,9 +288,9 @@ mutual
     ∎
 
 κ-hom : ∀ {n}
-      → (x : Carrier)
+      → (x : Raw.Carrier)
       → (Ρ : Vec Carrier n)
-      → ⟦ κ x ⟧ Ρ ≈ x
+      → ⟦ κ x ⟧ Ρ ≈ ⟦ x ⟧ᵣ
 κ-hom x [] = refl
 κ-hom x (ρ ∷ Ρ) =
   begin
@@ -295,18 +304,18 @@ mutual
   ≈⟨ +-identityʳ _ ⟩
     ⟦ κ x ⟧ Ρ
   ≈⟨ κ-hom x Ρ ⟩
-    x
+    ⟦ x ⟧ᵣ
   ∎
 
 ι-hom : ∀ {n} → (x : Fin n) → (Ρ : Vec Carrier n) → ⟦ ι x ⟧ Ρ ≈ Vec.lookup x Ρ
 ι-hom Fin.zero (ρ ∷ Ρ) =
   begin
-    ⟦ (κ 1# , 1) ∷↓ [] ⟧ (ρ ∷ Ρ)
+    ⟦ (κ Raw.1# , 1) ∷↓ [] ⟧ (ρ ∷ Ρ)
   ≈⟨ ∷↓-hom _ _ _ ρ Ρ ⟩
-    (⟦ κ 1# ⟧ Ρ + 0# * ρ) * ρ ^ 1
-  ≈⟨ ((κ-hom 1# Ρ ⟨ +-cong ⟩ zeroˡ ρ) ︔ +-identityʳ 1#) ⟨ *-cong ⟩ *-identityʳ ρ ⟩
-    1# * ρ
-  ≈⟨ *-identityˡ ρ ⟩
+    (⟦ κ Raw.1# ⟧ Ρ + 0# * ρ) * ρ ^ 1
+  ≈⟨ ((κ-hom Raw.1# Ρ ⟨ +-cong ⟩ zeroˡ ρ) ︔ +-identityʳ _) ⟨ *-cong ⟩ *-identityʳ ρ ⟩
+    ⟦ Raw.1# ⟧ᵣ * ρ
+  ≈⟨ ≪* 1-homo ︔ *-identityˡ ρ ⟩
     ρ
   ∎
 ι-hom (Fin.suc x) (ρ ∷ Ρ) =
