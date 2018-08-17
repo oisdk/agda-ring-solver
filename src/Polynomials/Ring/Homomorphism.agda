@@ -205,6 +205,50 @@ mutual
   ⊞-ne-r-hom k x xs ((y , j) ∷ ys) ρ Ρ = ⊞-ne-hom (ℕ.compare k j) x xs y ys ρ Ρ
 
 mutual
+  ⊟-hom : ∀ {n}
+        → (xs : Poly n)
+        → (Ρ : Vec Carrier n)
+        → ⟦ ⊟ xs ⟧ Ρ ≈ - ⟦ xs ⟧ Ρ
+  ⊟-hom {ℕ.zero} xs [] = -‿homo _
+  ⊟-hom {suc _} xs (ρ ∷ Ρ) = ⊟-hom-coeffs xs ρ Ρ
+
+  ⊟-hom-coeffs : ∀ {n}
+              → (xs : Coeffs n)
+              → (ρ : Carrier)
+              → (Ρ : Vec Carrier n)
+              → ⟦ ⊟ xs ⟧ (ρ ∷ Ρ) ≈ - ⟦ xs ⟧ (ρ ∷ Ρ)
+  ⊟-hom-coeffs [] ρ Ρ =
+    begin
+      ⟦ ⊟ [] ⟧ (ρ ∷ Ρ)
+    ≡⟨⟩
+      0#
+    ≈⟨ sym (zeroʳ _) ⟩
+      - 0# * 0#
+    ≈⟨ -‿*-distribˡ 0# 0# ⟩
+      - (0# * 0#)
+    ≈⟨ -‿cong (zeroˡ 0#) ⟩
+      - 0#
+    ≡⟨⟩
+      - ⟦ [] ⟧ (ρ ∷ Ρ)
+    ∎
+  ⊟-hom-coeffs  ((x ,~ x≠0 , i) ∷ xs) ρ Ρ =
+    begin
+      ⟦ ⊟ ((x ,~ x≠0 , i) ∷ xs) ⟧ (ρ ∷ Ρ)
+    ≡⟨⟩
+      ⟦ (⊟ x , i) ∷↓ ⊟ xs ⟧ (ρ ∷ Ρ)
+    ≈⟨ ∷↓-hom (⊟ x) i (⊟ xs) ρ Ρ ⟩
+      (⟦ ⊟ x ⟧ Ρ + ⟦ ⊟ xs ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ i
+    ≈⟨ ≪* (⊟-hom x Ρ ⟨ +-cong ⟩ (≪* ⊟-hom-coeffs xs ρ Ρ)) ⟩
+      (- ⟦ x ⟧ Ρ + - ⟦ xs ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ i
+    ≈⟨ ≪* +≫ -‿*-distribˡ _ ρ ⟩
+      (- ⟦ x ⟧ Ρ + - (⟦ xs ⟧ (ρ ∷ Ρ) * ρ)) * ρ ^ i
+    ≈⟨ ≪* -‿+-comm _ _ ⟩
+      - (⟦ x ⟧ Ρ + ⟦ xs ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ i
+    ≈⟨ -‿*-distribˡ _ _ ⟩
+      - ⟦ (x ,~ x≠0 , i) ∷ xs ⟧ (ρ ∷ Ρ)
+    ∎
+
+mutual
   ⋊-hom : ∀ {n}
         → (x : Poly n)
         → (ys : Poly (suc n))
