@@ -184,8 +184,15 @@ mutual
   ⊠-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
   ⊠-coeffs [] ys = []
   ⊠-coeffs (x ∷ xs) [] = []
-  ⊠-coeffs ((x , i) ∷ xs) ((y , j) ∷ ys) =
-    (fst~ x ⊠ fst~ y , j ℕ.+ i) ∷↓ (fst~ x ⋊ ys ⊞ ⊠-coeffs xs ((y , 0) ∷ ys))
+  ⊠-coeffs ((x ,~ _ , i) ∷ xs) ((y ,~ _ , j) ∷ ys) =
+    (x ⊠ y , j ℕ.+ i) ∷↓ (x ⋊ ys ⊞ ⊠-shift y ys xs)
+
+  ⊠-shift : ∀ {n} → Poly n → Coeffs n → Coeffs n → Coeffs n
+  ⊠-shift {n} y ys = List.foldr ⊠-step []
+    where
+    ⊠-step : Coeff n × ℕ → Coeffs n → Coeffs n
+    ⊠-step (x ,~ _ , i) xs = (x ⊠ y , i) ∷↓ (x ⋊ ys ⊞ xs)
+
 
 ----------------------------------------------------------------------
 -- Semantics
