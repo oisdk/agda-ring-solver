@@ -38,32 +38,34 @@ fromNat : ℕ → Bin
 fromNat zero = []
 fromNat (suc n) = incr (fromNat n)
 
+pow : ℕ → Bin → Bin
+pow i [] = []
+pow i (x ∷ xs) = (x ℕ.+ i) ∷ xs
+
 infixl 6 _+_
 _+_ : Bin → Bin → Bin
 [] + ys = ys
-(x ∷ xs) + [] = x ∷ xs
-(x ∷ xs) + (y ∷ ys) = +-ne (ℕ.compare x y) xs ys
+(x ∷ xs) + ys = +-ne-r x xs ys
   where
   +-ne : ∀ {x y} → ℕ.Ordering x y → Bin → Bin → Bin
-  +-ne-l : ℕ → Bin → Bin → Bin
+  +-ne-r : ℕ → Bin → Bin → Bin
 
-  +-ne (ℕ.less    i k) xs ys = i ∷ +-ne-l k xs ys
+  +-ne (ℕ.less    i k) xs ys = i ∷ +-ne-r k ys xs
   +-ne (ℕ.equal   k  ) xs ys = incr′ (suc k) (xs + ys)
-  +-ne (ℕ.greater j k) xs ys = j ∷ +-ne-l k ys xs
+  +-ne (ℕ.greater j k) xs ys = j ∷ +-ne-r k xs ys
 
-  +-ne-l k [] = k ∷_
-  +-ne-l k (x ∷ xs) = +-ne (ℕ.compare x k) xs
+  +-ne-r x xs [] = x ∷ xs
+  +-ne-r x xs (y ∷ ys) = +-ne (ℕ.compare x y) xs ys
 
 infixl 7 _*_
 _*_ : Bin → Bin → Bin
-[] * ys = []
-(x ∷ xs) * [] = []
-(x ∷ xs) * (y ∷ ys) = y ℕ.+ x ∷ ys + xs * (0 ∷ ys)
+xs * [] = []
+xs * (y ∷ ys) = pow y (List.foldr (λ z zs → z ∷ ys + zs) [] xs)
 
 private
 
   testLimit : ℕ
-  testLimit = 5
+  testLimit = 25
 
   nats : List ℕ
   nats = List.downFrom testLimit
