@@ -121,7 +121,7 @@ mutual
     in
     begin
       ⟦ (proj₁~ x ⊞ proj₁~ y , i) ∷↓ xs ⊞ ys ⟧ (ρ ∷ Ρ)
-    ≈⟨ (∷↓-hom _ i (xs ⊞ ys) ρ Ρ) ⟩
+    ≈⟨ ∷↓-hom _ i (xs ⊞ ys) ρ Ρ ⟩
       (⟦ proj₁~ x ⊞ proj₁~ y ⟧ Ρ + ⟦ xs ⊞ ys ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ i
     ≈⟨ ≪* begin
             ⟦ proj₁~ x ⊞ proj₁~ y ⟧ Ρ + ⟦ xs ⊞ ys ⟧ (ρ ∷ Ρ) * ρ
@@ -139,8 +139,7 @@ mutual
             x′ + (xs′ * ρ + (y′ + ys′ * ρ))
           ≈⟨ sym (+-assoc x′ _ _) ⟩
             (x′ + xs′ * ρ) + (y′ + ys′ * ρ)
-          ∎
-    ⟩
+          ∎ ⟩
       ((x′ + xs′ * ρ) + (y′ + ys′ * ρ)) * ρ ^ i
     ≈⟨ distribʳ (ρ ^ i) _ _ ⟩
       (x′ + xs′ * ρ) * ρ ^ i + (y′ + ys′ * ρ) * ρ ^ i
@@ -173,7 +172,21 @@ mutual
       ((x′ + xs′ * ρ) * ρ ^ k * ρ + (y′ + ys′ * ρ)) * ρ ^ j
     ≈⟨ distribʳ (ρ ^ j) _ _ ⟩
       (x′ + xs′ * ρ) * ρ ^ k * ρ * ρ ^ j + (y′ + ys′ * ρ) * ρ ^ j
-    ≈⟨ ≪+ (*-assoc _ ρ (ρ ^ j) ︔ *-assoc _ _ _ ︔ *≫ (*-comm _ _ ︔ *-assoc _ _ _ ︔ *≫ pow-add ρ j k)) ⟩
+    ≈⟨ ≪+ begin
+             (((x′ + xs′ * ρ) * ρ ^ k) * ρ) * ρ ^ j
+           ≈⟨ *-assoc _ ρ (ρ ^ j) ⟩
+             ((x′ + xs′ * ρ) * ρ ^ k) * (ρ * ρ ^ j)
+           ≈⟨ *-assoc _ _ _ ⟩
+             (x′ + xs′ * ρ) * (ρ ^ k * (ρ * ρ ^ j))
+           ≈⟨ *≫ begin
+                    ρ ^ k * (ρ * ρ ^ j)
+                  ≈⟨ pow-add ρ k _ ⟩
+                    ρ ^ (k ℕ.+ suc j)
+                  ≡⟨ ≡.cong (ρ ^_) (ℕ-≡.+-comm k (suc j)) ⟩
+                    ρ ^ suc (j ℕ.+ k)
+                  ∎ ⟩
+             (x′ + xs′ * ρ) * ρ ^ suc (j ℕ.+ k)
+           ∎ ⟩
       (x′ + xs′ * ρ) * ρ ^ suc (j ℕ.+ k) + (y′ + ys′ * ρ) * ρ ^ j
     ≡⟨⟩
       ⟦ (x , suc (j ℕ.+ k)) ∷ xs ⟧ (ρ ∷ Ρ) + ⟦ (y , j) ∷ ys ⟧ (ρ ∷ Ρ)
