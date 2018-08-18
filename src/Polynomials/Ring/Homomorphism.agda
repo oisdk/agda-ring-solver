@@ -116,6 +116,8 @@ mutual
   ⊞-ne-hom (ℕ.equal i) x xs y ys ρ Ρ =
     let x′ = ⟦ fst~ x ⟧ Ρ
         y′ = ⟦ fst~ y ⟧ Ρ
+        xs′ = ⟦ xs ⟧ (ρ ∷ Ρ)
+        ys′ = ⟦ ys ⟧ (ρ ∷ Ρ)
     in
     begin
       ⟦ (fst~ x ⊞ fst~ y , i) ∷↓ xs ⊞ ys ⟧ (ρ ∷ Ρ)
@@ -124,36 +126,39 @@ mutual
     ≈⟨ ≪* begin
             ⟦ fst~ x ⊞ fst~ y ⟧ Ρ + ⟦ xs ⊞ ys ⟧ (ρ ∷ Ρ) * ρ
           ≈⟨ ⊞-hom (fst~ x) (fst~ y) Ρ ⟨ +-cong ⟩ (≪* ⊞-coeffs-hom xs ys ρ Ρ) ⟩
-            (x′ + y′) + (⟦ xs ⟧ (ρ ∷ Ρ) + ⟦ ys ⟧ (ρ ∷ Ρ)) * ρ
+            (x′ + y′) + (xs′ + ys′) * ρ
           ≈⟨ +≫ distribʳ ρ _ _ ⟩
-            (x′ + y′) + (⟦ xs ⟧ (ρ ∷ Ρ) * ρ + ⟦ ys ⟧ (ρ ∷ Ρ) * ρ)
+            (x′ + y′) + (xs′ * ρ + ys′ * ρ)
           ≈⟨ +-assoc x′ y′ _ ⟩
-            x′ + (y′ + (⟦ xs ⟧ (ρ ∷ Ρ) * ρ + ⟦ ys ⟧ (ρ ∷ Ρ) * ρ))
+            x′ + (y′ + (xs′ * ρ + ys′ * ρ))
           ≈⟨ +≫ sym ( +-assoc y′ _ _ ) ⟩
-            x′ + ((y′ + ⟦ xs ⟧ (ρ ∷ Ρ) * ρ) + ⟦ ys ⟧ (ρ ∷ Ρ) * ρ)
+            x′ + ((y′ + xs′ * ρ) + ys′ * ρ)
           ≈⟨ +≫ ≪+ +-comm y′ _ ⟩
-            x′ + ((⟦ xs ⟧ (ρ ∷ Ρ) * ρ + y′) + ⟦ ys ⟧ (ρ ∷ Ρ) * ρ)
+            x′ + ((xs′ * ρ + y′) + ys′ * ρ)
           ≈⟨ +≫ +-assoc _ y′ _ ⟩
-            x′ + (⟦ xs ⟧ (ρ ∷ Ρ) * ρ + (y′ + ⟦ ys ⟧ (ρ ∷ Ρ) * ρ))
+            x′ + (xs′ * ρ + (y′ + ys′ * ρ))
           ≈⟨ sym (+-assoc x′ _ _) ⟩
-            (x′ + ⟦ xs ⟧ (ρ ∷ Ρ) * ρ) + (⟦ fst~ y ⟧ Ρ + ⟦ ys ⟧ (ρ ∷ Ρ) * ρ)
+            (x′ + xs′ * ρ) + (y′ + ys′ * ρ)
           ∎
     ⟩
-      ((x′ + ⟦ xs ⟧ (ρ ∷ Ρ) * ρ) + (y′ + ⟦ ys ⟧ (ρ ∷ Ρ) * ρ)) * ρ ^ i
+      ((x′ + xs′ * ρ) + (y′ + ys′ * ρ)) * ρ ^ i
     ≈⟨ distribʳ (ρ ^ i) _ _ ⟩
-      (x′ + ⟦ xs ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ i + (y′ + ⟦ ys ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ i
+      (x′ + xs′ * ρ) * ρ ^ i + (y′ + ys′ * ρ) * ρ ^ i
     ∎
   ⊞-ne-hom (ℕ.less i k) x xs y ys ρ Ρ =
     let x′ = ⟦ fst~ x ⟧ Ρ
+        y′ = ⟦ fst~ y ⟧ Ρ
+        xs′ = ⟦ xs ⟧ (ρ ∷ Ρ)
+        ys′ = ⟦ ys ⟧ (ρ ∷ Ρ)
     in
     begin
       (x′ + ⟦ ⊞-ne-l k xs y ys ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ i
     ≈⟨ ≪* +≫ ≪* ⊞-ne-l-hom k xs y ys ρ Ρ ⟩
-      (x′ + (⟦ xs ⟧ (ρ ∷ Ρ) + ⟦ (y , k) ∷ ys ⟧ (ρ ∷ Ρ)) * ρ) * ρ ^ i
+      (x′ + (xs′ + ⟦ (y , k) ∷ ys ⟧ (ρ ∷ Ρ)) * ρ) * ρ ^ i
     ≈⟨ ≪* +≫ distribʳ ρ _ _ ⟩
-      (x′ + (⟦ xs ⟧ (ρ ∷ Ρ) * ρ + ⟦ (y , k) ∷ ys ⟧ (ρ ∷ Ρ) * ρ)) * ρ ^ i
+      (x′ + (xs′ * ρ + ⟦ (y , k) ∷ ys ⟧ (ρ ∷ Ρ) * ρ)) * ρ ^ i
     ≈⟨ ≪* sym (+-assoc x′ _ _) ⟩
-      (x′ + ⟦ xs ⟧ (ρ ∷ Ρ) * ρ + ⟦ (y , k) ∷ ys ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ i
+      (x′ + xs′ * ρ + ⟦ (y , k) ∷ ys ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ i
     ≈⟨ distribʳ (ρ ^ i) _ _ ⟩
       ⟦ (x , i)  ∷ xs ⟧ (ρ ∷ Ρ) + ⟦ (y , k) ∷ ys ⟧ (ρ ∷ Ρ) * ρ * ρ ^ i
     ≈⟨ +≫ (*-assoc _ ρ (ρ ^ i) ︔ *-assoc _ (ρ ^ k) (ρ ^ suc i) ︔ *≫ pow-add _ k (suc i))⟩
@@ -290,7 +295,8 @@ mutual
              → (ys : Coeffs n)
              → (ρ : Carrier)
              → (Ρ : Vec Carrier n)
-             → ⟦ x ⊠ y ⟧ Ρ + ⟦ x ⋊ ys ⊞ ⊠-shift y ys xs ⟧ (ρ ∷ Ρ) * ρ ≈ (⟦ x ⟧ Ρ + ⟦ xs ⟧ (ρ ∷ Ρ) * ρ) * (⟦ y ⟧ Ρ + ⟦ ys ⟧ (ρ ∷ Ρ) * ρ)
+             → ⟦ x ⊠ y ⟧ Ρ + ⟦ x ⋊ ys ⊞ ⊠-shift y ys xs ⟧ (ρ ∷ Ρ) * ρ
+             ≈ (⟦ x ⟧ Ρ + ⟦ xs ⟧ (ρ ∷ Ρ) * ρ) * (⟦ y ⟧ Ρ + ⟦ ys ⟧ (ρ ∷ Ρ) * ρ)
   ⊠-step-hom x xs y ys ρ Ρ =
     let y′ = ⟦ y ⟧ Ρ
         x′ = ⟦ x ⟧ Ρ
