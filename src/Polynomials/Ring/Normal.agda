@@ -176,16 +176,11 @@ mutual
 
   -- A simple shift-and-add algorithm.
   ⊠-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
-  ⊠-coeffs [] ys = []
-  ⊠-coeffs (x ∷ xs) [] = []
-  ⊠-coeffs ((x ,~ _ , i) ∷ xs) ((y ,~ _ , j) ∷ ys) =
-    (x ⊠ y , j ℕ.+ i) ∷↓ (x ⋊ ys ⊞ ⊠-shift y ys xs)
+  ⊠-coeffs _ [] = []
+  ⊠-coeffs xs ((y ,~ _ , j) ∷ ys) = List.foldr (⊠-step y ys) [] xs ⍓ j
 
-  ⊠-shift : ∀ {n} → Poly n → Coeffs n → Coeffs n → Coeffs n
-  ⊠-shift {n} y ys = List.foldr ⊠-step []
-    where
-    ⊠-step : Coeff n × ℕ → Coeffs n → Coeffs n
-    ⊠-step (x ,~ _ , i) xs = (x ⊠ y , i) ∷↓ (x ⋊ ys ⊞ xs)
+  ⊠-step : ∀ {n} → Poly n → Coeffs n → Coeff n × ℕ → Coeffs n → Coeffs n
+  ⊠-step y ys (x ,~ _ , i) xs = (x ⊠ y , i) ∷↓ (x ⋊ ys ⊞ xs)
 
 ----------------------------------------------------------------------
 -- Constants and Variables
