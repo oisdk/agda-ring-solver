@@ -165,19 +165,15 @@ mutual
     in
     begin
       (y′ + ⟦ ⊞-ne-r k x xs ys ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ j
-    ≈⟨ ≪* +≫ ≪* (⊞-ne-r-hom k x xs ys ρ Ρ ︔ +-comm _ _) ⟩
-      (y′ + (ys′ + ⟦ (x , k) ∷ xs ⟧ (ρ ∷ Ρ)) * ρ) * ρ ^ j
+    ≈⟨ ≪* +≫ ≪* ⊞-ne-r-hom k x xs ys ρ Ρ ⟩
+      (y′ + ((x′ + xs′ * ρ) * ρ ^ k + ys′) * ρ) * ρ ^ j
     ≈⟨ ≪* +≫ distribʳ ρ _ _ ⟩
-      (y′ + (ys′ * ρ + ⟦ (x , k) ∷ xs ⟧ (ρ ∷ Ρ) * ρ)) * ρ ^ j
-    ≈⟨ ≪* sym (+-assoc y′ _ _) ⟩
-      (y′ + ys′ * ρ + ⟦ (x , k) ∷ xs ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ j
+      (y′ + ((x′ + xs′ * ρ) * ρ ^ k * ρ + ys′ * ρ)) * ρ ^ j
+    ≈⟨ ≪* (sym (+-assoc _ _ _) ︔ ≪+ +-comm _ _ ︔ +-assoc _ _ _) ⟩
+      ((x′ + xs′ * ρ) * ρ ^ k * ρ + (y′ + ys′ * ρ)) * ρ ^ j
     ≈⟨ distribʳ (ρ ^ j) _ _ ⟩
-      ⟦ (y , j)  ∷ ys ⟧ (ρ ∷ Ρ) + ⟦ (x , k) ∷ xs ⟧ (ρ ∷ Ρ) * ρ * ρ ^ j
-    ≈⟨ +≫ (*-assoc _ ρ (ρ ^ j) ︔ *-assoc _ (ρ ^ k) (ρ ^ suc j) ︔ *≫ pow-add _ k (suc j))⟩
-      ⟦ (y , j) ∷ ys ⟧ (ρ ∷ Ρ) + ⟦ (x  , k ℕ.+ suc j) ∷ xs ⟧ (ρ ∷ Ρ)
-    ≡⟨ ≡.cong (λ ik → ⟦ (y , j) ∷ ys ⟧ (ρ ∷ Ρ) + ⟦ (x , ik) ∷ xs ⟧ (ρ ∷ Ρ)) (ℕ-≡.+-comm k (suc j)) ⟩
-      ⟦ (y , j) ∷ ys ⟧ (ρ ∷ Ρ) + ⟦ (x , suc (j ℕ.+ k)) ∷ xs ⟧ (ρ ∷ Ρ)
-    ≈⟨ +-comm _ _ ⟩
+      (x′ + xs′ * ρ) * ρ ^ k * ρ * ρ ^ j + (y′ + ys′ * ρ) * ρ ^ j
+    ≈⟨ ≪+ (*-assoc _ ρ (ρ ^ j) ︔ *-assoc _ _ _ ︔ *≫ (*-comm _ _ ︔ *-assoc _ _ _ ︔ *≫ pow-add ρ j k)) ⟩
       (x′ + xs′ * ρ) * ρ ^ suc (j ℕ.+ k) + (y′ + ys′ * ρ) * ρ ^ j
     ≡⟨⟩
       ⟦ (x , suc (j ℕ.+ k)) ∷ xs ⟧ (ρ ∷ Ρ) + ⟦ (y , j) ∷ ys ⟧ (ρ ∷ Ρ)
