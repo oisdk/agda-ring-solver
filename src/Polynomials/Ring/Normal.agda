@@ -146,17 +146,13 @@ mutual
       → Coeffs n
       → Coeffs n
   ⊞-ne (ℕ.less    i k) x xs y ys = (x , i) ∷ ⊞-ne-l k xs y ys
-  ⊞-ne (ℕ.greater j k) x xs y ys = (y , j) ∷ ⊞-ne-r k x xs ys
+  ⊞-ne (ℕ.greater j k) x xs y ys = (y , j) ∷ ⊞-ne-l k ys x xs
   ⊞-ne (ℕ.equal   i  ) x xs y ys =
     (fst~ x ⊞ fst~ y , i) ∷↓ (⊞-coeffs xs ys)
 
   ⊞-ne-l : ∀ {n} → ℕ → Coeffs n → (y : Coeff n) → Coeffs n → Coeffs n
   ⊞-ne-l k [] y ys = (y , k) ∷ ys
   ⊞-ne-l k ((x , i) ∷ xs) y ys = ⊞-ne (ℕ.compare i k) x xs y ys
-
-  ⊞-ne-r : ∀ {n} → ℕ → (x : Coeff n) → Coeffs n → Coeffs n → Coeffs n
-  ⊞-ne-r k x xs [] = (x , k) ∷ xs
-  ⊞-ne-r k x xs ((y , j) ∷ ys) = ⊞-ne (ℕ.compare k j) x xs y ys
 
 ----------------------------------------------------------------------
 -- Negation
