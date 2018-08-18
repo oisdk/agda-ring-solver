@@ -189,9 +189,8 @@ mutual
     ⊠-step : Coeff n × ℕ → Coeffs n → Coeffs n
     ⊠-step (x ,~ _ , i) xs = (x ⊠ y , i) ∷↓ (x ⋊ ys ⊞ xs)
 
-
 ----------------------------------------------------------------------
--- Semantics
+-- Constants and Variables
 ----------------------------------------------------------------------
 
 -- The constant polynomial
