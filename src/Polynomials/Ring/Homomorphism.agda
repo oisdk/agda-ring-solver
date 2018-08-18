@@ -114,18 +114,18 @@ mutual
           → (Ρ : Vec Carrier n)
           → ⟦ ⊞-ne c x xs y ys ⟧ (ρ ∷ Ρ) ≈ ⟦ (x , i) ∷ xs ⟧ (ρ ∷ Ρ) + ⟦ (y , j) ∷ ys ⟧ (ρ ∷ Ρ)
   ⊞-ne-hom (ℕ.equal i) x xs y ys ρ Ρ =
-    let x′ = ⟦ fst~ x ⟧ Ρ
-        y′ = ⟦ fst~ y ⟧ Ρ
+    let x′ = ⟦ proj₁~ x ⟧ Ρ
+        y′ = ⟦ proj₁~ y ⟧ Ρ
         xs′ = ⟦ xs ⟧ (ρ ∷ Ρ)
         ys′ = ⟦ ys ⟧ (ρ ∷ Ρ)
     in
     begin
-      ⟦ (fst~ x ⊞ fst~ y , i) ∷↓ xs ⊞ ys ⟧ (ρ ∷ Ρ)
+      ⟦ (proj₁~ x ⊞ proj₁~ y , i) ∷↓ xs ⊞ ys ⟧ (ρ ∷ Ρ)
     ≈⟨ (∷↓-hom _ i (xs ⊞ ys) ρ Ρ) ⟩
-      (⟦ fst~ x ⊞ fst~ y ⟧ Ρ + ⟦ xs ⊞ ys ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ i
+      (⟦ proj₁~ x ⊞ proj₁~ y ⟧ Ρ + ⟦ xs ⊞ ys ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ i
     ≈⟨ ≪* begin
-            ⟦ fst~ x ⊞ fst~ y ⟧ Ρ + ⟦ xs ⊞ ys ⟧ (ρ ∷ Ρ) * ρ
-          ≈⟨ ⊞-hom (fst~ x) (fst~ y) Ρ ⟨ +-cong ⟩ (≪* ⊞-coeffs-hom xs ys ρ Ρ) ⟩
+            ⟦ proj₁~ x ⊞ proj₁~ y ⟧ Ρ + ⟦ xs ⊞ ys ⟧ (ρ ∷ Ρ) * ρ
+          ≈⟨ ⊞-hom (proj₁~ x) (proj₁~ y) Ρ ⟨ +-cong ⟩ (≪* ⊞-coeffs-hom xs ys ρ Ρ) ⟩
             (x′ + y′) + (xs′ + ys′) * ρ
           ≈⟨ +≫ distribʳ ρ _ _ ⟩
             (x′ + y′) + (xs′ * ρ + ys′ * ρ)
@@ -155,11 +155,11 @@ mutual
                   → (ys : Coeffs n)
                   → (ρ : Carrier)
                   → (Ρ : Vec Carrier n)
-                  → (⟦ fst~ x ⟧ Ρ + ⟦ ⊞-ne-l k xs y ys ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ i
+                  → (⟦ proj₁~ x ⟧ Ρ + ⟦ ⊞-ne-l k xs y ys ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ i
                   ≈ ⟦ (x , i) ∷ xs ⟧ (ρ ∷ Ρ) + ⟦ (y , suc (i ℕ.+ k)) ∷ ys ⟧ (ρ ∷ Ρ)
   ⊞-ne-l-step-hom i k x xs y ys ρ Ρ =
-    let x′ = ⟦ fst~ x ⟧ Ρ
-        y′ = ⟦ fst~ y ⟧ Ρ
+    let x′ = ⟦ proj₁~ x ⟧ Ρ
+        y′ = ⟦ proj₁~ y ⟧ Ρ
         xs′ = ⟦ xs ⟧ (ρ ∷ Ρ)
         ys′ = ⟦ ys ⟧ (ρ ∷ Ρ)
     in
@@ -246,17 +246,17 @@ mutual
     begin
       ⟦ x ⋊ ((y , j) ∷ ys) ⟧ (ρ ∷ Ρ)
     ≡⟨⟩
-      ⟦ (x ⊠ fst~ y , j) ∷↓ x ⋊ ys ⟧ (ρ ∷ Ρ)
+      ⟦ (x ⊠ proj₁~ y , j) ∷↓ x ⋊ ys ⟧ (ρ ∷ Ρ)
     ≈⟨ ∷↓-hom _ j (x ⋊ ys) ρ Ρ ⟩
-      (⟦ x ⊠ fst~ y ⟧ Ρ + ⟦ x ⋊ ys ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ j
+      (⟦ x ⊠ proj₁~ y ⟧ Ρ + ⟦ x ⋊ ys ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ j
     ≈⟨ ≪* +≫ ≪* ⋊-hom x ys ρ Ρ ⟩
-      (⟦ x ⊠ fst~ y ⟧ Ρ + ⟦ x ⟧ Ρ * ⟦ ys ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ j
+      (⟦ x ⊠ proj₁~ y ⟧ Ρ + ⟦ x ⟧ Ρ * ⟦ ys ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ j
     ≈⟨ ≪* +≫ *-assoc _ _ _ ⟩
-      (⟦ x ⊠ fst~ y ⟧ Ρ + ⟦ x ⟧ Ρ * (⟦ ys ⟧ (ρ ∷ Ρ) * ρ)) * ρ ^ j
-    ≈⟨ ≪* ≪+ ⊠-hom x (fst~ y) Ρ ⟩
-      (⟦ x ⟧ Ρ * ⟦ fst~ y ⟧ Ρ + ⟦ x ⟧ Ρ * (⟦ ys ⟧ (ρ ∷ Ρ) * ρ)) * ρ ^ j
+      (⟦ x ⊠ proj₁~ y ⟧ Ρ + ⟦ x ⟧ Ρ * (⟦ ys ⟧ (ρ ∷ Ρ) * ρ)) * ρ ^ j
+    ≈⟨ ≪* ≪+ ⊠-hom x (proj₁~ y) Ρ ⟩
+      (⟦ x ⟧ Ρ * ⟦ proj₁~ y ⟧ Ρ + ⟦ x ⟧ Ρ * (⟦ ys ⟧ (ρ ∷ Ρ) * ρ)) * ρ ^ j
     ≈⟨ ≪* sym (distribˡ (⟦ x ⟧ Ρ) _ _) ⟩
-      ⟦ x ⟧ Ρ * (⟦ fst~ y ⟧ Ρ + ⟦ ys ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ j
+      ⟦ x ⟧ Ρ * (⟦ proj₁~ y ⟧ Ρ + ⟦ ys ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ j
     ≈⟨ *-assoc _ _ _ ⟩
       ⟦ x ⟧ Ρ * ⟦ (y , j) ∷ ys ⟧ (ρ ∷ Ρ)
     ∎
@@ -335,18 +335,18 @@ mutual
   ⊠-coeffs-hom [] ys ρ Ρ = sym (zeroˡ _)
   ⊠-coeffs-hom (x ∷ xs) [] ρ Ρ = sym (zeroʳ _)
   ⊠-coeffs-hom ((x , i) ∷ xs) ((y , j) ∷ ys) ρ Ρ =
-    let x′ = ⟦ fst~ x ⟧ Ρ
-        y′ = ⟦ fst~ y ⟧ Ρ
+    let x′ = ⟦ proj₁~ x ⟧ Ρ
+        y′ = ⟦ proj₁~ y ⟧ Ρ
         xs′ = ⟦ xs ⟧ (ρ ∷ Ρ)
         ys′ = ⟦ ys ⟧ (ρ ∷ Ρ)
     in
     begin
       ⟦ ⊠-coeffs ((x , i) ∷ xs) ((y , j) ∷ ys) ⟧ (ρ ∷ Ρ)
     ≡⟨⟩
-      ⟦ (fst~ x ⊠ fst~ y , j ℕ.+ i) ∷↓ fst~ x ⋊ ys ⊞ ⊠-shift (fst~ y) ys xs ⟧ (ρ ∷ Ρ)
+      ⟦ (proj₁~ x ⊠ proj₁~ y , j ℕ.+ i) ∷↓ proj₁~ x ⋊ ys ⊞ ⊠-shift (proj₁~ y) ys xs ⟧ (ρ ∷ Ρ)
     ≈⟨ ∷↓-hom _ _ _ ρ Ρ ⟩
-      (⟦ fst~ x ⊠ fst~ y ⟧ Ρ + ⟦ fst~ x ⋊ ys ⊞ ⊠-shift (fst~ y) ys xs ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ (j ℕ.+ i)
-    ≈⟨ ≪* ⊠-step-hom (fst~ x) xs (fst~ y) ys ρ Ρ ⟩
+      (⟦ proj₁~ x ⊠ proj₁~ y ⟧ Ρ + ⟦ proj₁~ x ⋊ ys ⊞ ⊠-shift (proj₁~ y) ys xs ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ (j ℕ.+ i)
+    ≈⟨ ≪* ⊠-step-hom (proj₁~ x) xs (proj₁~ y) ys ρ Ρ ⟩
       (x′ + xs′ * ρ) * (y′ + ys′ * ρ) * ρ ^ (j ℕ.+ i)
     ≈⟨ *≫ sym (pow-add ρ j i) ⟩
       (x′ + xs′ * ρ) * (y′ + ys′ * ρ) * (ρ ^ j * ρ ^ i)

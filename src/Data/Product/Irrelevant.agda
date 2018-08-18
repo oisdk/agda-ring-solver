@@ -8,8 +8,8 @@ open import Function
 record Σ~ {a b} (A : Set a) (B : A → Set b) : Set (a ⊔ b) where
   constructor _,~_
   field
-    fst~ : A
-    .snd~ : B fst~
+    proj₁~ : A
+    .proj₂~ : B proj₁~
 open Σ~ public
 
 _×~_ : ∀ {a b} (A : Set a) (B : Set b) → Set (a ⊔ b)

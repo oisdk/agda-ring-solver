@@ -77,7 +77,7 @@ zero? {zero} (lift x) = zero-c? x
 zero? {suc n} [] = yes (lift tt)
 zero? {suc n} (x ∷ xs) = no lower
 
--- Polynomial exponentiation
+-- Exponentiate the first variable of a polynomial
 infixr 8 _⍓_
 _⍓_ : ∀ {n} → Coeffs n → ℕ → Coeffs n
 [] ⍓ i = []
@@ -94,7 +94,7 @@ map-poly : ∀ {n} → (Poly n → Poly n) → Coeffs n → Coeffs n
 map-poly {n} f = List.foldr cons []
   where
   cons : (Coeff n × ℕ) → Coeffs n → Coeffs n
-  cons ((x ,~ _) , i) = _∷↓_ (f x , i)
+  cons (x ,~ _ , i) = _∷↓_ (f x , i)
 
 ----------------------------------------------------------------------
 -- Arithmetic
@@ -139,20 +139,20 @@ mutual
     ⊞-ne (ℕ.compare p q) x xs y ys
 
   ⊞-ne : ∀ {p q n}
-      → ℕ.Ordering p q
-      → (x : Coeff n)
-      → Coeffs n
-      → (y : Coeff n)
-      → Coeffs n
-      → Coeffs n
+       → ℕ.Ordering p q
+       → (x : Coeff n)
+       → Coeffs n
+       → (y : Coeff n)
+       → Coeffs n
+       → Coeffs n
   ⊞-ne (ℕ.less    i k) x xs y ys = (x , i) ∷ ⊞-ne-l k xs y ys
   ⊞-ne (ℕ.greater j k) x xs y ys = (y , j) ∷ ⊞-ne-l k ys x xs
-  ⊞-ne (ℕ.equal   i  ) x xs y ys =
-    (fst~ x ⊞ fst~ y , i) ∷↓ (⊞-coeffs xs ys)
+  ⊞-ne (ℕ.equal   i  ) (x ,~ _) xs (y ,~ _) ys =
+    (x ⊞ y , i) ∷↓ ⊞-coeffs xs ys
 
   ⊞-ne-l : ∀ {n} → ℕ → Coeffs n → (y : Coeff n) → Coeffs n → Coeffs n
   ⊞-ne-l k [] y ys = (y , k) ∷ ys
-  ⊞-ne-l k ((x , i) ∷ xs) y ys = ⊞-ne (ℕ.compare i k) x xs y ys
+  ⊞-ne-l k ((x , i) ∷ xs) = ⊞-ne (ℕ.compare i k) x xs
 
 ----------------------------------------------------------------------
 -- Negation
@@ -160,7 +160,7 @@ mutual
 
 ⊟_ : ∀ {n} → Poly n → Poly n
 ⊟_ {zero} (lift x) = lift (- x)
-⊟_ {suc n} xs = map-poly ⊟_ xs
+⊟_ {suc n} = map-poly ⊟_
 
 ----------------------------------------------------------------------
 -- Multiplication
