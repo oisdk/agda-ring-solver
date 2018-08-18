@@ -134,25 +134,23 @@ mutual
 
   ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
   ⊞-coeffs [] ys = ys
-  ⊞-coeffs (x ∷ xs) [] = x ∷ xs
-  ⊞-coeffs ((x , p) ∷ xs) ((y , q) ∷ ys) =
-    ⊞-ne (ℕ.compare p q) x xs y ys
+  ⊞-coeffs ((x , i) ∷ xs) = ⊞-ne-r i x xs
 
   ⊞-ne : ∀ {p q n}
        → ℕ.Ordering p q
-       → (x : Coeff n)
+       → Coeff n
        → Coeffs n
-       → (y : Coeff n)
+       → Coeff n
        → Coeffs n
        → Coeffs n
-  ⊞-ne (ℕ.less    i k) x xs y ys = (x , i) ∷ ⊞-ne-l k xs y ys
-  ⊞-ne (ℕ.greater j k) x xs y ys = (y , j) ∷ ⊞-ne-l k ys x xs
+  ⊞-ne (ℕ.less    i k) x xs y ys = (x , i) ∷ ⊞-ne-r k y ys xs
+  ⊞-ne (ℕ.greater j k) x xs y ys = (y , j) ∷ ⊞-ne-r k x xs ys
   ⊞-ne (ℕ.equal   i  ) (x ,~ _) xs (y ,~ _) ys =
     (x ⊞ y , i) ∷↓ ⊞-coeffs xs ys
 
-  ⊞-ne-l : ∀ {n} → ℕ → Coeffs n → (y : Coeff n) → Coeffs n → Coeffs n
-  ⊞-ne-l k [] y ys = (y , k) ∷ ys
-  ⊞-ne-l k ((x , i) ∷ xs) = ⊞-ne (ℕ.compare i k) x xs
+  ⊞-ne-r : ∀ {n} → ℕ → Coeff n → Coeffs n → Coeffs n → Coeffs n
+  ⊞-ne-r i x xs [] = (x , i) ∷ xs
+  ⊞-ne-r i x xs ((y , j) ∷ ys) = ⊞-ne (ℕ.compare i j) x xs y ys
 
 ----------------------------------------------------------------------
 -- Negation
