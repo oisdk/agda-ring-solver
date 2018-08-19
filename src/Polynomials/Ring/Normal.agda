@@ -45,7 +45,7 @@ mutual
     constructor _[,]_
     field
       flat : NormPoly i
-      i≤n  : i ≤ n
+      .i≤n  : i ≤ n
 
   FlatPoly : ℕ → Set (a ⊔ ℓ)
   FlatPoly zero = Lift ℓ Carrier
@@ -129,8 +129,8 @@ map-poly {n} f = List.foldr cons []
   (≡.trans (≡.sym (ℕ-≡.+-assoc _ k₁ k₂))
   (≡.trans (≡.cong (ℕ._+ k₂) xs) ys))
 
-z≤n : ∀ n → zero ≤ n
-z≤n n = ℕ.less-than-or-equal ≡.refl
+z≤n : ∀ {n} → zero ≤ n
+z≤n = ℕ.less-than-or-equal ≡.refl
 
 ≤-left-pred : ∀ {x y} → suc x ≤ y → x ≤ y
 ≤-left-pred (ℕ.less-than-or-equal proof) =
@@ -140,14 +140,14 @@ x≤x+k : ∀ {x k} → x ≤ x ℕ.+ k
 x≤x+k = ℕ.less-than-or-equal ≡.refl
 
 -- Inject a polynomial into a larger polynomoial with more variables
-inject : ∀ {n m} → n ≤ m → Poly n → Poly m
-inject n≤m (_ , xs [,] i≤n) = _ , xs [,] (≤-trans i≤n n≤m)
+inject : ∀ {n m} → Poly n → .(n ≤ m) → Poly m
+inject (_ , xs [,] i≤n) n≤m = _ , xs [,] (≤-trans i≤n n≤m)
 
 infixr 4 _[,]↓_
-_[,]↓_ : ∀ {i n} → FlatPoly i → i ≤ n → Poly n
+_[,]↓_ : ∀ {i n} → FlatPoly i → .(i ≤ n) → Poly n
 _[,]↓_ {zero}  xs i≤n = zero , xs ,~ tt [,] i≤n
-_[,]↓_ {suc i} [] i≤n = zero , lift 0# ,~ tt [,] z≤n _
-_[,]↓_ {suc i} ((x ,~ _ , zero) ∷ []) i≤n = inject (≤-left-pred i≤n) x
+_[,]↓_ {suc i} [] i≤n = zero , lift 0# ,~ tt [,] z≤n
+_[,]↓_ {suc i} ((x ,~ _ , zero) ∷ []) i≤n = inject x (≤-left-pred i≤n)
 _[,]↓_ {suc i} ((x₁ , zero) ∷ x₂ ∷ xs) i≤n =
   suc i , ((x₁ , zero) ∷ x₂ ∷ xs) ,~ tt [,] i≤n
 _[,]↓_ {suc i} ((x , suc j) ∷ xs) i≤n =
@@ -191,23 +191,23 @@ mutual
   ⊞-inj : ∀ {i j n}
         → ℕ.Ordering i j
         → NormPoly i
-        → i ≤ n
+        → .(i ≤ n)
         → NormPoly j
-        → j ≤ n
+        → .(j ≤ n)
         → Poly n
   ⊞-inj (ℕ.equal   m  ) xs i≤n ys _ = ⊞-flat xs ys i≤n
   ⊞-inj (ℕ.less    m k) xs x≤ ys y≤ = ⊞-le xs x≤ ys y≤
   ⊞-inj (ℕ.greater m k) xs x≤ ys y≤ = ⊞-le ys y≤ xs x≤
 
-  ⊞-flat : ∀ {i n} → NormPoly i → NormPoly i → i ≤ n → Poly n
+  ⊞-flat : ∀ {i n} → NormPoly i → NormPoly i → .(i ≤ n) → Poly n
   ⊞-flat {zero} (lift x ,~ _) (lift y ,~ _) i≤n = zero , lift (x + y) ,~ tt [,] i≤n
   ⊞-flat {suc i} (xs ,~ _) (ys ,~ _) i≤n = ⊞-coeffs xs ys [,]↓ i≤n
 
   ⊞-le : ∀ {i k n}
        → NormPoly i
-       → i ≤ n
+       → .(i ≤ n)
        → NormPoly (suc (i ℕ.+ k))
-       → suc (i ℕ.+ k) ≤ n
+       → .(suc (i ℕ.+ k) ≤ n)
        → Poly n
   ⊞-le xs _ ([] ,~ ()) i≤n
   ⊞-le xs xs≤ ((((j , y [,] y≤) ,~ _ , zero) ∷ ys) ,~ yn) k≤n =
@@ -240,30 +240,42 @@ mutual
 -- ----------------------------------------------------------------------
 
 -- ⊟_ : ∀ {n} → Poly n → Poly n
--- ⊟_ {zero} (lift x) = lift (- x)
--- ⊟_ {suc n} = map-poly ⊟_
+-- ⊟_ (zero  , lift x ,~ xn [,] i≤n) = zero , lift (- x) ,~ xn [,] i≤n
+-- ⊟_ (suc n , xs     ,~ xn [,] i≤n) = map-poly ⊟_ xs [,]↓ i≤n
 
--- ----------------------------------------------------------------------
--- -- Multiplication
--- ----------------------------------------------------------------------
--- mutual
---   -- Multiply a polynomial in degree n by a Polynomial in degree n-1.
---   infixl 7 _⋊_
---   _⋊_ : ∀ {n} → Poly n → Poly (suc n) → Poly (suc n)
---   _⋊_ = map-poly ∘ _⊠_
+----------------------------------------------------------------------
+-- Multiplication
+----------------------------------------------------------------------
+mutual
+  _⋊_ : ∀ {n} → Poly n → Coeffs n → Coeffs n
+  (i , xs [,] i≤n) ⋊ ys = {!!}
 
---   infixl 7 _⊠_
---   _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
---   _⊠_ {zero} (lift x) (lift y) = lift (x * y)
---   _⊠_ {suc n} = ⊠-coeffs
+  infixl 7 _⊠_
+  _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
+  _⊠_ = {!!}
 
---   -- A simple shift-and-add algorithm.
---   ⊠-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
---   ⊠-coeffs _ [] = []
---   ⊠-coeffs xs ((y ,~ _ , j) ∷ ys) = List.foldr (⊠-step y ys) [] xs ⍓ j
+  ⊠-up : ∀ {i k n}
+       → NormPoly i
+       → .(i ≤ n)
+       → NormPoly (suc (i ℕ.+ k))
+       → .(suc (i ℕ.+ k) ≤ n)
+       → Poly n
+  ⊠-up xs xs≤ ([] ,~ ()) ys≤
+  ⊠-up xs xs≤ ((y ∷ ys) ,~ yn) ys≤ = {!!}
 
---   ⊠-step : ∀ {n} → Poly n → Coeffs n → Coeff n × ℕ → Coeffs n → Coeffs n
---   ⊠-step y ys (x ,~ _ , i) xs = (x ⊠ y , i) ∷↓ (x ⋊ ys ⊞ xs)
+  -- ⊠-inj : ∀ {i j n}
+  --       → ℕ.Ordering i j
+  --       → NormPoly i
+  --       → .(i )
+
+
+  -- A simple shift-and-add algorithm.
+  ⊠-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
+  ⊠-coeffs _ [] = []
+  ⊠-coeffs xs ((y ,~ _ , j) ∷ ys) = List.foldr (⊠-step y ys) [] xs ⍓ j
+
+  ⊠-step : ∀ {n} → Poly n → Coeffs n → Coeff n × ℕ → Coeffs n → Coeffs n
+  ⊠-step y ys (x ,~ _ , i) xs = (x ⊠ y , i) ∷↓ ⊞-coeffs (x ⋊ ys) xs
 
 -- ----------------------------------------------------------------------
 -- -- Constants and Variables

@@ -29,11 +29,16 @@ _^_ : Carrier → ℕ → Carrier
 x ^ zero = 1#
 x ^ suc n = x * x ^ n
 
--- Evaluation
-⟦_⟧ : ∀ {n} → Poly n → Vec Carrier n → Carrier
-⟦_⟧ {zero} (lift x) [] = ⟦ x ⟧ᵣ
-⟦_⟧ {suc n} x (y ∷ ρ) = List.foldr coeff-eval 0# x
-  where
-  coeff-eval : Coeff n × ℕ → Carrier → Carrier
-  coeff-eval (c ,~ _ , p) xs = (⟦ c ⟧ ρ + xs * y) * y ^ p
+take : ∀ i {n} → Vec Carrier n → .(i ℕ.≤″ n) → Vec Carrier i
+take ℕ.zero xs i≤n = []
+take (suc i) [] (ℕ.less-than-or-equal ())
+take (suc i) (x ∷ xs) i≤n = {!!}
+
+-- -- Evaluation
+-- ⟦_⟧ : ∀ {n} → Poly n → Vec Carrier n → Carrier
+-- ⟦_⟧ (zero , lift x) [] = ⟦ x ⟧ᵣ
+-- ⟦_⟧ x (y ∷ ρ) = List.foldr coeff-eval 0# x
+--   where
+--   coeff-eval : Coeff n × ℕ → Carrier → Carrier
+--   coeff-eval (c ,~ _ , p) xs = (⟦ c ⟧ ρ + xs * y) * y ^ p
 
