@@ -12,11 +12,13 @@ open import Data.List as List using (_∷_; []; List)
 open import Data.Vec as Vec using (_∷_; []; Vec)
 open import Data.Nat as ℕ
   using (ℕ; suc; zero)
-  renaming (_≤′_ to _≤_)
+  renaming (_≤″_ to _≤_)
 open import Data.Product
 open import Data.Product.Irrelevant
 open import Function
 open import Data.Fin as Fin using (Fin)
+import Relation.Binary.PropositionalEquality as ≡
+import Data.Nat.Properties as ℕ-≡
 
 -- Multivariate polynomials.
 module Polynomials.Ring.Normal
@@ -42,12 +44,15 @@ mutual
     inductive
     constructor _[,]_
     field
-      flat : Σ~ (FlatPoly i) (Norm i)
+      flat : NormPoly i
       i≤n  : i ≤ n
 
   FlatPoly : ℕ → Set (a ⊔ ℓ)
   FlatPoly zero = Lift ℓ Carrier
   FlatPoly (suc n) = Coeffs n
+
+  NormPoly : ℕ → Set (a ⊔ ℓ)
+  NormPoly i = Σ~ (FlatPoly i) (Norm i)
 
   -- A list of coefficients, paired with the exponent *gap* from the
   -- preceding coefficient. In other words, to represent the
@@ -84,6 +89,8 @@ mutual
   Norm (suc _) ((_ , zero) ∷ _ ∷ _) = ⊤
   Norm (suc _) ((_ , suc _) ∷ _) = ⊤
 
+open NestPoly
+
 ----------------------------------------------------------------------
 -- Construction
 --
@@ -117,16 +124,20 @@ map-poly {n} f = List.foldr cons []
   cons (x ,~ _ , i) = _∷↓_ (f x , i)
 
 ≤-trans : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
-≤-trans xs ℕ.≤′-refl = xs
-≤-trans xs (ℕ.≤′-step ys) = ℕ.≤′-step (≤-trans xs ys)
+≤-trans (ℕ.less-than-or-equal {k₁} xs) (ℕ.less-than-or-equal {k₂} ys) =
+  ℕ.less-than-or-equal {k = k₁ ℕ.+ k₂}
+  (≡.trans (≡.sym (ℕ-≡.+-assoc _ k₁ k₂))
+  (≡.trans (≡.cong (ℕ._+ k₂) xs) ys))
 
 z≤n : ∀ n → zero ≤ n
-z≤n zero = ℕ.≤′-refl
-z≤n (suc n) = ℕ.≤′-step (z≤n n)
+z≤n n = ℕ.less-than-or-equal ≡.refl
 
 ≤-left-pred : ∀ {x y} → suc x ≤ y → x ≤ y
-≤-left-pred ℕ.≤′-refl = ℕ.≤′-step ℕ.≤′-refl
-≤-left-pred (ℕ.≤′-step xs) = ℕ.≤′-step (≤-left-pred xs)
+≤-left-pred (ℕ.less-than-or-equal proof) =
+  ℕ.less-than-or-equal (≡.trans (ℕ-≡.+-suc _ _) proof)
+
+x≤x+k : ∀ x k → x ≤ x ℕ.+ k
+x≤x+k x k = ℕ.less-than-or-equal ≡.refl
 
 -- Inject a polynomial into a larger polynomoial with more variables
 inject : ∀ {n m} → n ≤ m → Poly n → Poly m
@@ -141,61 +152,80 @@ _[,]↓_ {suc i} ((x₁ , zero) ∷ x₂ ∷ xs) i≤n =
 _[,]↓_ {suc i} ((x , suc j) ∷ xs) i≤n =
   suc i , ((x , suc j) ∷ xs) ,~ tt [,] i≤n
 
--- ----------------------------------------------------------------------
--- -- Arithmetic
--- ----------------------------------------------------------------------
+----------------------------------------------------------------------
+-- Arithmetic
+----------------------------------------------------------------------
 
--- ----------------------------------------------------------------------
--- -- Addition
--- ----------------------------------------------------------------------
--- mutual
---   -- The reason the following code is so verbose is termination
---   -- checking. For instance, in the third case for ⊞-coeffs, we call a
---   -- helper function. Instead, you could conceivably use a with-block
---   -- (on ℕ.compare p q):
---   --
---   -- ⊞-coeffs ((x , p) ∷ xs) ((y , q) ∷ ys) with (ℕ.compare p q)
---   -- ... | ℕ.less    p k = (x , p) ∷ ⊞-coeffs xs ((y , k) ∷ ys)
---   -- ... | ℕ.equal   p   = (fst~ x ⊞ fst~ y , p) ∷↓ ⊞-coeffs xs ys
---   -- ... | ℕ.greater q k = (y , q) ∷ ⊞-coeffs ((x , k) ∷ xs) ys
---   --
---   -- However, because the first and third recursive calls each rewrap
---   -- a list that was already pattern-matched on, the recursive call
---   -- does not strictly decrease the size of its argument.
---   --
---   -- Interestingly, if --without-K is turned off, we don't need the
---   -- helper function ⊞-coeffs; we could pattern match on _⊞_ directly.
---   --
---   -- _⊞_ {zero} (lift x) (lift y) = lift (x + y)
---   -- _⊞_ {suc n} [] ys = ys
---   -- _⊞_ {suc n} (x ∷ xs) [] = x ∷ xs
---   -- _⊞_ {suc n} ((x , p) ∷ xs) ((y , q) ∷ ys) =
---   --   ⊞-ne (ℕ.compare p q) x xs y ys
+----------------------------------------------------------------------
+-- Addition
+----------------------------------------------------------------------
+mutual
+  -- The reason the following code is so verbose is termination
+  -- checking. For instance, in the third case for ⊞-coeffs, we call a
+  -- helper function. Instead, you could conceivably use a with-block
+  -- (on ℕ.compare p q):
+  --
+  -- ⊞-coeffs ((x , p) ∷ xs) ((y , q) ∷ ys) with (ℕ.compare p q)
+  -- ... | ℕ.less    p k = (x , p) ∷ ⊞-coeffs xs ((y , k) ∷ ys)
+  -- ... | ℕ.equal   p   = (fst~ x ⊞ fst~ y , p) ∷↓ ⊞-coeffs xs ys
+  -- ... | ℕ.greater q k = (y , q) ∷ ⊞-coeffs ((x , k) ∷ xs) ys
+  --
+  -- However, because the first and third recursive calls each rewrap
+  -- a list that was already pattern-matched on, the recursive call
+  -- does not strictly decrease the size of its argument.
+  --
+  -- Interestingly, if --without-K is turned off, we don't need the
+  -- helper function ⊞-coeffs; we could pattern match on _⊞_ directly.
+  --
+  -- _⊞_ {zero} (lift x) (lift y) = lift (x + y)
+  -- _⊞_ {suc n} [] ys = ys
+  -- _⊞_ {suc n} (x ∷ xs) [] = x ∷ xs
+  -- _⊞_ {suc n} ((x , p) ∷ xs) ((y , q) ∷ ys) =
+  --   ⊞-ne (ℕ.compare p q) x xs y ys
 
---   infixl 6 _⊞_
---   _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
---   _⊞_ {zero} (lift x) (lift y) = lift (x + y)
---   _⊞_ {suc n} = ⊞-coeffs
+  infixl 6 _⊞_
+  _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
+  (i , xs) ⊞ (j , ys) = ⊞-inj (ℕ.compare i j) xs ys
 
---   ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
---   ⊞-coeffs [] ys = ys
---   ⊞-coeffs ((x , i) ∷ xs) = ⊞-ne-r i x xs
+  ⊞-inj : ∀ {i j n}
+        → ℕ.Ordering i j
+        → NestPoly n i
+        → NestPoly n j
+        → Poly n
+  ⊞-inj (ℕ.equal   m  ) (xs [,] i≤n) (ys [,] _) = ⊞-flat xs ys i≤n
+  ⊞-inj (ℕ.less    m k) xs ys = ⊞-le xs ys (x≤x+k _ _)
+  ⊞-inj (ℕ.greater m k) xs ys = ⊞-le ys xs (x≤x+k _ _)
 
---   ⊞-ne : ∀ {p q n}
---        → ℕ.Ordering p q
---        → Coeff n
---        → Coeffs n
---        → Coeff n
---        → Coeffs n
---        → Coeffs n
---   ⊞-ne (ℕ.less    i k) x xs y ys = (x , i) ∷ ⊞-ne-r k y ys xs
---   ⊞-ne (ℕ.greater j k) x xs y ys = (y , j) ∷ ⊞-ne-r k x xs ys
---   ⊞-ne (ℕ.equal   i  ) (x ,~ _) xs (y ,~ _) ys =
---     (x ⊞ y , i) ∷↓ ⊞-coeffs xs ys
+  ⊞-flat : ∀ {i n} → NormPoly i → NormPoly i → i ≤ n → Poly n
+  ⊞-flat {zero} (lift x ,~ _) (lift y ,~ _) i≤n = zero , lift (x + y) ,~ tt [,] i≤n
+  ⊞-flat {suc i} (xs ,~ _) (ys ,~ _) i≤n = ⊞-coeffs xs ys [,]↓ i≤n
 
---   ⊞-ne-r : ∀ {n} → ℕ → Coeff n → Coeffs n → Coeffs n → Coeffs n
---   ⊞-ne-r i x xs [] = (x , i) ∷ xs
---   ⊞-ne-r i x xs ((y , j) ∷ ys) = ⊞-ne (ℕ.compare i j) x xs y ys
+  ⊞-le : ∀ {i j n} → NestPoly n i → NestPoly n (suc j) → i ≤ j → Poly n
+  ⊞-le xs ([] ,~ () [,] i≤n) _
+  ⊞-le (xs [,] xs≤) ((((j , y) ,~ _ , zero) ∷ ys) ,~ yn [,] k≤n) i≤j =
+    (( ⊞-inj (ℕ.compare _ _) (xs [,] i≤j) y , zero) ∷↓ ys) [,]↓ k≤n
+  ⊞-le (xs [,] i≤n) (((y , suc j) ∷ ys) ,~ yn [,] j≤n) i≤j =
+    (((_ , xs [,] i≤j) , zero) ∷↓ (y , j) ∷ ys) [,]↓ j≤n
+
+  ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
+  ⊞-coeffs [] ys = ys
+  ⊞-coeffs ((x , i) ∷ xs) = ⊞-ne-r i x xs
+
+  ⊞-ne : ∀ {p q n}
+       → ℕ.Ordering p q
+       → Coeff n
+       → Coeffs n
+       → Coeff n
+       → Coeffs n
+       → Coeffs n
+  ⊞-ne (ℕ.less    i k) x xs y ys = (x , i) ∷ ⊞-ne-r k y ys xs
+  ⊞-ne (ℕ.greater j k) x xs y ys = (y , j) ∷ ⊞-ne-r k x xs ys
+  ⊞-ne (ℕ.equal   i  ) (x ,~ _) xs (y ,~ _) ys =
+    (x ⊞ y , i) ∷↓ ⊞-coeffs xs ys
+
+  ⊞-ne-r : ∀ {n} → ℕ → Coeff n → Coeffs n → Coeffs n → Coeffs n
+  ⊞-ne-r i x xs [] = (x , i) ∷ xs
+  ⊞-ne-r i x xs ((y , j) ∷ ys) = ⊞-ne (ℕ.compare i j) x xs y ys
 
 -- ----------------------------------------------------------------------
 -- -- Negation
