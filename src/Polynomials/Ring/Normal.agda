@@ -143,6 +143,7 @@ x≤x+k x k = ℕ.less-than-or-equal ≡.refl
 inject : ∀ {n m} → n ≤ m → Poly n → Poly m
 inject n≤m (_ , xs [,] i≤n) = _ , xs [,] (≤-trans i≤n n≤m)
 
+infixr 4 _[,]↓_
 _[,]↓_ : ∀ {i n} → FlatPoly i → i ≤ n → Poly n
 _[,]↓_ {zero}  xs i≤n = zero , xs ,~ tt [,] i≤n
 _[,]↓_ {suc i} [] i≤n = zero , lift 0# ,~ tt [,] z≤n _
@@ -185,26 +186,28 @@ mutual
 
   infixl 6 _⊞_
   _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
-  (i , xs) ⊞ (j , ys) = ⊞-inj (ℕ.compare i j) xs ys
+  (i , xs [,] xs≤) ⊞ (j , ys [,] ys≤) = ⊞-inj (ℕ.compare i j) xs xs≤ ys ys≤
 
   ⊞-inj : ∀ {i j n}
         → ℕ.Ordering i j
-        → NestPoly n i
-        → NestPoly n j
+        → NormPoly i
+        → i ≤ n
+        → NormPoly j
+        → j ≤ n
         → Poly n
-  ⊞-inj (ℕ.equal   m  ) (xs [,] i≤n) (ys [,] _) = ⊞-flat xs ys i≤n
-  ⊞-inj (ℕ.less    m k) xs ys = ⊞-le xs ys (x≤x+k _ _)
-  ⊞-inj (ℕ.greater m k) xs ys = ⊞-le ys xs (x≤x+k _ _)
+  ⊞-inj (ℕ.equal   m  ) xs i≤n ys _ = ⊞-flat xs ys i≤n
+  ⊞-inj (ℕ.less    m k) xs x≤ ys y≤ = ⊞-le xs x≤ ys y≤ (x≤x+k _ _)
+  ⊞-inj (ℕ.greater m k) xs x≤ ys y≤ = ⊞-le ys y≤ xs x≤ (x≤x+k _ _)
 
   ⊞-flat : ∀ {i n} → NormPoly i → NormPoly i → i ≤ n → Poly n
   ⊞-flat {zero} (lift x ,~ _) (lift y ,~ _) i≤n = zero , lift (x + y) ,~ tt [,] i≤n
   ⊞-flat {suc i} (xs ,~ _) (ys ,~ _) i≤n = ⊞-coeffs xs ys [,]↓ i≤n
 
-  ⊞-le : ∀ {i j n} → NestPoly n i → NestPoly n (suc j) → i ≤ j → Poly n
-  ⊞-le xs ([] ,~ () [,] i≤n) _
-  ⊞-le (xs [,] xs≤) ((((j , y) ,~ _ , zero) ∷ ys) ,~ yn [,] k≤n) i≤j =
-    (( ⊞-inj (ℕ.compare _ _) (xs [,] i≤j) y , zero) ∷↓ ys) [,]↓ k≤n
-  ⊞-le (xs [,] i≤n) (((y , suc j) ∷ ys) ,~ yn [,] j≤n) i≤j =
+  ⊞-le : ∀ {i j n} → NormPoly i → i ≤ n → NormPoly (suc j) → suc j ≤ n → i ≤ j → Poly n
+  ⊞-le xs _ ([] ,~ ()) i≤n _
+  ⊞-le xs xs≤ ((((j , y [,] y≤) ,~ _ , zero) ∷ ys) ,~ yn) k≤n i≤j =
+    ((⊞-inj (ℕ.compare _ _) y y≤ xs i≤j , zero) ∷↓ ys) [,]↓ k≤n
+  ⊞-le xs i≤n (((y , suc j) ∷ ys) ,~ yn) j≤n i≤j =
     (((_ , xs [,] i≤j) , zero) ∷↓ (y , j) ∷ ys) [,]↓ j≤n
 
   ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
