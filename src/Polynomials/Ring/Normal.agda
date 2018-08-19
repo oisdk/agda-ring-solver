@@ -136,8 +136,8 @@ z≤n n = ℕ.less-than-or-equal ≡.refl
 ≤-left-pred (ℕ.less-than-or-equal proof) =
   ℕ.less-than-or-equal (≡.trans (ℕ-≡.+-suc _ _) proof)
 
-x≤x+k : ∀ x k → x ≤ x ℕ.+ k
-x≤x+k x k = ℕ.less-than-or-equal ≡.refl
+x≤x+k : ∀ {x k} → x ≤ x ℕ.+ k
+x≤x+k = ℕ.less-than-or-equal ≡.refl
 
 -- Inject a polynomial into a larger polynomoial with more variables
 inject : ∀ {n m} → n ≤ m → Poly n → Poly m
@@ -196,19 +196,24 @@ mutual
         → j ≤ n
         → Poly n
   ⊞-inj (ℕ.equal   m  ) xs i≤n ys _ = ⊞-flat xs ys i≤n
-  ⊞-inj (ℕ.less    m k) xs x≤ ys y≤ = ⊞-le xs x≤ ys y≤ (x≤x+k _ _)
-  ⊞-inj (ℕ.greater m k) xs x≤ ys y≤ = ⊞-le ys y≤ xs x≤ (x≤x+k _ _)
+  ⊞-inj (ℕ.less    m k) xs x≤ ys y≤ = ⊞-le xs x≤ ys y≤
+  ⊞-inj (ℕ.greater m k) xs x≤ ys y≤ = ⊞-le ys y≤ xs x≤
 
   ⊞-flat : ∀ {i n} → NormPoly i → NormPoly i → i ≤ n → Poly n
   ⊞-flat {zero} (lift x ,~ _) (lift y ,~ _) i≤n = zero , lift (x + y) ,~ tt [,] i≤n
   ⊞-flat {suc i} (xs ,~ _) (ys ,~ _) i≤n = ⊞-coeffs xs ys [,]↓ i≤n
 
-  ⊞-le : ∀ {i j n} → NormPoly i → i ≤ n → NormPoly (suc j) → suc j ≤ n → i ≤ j → Poly n
-  ⊞-le xs _ ([] ,~ ()) i≤n _
-  ⊞-le xs xs≤ ((((j , y [,] y≤) ,~ _ , zero) ∷ ys) ,~ yn) k≤n i≤j =
-    ((⊞-inj (ℕ.compare _ _) y y≤ xs i≤j , zero) ∷↓ ys) [,]↓ k≤n
-  ⊞-le xs i≤n (((y , suc j) ∷ ys) ,~ yn) j≤n i≤j =
-    (((_ , xs [,] i≤j) , zero) ∷↓ (y , j) ∷ ys) [,]↓ j≤n
+  ⊞-le : ∀ {i k n}
+       → NormPoly i
+       → i ≤ n
+       → NormPoly (suc (i ℕ.+ k))
+       → suc (i ℕ.+ k) ≤ n
+       → Poly n
+  ⊞-le xs _ ([] ,~ ()) i≤n
+  ⊞-le xs xs≤ ((((j , y [,] y≤) ,~ _ , zero) ∷ ys) ,~ yn) k≤n =
+    ((⊞-inj (ℕ.compare _ _) y y≤ xs x≤x+k , zero) ∷↓ ys) [,]↓ k≤n
+  ⊞-le xs i≤n (((y , suc j) ∷ ys) ,~ yn) j≤n =
+    (((_ , xs [,] x≤x+k) , zero) ∷↓ (y , j) ∷ ys) [,]↓ j≤n
 
   ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
   ⊞-coeffs [] ys = ys
