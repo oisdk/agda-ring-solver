@@ -12,6 +12,7 @@ open import Data.List as List using (_∷_; []; List)
 open import Data.Vec as Vec using (_∷_; []; Vec)
 open import Data.Nat as ℕ
   using (ℕ; suc; zero)
+  renaming (_≤′_ to _≤_)
 open import Data.Product
 open import Data.Product.Irrelevant
 open import Function
@@ -42,7 +43,7 @@ mutual
     constructor _[,]_
     field
       flat : Σ~ (FlatPoly i) (Norm i)
-      i≤n  : i ℕ.≤″ n
+      i≤n  : i ≤ n
 
   FlatPoly : ℕ → Set (a ⊔ ℓ)
   FlatPoly zero = Lift ℓ Carrier
@@ -90,30 +91,55 @@ mutual
 -- normalising cons operator to construct the coefficient lists.
 ----------------------------------------------------------------------
 
--- -- Decision procedure for Zero
--- zero? : ∀ {n} → (p : Poly n) → Dec (Zero n p)
--- zero? {zero} (lift x) = zero-c? x
--- zero? {suc n} [] = yes (lift tt)
--- zero? {suc n} (x ∷ xs) = no lower
+-- Decision procedure for Zero
+zero? : ∀ {n} → (p : Poly n) → Dec (Zero p)
+zero? (zero  , lift x  ,~ _ [,] _) = zero-c? x
+zero? (suc _ , []      ,~ _ [,] _) = yes (lift tt)
+zero? (suc _ , (_ ∷ _) ,~ _ [,] _) = no lower
 
--- -- Exponentiate the first variable of a polynomial
--- infixr 8 _⍓_
--- _⍓_ : ∀ {n} → Coeffs n → ℕ → Coeffs n
--- [] ⍓ i = []
--- ((x , j) ∷ xs) ⍓ i = (x , j ℕ.+ i) ∷ xs
+-- Exponentiate the first variable of a polynomial
+infixr 8 _⍓_
+_⍓_ : ∀ {n} → Coeffs n → ℕ → Coeffs n
+[] ⍓ i = []
+((x , j) ∷ xs) ⍓ i = (x , j ℕ.+ i) ∷ xs
 
--- -- Normalising cons
--- infixr 5 _∷↓_
--- _∷↓_ : ∀ {n} → (Poly n × ℕ) → Coeffs n → Coeffs n
--- (x , i) ∷↓ xs with zero? x
--- ... | yes p = xs ⍓ suc i
--- ... | no ¬p = (x ,~ ¬p , i) ∷ xs
+-- Normalising cons
+infixr 5 _∷↓_
+_∷↓_ : ∀ {n} → (Poly n × ℕ) → Coeffs n → Coeffs n
+(x , i) ∷↓ xs with zero? x
+... | yes p = xs ⍓ suc i
+... | no ¬p = (x ,~ ¬p , i) ∷ xs
 
--- map-poly : ∀ {n} → (Poly n → Poly n) → Coeffs n → Coeffs n
--- map-poly {n} f = List.foldr cons []
---   where
---   cons : (Coeff n × ℕ) → Coeffs n → Coeffs n
---   cons (x ,~ _ , i) = _∷↓_ (f x , i)
+map-poly : ∀ {n} → (Poly n → Poly n) → Coeffs n → Coeffs n
+map-poly {n} f = List.foldr cons []
+  where
+  cons : (Coeff n × ℕ) → Coeffs n → Coeffs n
+  cons (x ,~ _ , i) = _∷↓_ (f x , i)
+
+≤-trans : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
+≤-trans xs ℕ.≤′-refl = xs
+≤-trans xs (ℕ.≤′-step ys) = ℕ.≤′-step (≤-trans xs ys)
+
+z≤n : ∀ n → zero ≤ n
+z≤n zero = ℕ.≤′-refl
+z≤n (suc n) = ℕ.≤′-step (z≤n n)
+
+≤-left-pred : ∀ {x y} → suc x ≤ y → x ≤ y
+≤-left-pred ℕ.≤′-refl = ℕ.≤′-step ℕ.≤′-refl
+≤-left-pred (ℕ.≤′-step xs) = ℕ.≤′-step (≤-left-pred xs)
+
+-- Inject a polynomial into a larger polynomoial with more variables
+inject : ∀ {n m} → n ≤ m → Poly n → Poly m
+inject n≤m (_ , xs [,] i≤n) = _ , xs [,] (≤-trans i≤n n≤m)
+
+_[,]↓_ : ∀ {i n} → FlatPoly i → i ≤ n → Poly n
+_[,]↓_ {zero}  xs i≤n = zero , xs ,~ tt [,] i≤n
+_[,]↓_ {suc i} [] i≤n = zero , lift 0# ,~ tt [,] z≤n _
+_[,]↓_ {suc i} ((x ,~ _ , zero) ∷ []) i≤n = inject (≤-left-pred i≤n) x
+_[,]↓_ {suc i} ((x₁ , zero) ∷ x₂ ∷ xs) i≤n =
+  suc i , ((x₁ , zero) ∷ x₂ ∷ xs) ,~ tt [,] i≤n
+_[,]↓_ {suc i} ((x , suc j) ∷ xs) i≤n =
+  suc i , ((x , suc j) ∷ xs) ,~ tt [,] i≤n
 
 -- ----------------------------------------------------------------------
 -- -- Arithmetic
