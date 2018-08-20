@@ -134,7 +134,7 @@ mutual
   --
   -- This is sparse Horner normal form.
   Coeffs : ℕ → Set (a ⊔ ℓ)
-  Coeffs n = List (Coeff n × ℕ)
+  Coeffs n = List (ℕ × Coeff n)
 
   -- We disallow zeroes in the coefficient list. This condition alone
   -- is enough to ensure a unique representation for any polynomial.
@@ -149,9 +149,9 @@ mutual
   Norm : ∀ i → FlatPoly i → Set
   Norm zero _ = ⊤
   Norm (suc _) [] = ⊥
-  Norm (suc _) ((_ , zero) ∷ []) = ⊥
-  Norm (suc _) ((_ , zero) ∷ _ ∷ _) = ⊤
-  Norm (suc _) ((_ , suc _) ∷ _) = ⊤
+  Norm (suc _) ((zero  , _) ∷ []) = ⊥
+  Norm (suc _) ((zero  , _) ∷ _ ∷ _) = ⊤
+  Norm (suc _) ((suc _ , _) ∷ _) = ⊤
 
 open NestPoly
 
@@ -172,37 +172,28 @@ zero? (suc _ , (_ ∷ _) ,~ _ [,] _) = no lower
 infixr 8 _⍓_
 _⍓_ : ∀ {n} → Coeffs n → ℕ → Coeffs n
 [] ⍓ i = []
-((x , j) ∷ xs) ⍓ i = (x , j ℕ.+ i) ∷ xs
+((j , x) ∷ xs) ⍓ i = (j ℕ.+ i , x) ∷ xs
 
 -- Normalising cons
 infixr 5 _^_∷↓_
 _^_∷↓_ : ∀ {n} → Poly n → ℕ → Coeffs n → Coeffs n
 x ^ i ∷↓ xs with zero? x
 ... | yes p = xs ⍓ suc i
-... | no ¬p = (x ,~ ¬p , i) ∷ xs
-
-map-poly : ∀ {n} → (Poly n → Poly n) → Coeffs n → Coeffs n
-map-poly {n} f = List.foldr cons []
-  where
-  cons : (Coeff n × ℕ) → Coeffs n → Coeffs n
-  cons (x ,~ _ , i) = f x ^ i ∷↓_
-
-
-
+... | no ¬p = (i , x ,~ ¬p) ∷ xs
 
 -- Inject a polynomial into a larger polynomoial with more variables
 inject : ∀ {n m} → Poly n → .(n ≤ m) → Poly m
-inject (_ , xs [,] i≤n) n≤m = _ , xs [,] (≤-trans i≤n n≤m)
+inject (i , xs [,] i≤n) n≤m = i , xs [,] (≤-trans i≤n n≤m)
 
 infixr 4 _[,]↓_
 _[,]↓_ : ∀ {i n} → FlatPoly i → .(i ≤ n) → Poly n
 _[,]↓_ {zero}  xs i≤n = zero , xs ,~ tt [,] i≤n
 _[,]↓_ {suc i} [] i≤n = zero , lift 0# ,~ tt [,] z≤n
-_[,]↓_ {suc i} ((x ,~ _ , zero) ∷ []) i≤n = inject x (≤-left-pred i≤n)
-_[,]↓_ {suc i} ((x₁ , zero) ∷ x₂ ∷ xs) i≤n =
-  suc i , ((x₁ , zero) ∷ x₂ ∷ xs) ,~ tt [,] i≤n
-_[,]↓_ {suc i} ((x , suc j) ∷ xs) i≤n =
-  suc i , ((x , suc j) ∷ xs) ,~ tt [,] i≤n
+_[,]↓_ {suc i} ((zero , x ,~ _ ) ∷ []) i≤n = inject x (≤-left-pred i≤n)
+_[,]↓_ {suc i} ((zero , x₁ ) ∷ x₂ ∷ xs) i≤n =
+  suc i , ((zero , x₁) ∷ x₂ ∷ xs) ,~ tt [,] i≤n
+_[,]↓_ {suc i} ((suc j , x) ∷ xs) i≤n =
+  suc i , ((suc j , x) ∷ xs) ,~ tt [,] i≤n
 
 ----------------------------------------------------------------------
 -- Arithmetic
@@ -261,14 +252,14 @@ mutual
        → .(suc (i ℕ.+ k) ≤ n)
        → Poly n
   ⊞-le xs _ ([] ,~ ()) i≤n
-  ⊞-le xs xs≤ ((((j , y [,] y≤) ,~ _ , zero) ∷ ys) ,~ yn) k≤n =
+  ⊞-le xs xs≤ (((zero , (j , y [,] y≤) ,~ _ ) ∷ ys) ,~ yn) k≤n =
     (⊞-inj (ℕ.compare _ _) y y≤ xs x≤x+k ^ zero ∷↓ ys) [,]↓ k≤n
-  ⊞-le xs i≤n (((y , suc j) ∷ ys) ,~ yn) j≤n =
-    ((_ , xs [,] x≤x+k) ^ zero ∷↓ (y , j) ∷ ys) [,]↓ j≤n
+  ⊞-le xs i≤n (((suc j , y) ∷ ys) ,~ yn) j≤n =
+    ((_ , xs [,] x≤x+k) ^ zero ∷↓ (j , y) ∷ ys) [,]↓ j≤n
 
   ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
   ⊞-coeffs [] ys = ys
-  ⊞-coeffs ((x , i) ∷ xs) = ⊞-ne-r i x xs
+  ⊞-coeffs ((i , x) ∷ xs) = ⊞-ne-r i x xs
 
   ⊞-ne : ∀ {p q n}
        → ℕ.Ordering p q
@@ -277,14 +268,14 @@ mutual
        → Coeff n
        → Coeffs n
        → Coeffs n
-  ⊞-ne (ℕ.less    i k) x xs y ys = (x , i) ∷ ⊞-ne-r k y ys xs
-  ⊞-ne (ℕ.greater j k) x xs y ys = (y , j) ∷ ⊞-ne-r k x xs ys
+  ⊞-ne (ℕ.less    i k) x xs y ys = (i , x) ∷ ⊞-ne-r k y ys xs
+  ⊞-ne (ℕ.greater j k) x xs y ys = (j , y) ∷ ⊞-ne-r k x xs ys
   ⊞-ne (ℕ.equal   i  ) (x ,~ _) xs (y ,~ _) ys =
     (x ⊞ y) ^ i ∷↓ ⊞-coeffs xs ys
 
   ⊞-ne-r : ∀ {n} → ℕ → Coeff n → Coeffs n → Coeffs n → Coeffs n
-  ⊞-ne-r i x xs [] = (x , i) ∷ xs
-  ⊞-ne-r i x xs ((y , j) ∷ ys) = ⊞-ne (ℕ.compare i j) x xs y ys
+  ⊞-ne-r i x xs [] = (i , x) ∷ xs
+  ⊞-ne-r i x xs ((j , y) ∷ ys) = ⊞-ne (ℕ.compare i j) x xs y ys
 
 -- ----------------------------------------------------------------------
 -- -- Negation
@@ -300,7 +291,7 @@ mutual
 mutual
   _⋊_ : ∀ {n} → Poly n → Coeffs n → Coeffs n
   xs ⋊ [] = []
-  xs ⋊ ((y ,~ y≠0 , j) ∷ ys) = (xs ⊠ y) ^ j ∷↓ (xs ⋊ ys)
+  xs ⋊ ((j , y ,~ y≠0) ∷ ys) = (xs ⊠ y) ^ j ∷↓ (xs ⋊ ys)
 
   infixl 7 _⊠_
   _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
@@ -321,7 +312,7 @@ mutual
        → Coeffs (i ℕ.+ k)
        → Coeffs (i ℕ.+ k)
   ⊠-up′ xs xs≤ [] = []
-  ⊠-up′ xs xs≤ ((((p , y [,] y≤) ,~ _ , j) ∷ ys)) =
+  ⊠-up′ xs xs≤ (((j , (p , y [,] y≤) ,~ _ ) ∷ ys)) =
     (⊠-inj (ℕ.compare _ _) y y≤ xs x≤x+k) ^ j ∷↓ ⊠-up′ xs xs≤ ys
 
 
@@ -348,11 +339,11 @@ mutual
   -- A simple shift-and-add algorithm.
   ⊠-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
   ⊠-coeffs _ [] = []
-  ⊠-coeffs xs ((y ,~ _ , j) ∷ ys) = ⊠-step y ys xs ⍓ j
+  ⊠-coeffs xs ((j , y ,~ _ ) ∷ ys) = ⊠-step y ys xs ⍓ j
 
   ⊠-step : ∀ {n} → Poly n → Coeffs n → Coeffs n → Coeffs n
   ⊠-step y ys [] = []
-  ⊠-step y ys ((x ,~ _ , i) ∷ xs) = (x ⊠ y) ^ i ∷↓ ⊞-coeffs (x ⋊ ys) (⊠-step y ys xs)
+  ⊠-step y ys ((i , x ,~ _ ) ∷ xs) = (x ⊠ y) ^ i ∷↓ ⊞-coeffs (x ⋊ ys) (⊠-step y ys xs)
 
 -- ----------------------------------------------------------------------
 -- -- Constants and Variables
