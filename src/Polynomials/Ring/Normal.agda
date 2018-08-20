@@ -195,13 +195,13 @@ mutual
         → NormPoly j
         → .(j ≤ n)
         → Poly n
-  ⊞-inj (ℕ.equal   m  ) xs i≤n ys _ = ⊞-flat xs ys i≤n
+  ⊞-inj (ℕ.equal   m  ) xs i≤n ys _ = ⊞-flat _ xs ys i≤n
   ⊞-inj (ℕ.less    m k) xs x≤ ys y≤ = ⊞-le xs x≤ ys y≤
   ⊞-inj (ℕ.greater m k) xs x≤ ys y≤ = ⊞-le ys y≤ xs x≤
 
-  ⊞-flat : ∀ {i n} → NormPoly i → NormPoly i → .(i ≤ n) → Poly n
-  ⊞-flat {zero} (lift x ,~ _) (lift y ,~ _) i≤n = zero , lift (x + y) ,~ tt [,] i≤n
-  ⊞-flat {suc i} (xs ,~ _) (ys ,~ _) i≤n = ⊞-coeffs xs ys [,]↓ i≤n
+  ⊞-flat : ∀ i {n} → NormPoly i → NormPoly i → .(i ≤ n) → Poly n
+  ⊞-flat zero (lift x ,~ _) (lift y ,~ _) i≤n = zero , lift (x + y) ,~ tt [,] i≤n
+  ⊞-flat (suc i) (xs ,~ _) (ys ,~ _) i≤n = ⊞-coeffs xs ys [,]↓ i≤n
 
   ⊞-le : ∀ {i k n}
        → NormPoly i
@@ -248,11 +248,12 @@ mutual
 ----------------------------------------------------------------------
 mutual
   _⋊_ : ∀ {n} → Poly n → Coeffs n → Coeffs n
-  (i , xs [,] i≤n) ⋊ ys = {!!}
+  xs ⋊ [] = []
+  xs ⋊ ((y ,~ y≠0 , j) ∷ ys) = (xs ⊠ y , j) ∷↓ (xs ⋊ ys)
 
   infixl 7 _⊠_
   _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
-  _⊠_ = {!!}
+  (i , xs [,] i≤n) ⊠ (j , ys [,] j≤n) = ⊠-inj (ℕ.compare i j) xs i≤n ys j≤n
 
   ⊠-up : ∀ {i k n}
        → NormPoly i
@@ -260,13 +261,37 @@ mutual
        → NormPoly (suc (i ℕ.+ k))
        → .(suc (i ℕ.+ k) ≤ n)
        → Poly n
-  ⊠-up xs xs≤ ([] ,~ ()) ys≤
-  ⊠-up xs xs≤ ((y ∷ ys) ,~ yn) ys≤ = {!!}
+  ⊠-up xs xs≤ (ys ,~ _) ys≤ =
+    ⊠-up′ xs xs≤ ys [,]↓ ys≤
 
-  -- ⊠-inj : ∀ {i j n}
-  --       → ℕ.Ordering i j
-  --       → NormPoly i
-  --       → .(i )
+  ⊠-up′ : ∀ {i k n}
+       → NormPoly i
+       → .(i ≤ n)
+       → Coeffs (i ℕ.+ k)
+       → Coeffs (i ℕ.+ k)
+  ⊠-up′ xs xs≤ [] = []
+  ⊠-up′ xs xs≤ ((((p , y [,] y≤) ,~ _ , j) ∷ ys)) =
+    (⊠-inj (ℕ.compare _ _) y y≤ xs x≤x+k , j) ∷↓ ⊠-up′ xs xs≤ ys
+
+
+  ⊠-inj : ∀ {i j n}
+        → ℕ.Ordering i j
+        → NormPoly i
+        → .(i ≤ n)
+        → NormPoly j
+        → .(j ≤ n)
+        → Poly n
+  ⊠-inj (ℕ.equal     k) xs i≤n ys j≤n = ⊠-flat _ xs ys i≤n
+  ⊠-inj (ℕ.greater j k) xs i≤n ys j≤n = ⊠-up ys j≤n xs i≤n
+  ⊠-inj (ℕ.less    i k) xs i≤n ys j≤n = ⊠-up xs i≤n ys j≤n
+
+  ⊠-flat : ∀ i {n}
+         → NormPoly i
+         → NormPoly i
+         → .(i ≤ n)
+         → Poly n
+  ⊠-flat zero (lift x ,~ _) (lift y ,~ _) i≤n = zero , lift (x * y) ,~ tt [,] i≤n
+  ⊠-flat (suc i) (xs ,~ _) (ys ,~ _) i≤n = ⊠-coeffs xs ys [,]↓ i≤n
 
 
   -- A simple shift-and-add algorithm.
