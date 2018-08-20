@@ -12,7 +12,6 @@ open import Data.List as List using (_∷_; []; List)
 open import Data.Vec as Vec using (_∷_; []; Vec)
 open import Data.Nat as ℕ
   using (ℕ; suc; zero)
-  renaming (_≤″_ to _≤_)
 open import Data.Product
 open import Data.Product.Irrelevant
 open import Function
@@ -27,6 +26,71 @@ module Polynomials.Ring.Normal
   (Zero-C : Pred (RawRing.Carrier coeff) ℓ)
   (zero-c? : Decidable Zero-C)
   where
+
+module Order-1 where
+  infix 4 _≤_
+  data _≤_ : ℕ → ℕ → Set where
+    z≤n : ∀ {n} → 0 ≤ n
+    s≤s : ∀ {m n} → m ≤ n → suc m ≤ suc n
+
+  ≤-trans : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
+  ≤-trans z≤n ys = z≤n
+  ≤-trans (s≤s xs) (s≤s ys) = s≤s (≤-trans xs ys)
+
+  ≤-left-pred : ∀ {x y} → suc x ≤ y → x ≤ y
+  ≤-left-pred (s≤s xs) = ≤-right-suc xs
+    where
+    ≤-right-suc : ∀ {x y} → x ≤ y → x ≤ suc y
+    ≤-right-suc z≤n = z≤n
+    ≤-right-suc (s≤s xs) = s≤s (≤-right-suc xs)
+
+  x≤x+k : ∀ {x k} → x ≤ x ℕ.+ k
+  x≤x+k {zero} = z≤n
+  x≤x+k {suc x} = s≤s x≤x+k
+
+  fin⇒≤ : ∀ {n} → (x : Fin n) → suc (Fin.toℕ x) ≤ n
+  fin⇒≤ Fin.zero = s≤s z≤n
+  fin⇒≤ (Fin.suc x) = s≤s (fin⇒≤ x)
+
+module Order-2 where
+  infix 4 _≤_
+  data _≤_ (m : ℕ) : ℕ → Set where
+    m≤m : m ≤ m
+    s≤s : ∀ {n} → m ≤ n → m ≤ suc n
+
+  ≤-trans : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
+  ≤-trans xs m≤m = xs
+  ≤-trans xs (s≤s ys) = s≤s (≤-trans xs ys)
+
+  z≤n : ∀ {n} → 0 ≤ n
+  z≤n {zero} = m≤m
+  z≤n {suc n} = s≤s z≤n
+
+module Order-3 where
+  infix 4 _≤_
+  record _≤_ (m n : ℕ) : Set where
+    constructor _+≡_
+    field
+      k : ℕ
+      proof : m ℕ.+ k ≡.≡ n
+
+  ≤-trans : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
+  ≤-trans (k₁ +≡ xs) (k₂ +≡ ys) =
+    (k₁ ℕ.+ k₂) +≡
+    (≡.trans (≡.sym (ℕ-≡.+-assoc _ k₁ k₂))
+    (≡.trans (≡.cong (ℕ._+ k₂) xs) ys))
+
+  z≤n : ∀ {n} → zero ≤ n
+  z≤n {n} = n +≡ ≡.refl
+
+  ≤-left-pred : ∀ {x y} → suc x ≤ y → x ≤ y
+  ≤-left-pred (k +≡ proof) =
+    suc k +≡ (≡.trans (ℕ-≡.+-suc _ _) proof)
+
+  x≤x+k : ∀ {x k} → x ≤ x ℕ.+ k
+  x≤x+k {x} {k} = k +≡ ≡.refl
+
+open Order-1
 
 open RawRing coeff
 
@@ -123,21 +187,8 @@ map-poly {n} f = List.foldr cons []
   cons : (Coeff n × ℕ) → Coeffs n → Coeffs n
   cons (x ,~ _ , i) = f x ^ i ∷↓_
 
-≤-trans : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
-≤-trans (ℕ.less-than-or-equal {k₁} xs) (ℕ.less-than-or-equal {k₂} ys) =
-  ℕ.less-than-or-equal {k = k₁ ℕ.+ k₂}
-  (≡.trans (≡.sym (ℕ-≡.+-assoc _ k₁ k₂))
-  (≡.trans (≡.cong (ℕ._+ k₂) xs) ys))
 
-z≤n : ∀ {n} → zero ≤ n
-z≤n = ℕ.less-than-or-equal ≡.refl
 
-≤-left-pred : ∀ {x y} → suc x ≤ y → x ≤ y
-≤-left-pred (ℕ.less-than-or-equal proof) =
-  ℕ.less-than-or-equal (≡.trans (ℕ-≡.+-suc _ _) proof)
-
-x≤x+k : ∀ {x k} → x ≤ x ℕ.+ k
-x≤x+k = ℕ.less-than-or-equal ≡.refl
 
 -- Inject a polynomial into a larger polynomoial with more variables
 inject : ∀ {n m} → Poly n → .(n ≤ m) → Poly m
@@ -307,12 +358,10 @@ mutual
 -- -- Constants and Variables
 -- ----------------------------------------------------------------------
 
--- -- The constant polynomial
--- κ : ∀ {n} → Carrier → Poly n
--- κ {zero} x = lift x
--- κ {suc n} x = (κ x , 0) ∷↓ []
+-- The constant polynomial
+κ : ∀ {n} → Carrier → Poly n
+κ x = (0 , lift x ,~ tt [,] z≤n)
 
--- -- A variable
--- ι : ∀ {n} → Fin n → Poly n
--- ι Fin.zero = (κ 1# , 1) ∷↓ []
--- ι (Fin.suc x) = (ι x , 0) ∷↓ []
+-- A variable
+ι : ∀ {n} → Fin n → Poly n
+ι i = (κ 1# ^ 1 ∷↓ []) [,]↓ fin⇒≤ i
