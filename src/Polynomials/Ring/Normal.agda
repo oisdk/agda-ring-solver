@@ -37,14 +37,14 @@ open RawRing coeff
 
 mutual
   -- A Polynomial is indexed by the number of variables it contains.
-  infixr 4 _[,]_
+  infixr 4 _Π_
   record Poly (n : ℕ) : Set (a ⊔ ℓ) where
     inductive
-    constructor _[,]_
+    constructor _Π_
     field
       {inj} : ℕ
-      flat  : FlatPoly inj
       .i≤n  : inj ≤ n
+      flat  : FlatPoly inj
 
   data FlatPoly : ℕ → Set (a ⊔ ℓ) where
     Κ : Carrier → FlatPoly 0
@@ -74,9 +74,9 @@ mutual
   Coeff i = Σ~[ x ∈ Poly i ] ¬ Zero x
 
   Zero : ∀ {n} → Poly n → Set ℓ
-  Zero (Κ x       [,] _) = Zero-C x
-  Zero (Σ []      [,] _) = Lift ℓ ⊤
-  Zero (Σ (_ ∷ _) [,] _) = Lift ℓ ⊥
+  Zero (_ Π Κ x      ) = Zero-C x
+  Zero (_ Π Σ []     ) = Lift ℓ ⊤
+  Zero (_ Π Σ (_ ∷ _)) = Lift ℓ ⊥
 
   Norm : ∀ {i} → Coeffs i → Set
   Norm [] = ⊥
@@ -95,9 +95,9 @@ open Poly
 
 -- Decision procedure for Zero
 zero? : ∀ {n} → (p : Poly n) → Dec (Zero p)
-zero? (Κ x       [,] _) = zero-c? x
-zero? (Σ []      [,] _) = yes (lift tt)
-zero? (Σ (_ ∷ _) [,] _) = no lower
+zero? (_ Π Κ x      ) = zero-c? x
+zero? (_ Π Σ []     ) = yes (lift tt)
+zero? (_ Π Σ (_ ∷ _)) = no lower
 
 -- Exponentiate the first variable of a polynomial
 infixr 8 _⍓_
@@ -113,15 +113,15 @@ x ^ i ∷↓ xs with zero? x
 ... | no ¬p = (i , x ,~ ¬p) ∷ xs
 
 -- Inject a polynomial into a larger polynomoial with more variables
-inject : ∀ {n m} → Poly n → .(n ≤ m) → Poly m
-inject (xs [,] i≤n) n≤m = xs [,] (ℕ-≡.≤-trans i≤n n≤m)
+_Π↑_ : ∀ {n m} → .(n ≤ m) → Poly n → Poly m
+n≤m Π↑ (i≤n Π xs) = (ℕ-≡.≤-trans i≤n n≤m) Π xs
 
-infixr 4 _[,]↓_
-_[,]↓_ : ∀ {i n} → Coeffs i → .(suc i ≤ n) → Poly n
-_[,]↓_ [] i≤n = Κ 0# [,] ℕ.z≤n
-_[,]↓_ ((zero , x ,~ _ ) ∷ []) i≤n = inject x (ℕ-≡.≤⇒pred≤ i≤n)
-_[,]↓_ ((zero , x₁ ) ∷ x₂ ∷ xs) i≤n = Σ ((zero , x₁) ∷ x₂ ∷ xs) [,] i≤n
-_[,]↓_ ((suc j , x) ∷ xs) i≤n = Σ ((suc j , x) ∷ xs) [,] i≤n
+infixr 4 _Π↓_
+_Π↓_ : ∀ {i n} → .(suc i ≤ n) → Coeffs i → Poly n
+i≤n Π↓ []                       = ℕ.z≤n Π Κ 0#
+i≤n Π↓ ((zero , x ,~ _ )  ∷ []) = ℕ-≡.≤⇒pred≤ i≤n Π↑ x
+i≤n Π↓ ((zero , x₁ ) ∷ x₂ ∷ xs) = i≤n Π Σ ((zero , x₁) ∷ x₂ ∷ xs)
+i≤n Π↓ ((suc j , x) ∷ xs)       = i≤n Π Σ ((suc j , x) ∷ xs)
 
 ----------------------------------------------------------------------
 -- Arithmetic
@@ -156,7 +156,7 @@ mutual
 
   infixl 6 _⊞_
   _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
-  (xs [,] i≤n) ⊞ (ys [,] j≤n) = ⊞-inj (ℕ.compare _ _) xs i≤n ys j≤n
+  (i≤n Π xs) ⊞ (j≤n Π ys) = ⊞-inj (ℕ.compare _ _) xs i≤n ys j≤n
 
   ⊞-inj : ∀ {i j n}
         → ℕ.Ordering i j
@@ -165,8 +165,8 @@ mutual
         → FlatPoly j
         → .(j ≤ n)
         → Poly n
-  ⊞-inj (ℕ.equal   _  ) (Κ x) i≤n (Κ y) _ = Κ (x + y) [,] i≤n
-  ⊞-inj (ℕ.equal   _  ) (Σ xs) i≤n (Σ ys) _ = ⊞-coeffs xs ys [,]↓ i≤n
+  ⊞-inj (ℕ.equal   _  ) (Κ x) i≤n (Κ y) _ = i≤n Π Κ (x + y)
+  ⊞-inj (ℕ.equal   _  ) (Σ xs) i≤n (Σ ys) _ = i≤n Π↓ ⊞-coeffs xs ys
   ⊞-inj (ℕ.less    _ _) xs i≤n ys j≤n = ⊞-le xs i≤n ys j≤n
   ⊞-inj (ℕ.greater _ _) xs i≤n ys j≤n = ⊞-le ys j≤n xs i≤n
 
@@ -177,10 +177,10 @@ mutual
        → .(suc (i ℕ.+ k) ≤ n)
        → Poly n
   ⊞-le xs _ (Σ [] {()})
-  ⊞-le xs xs≤ (Σ ((zero , (y [,] y≤) ,~ _ ) ∷ ys)) =
-    (⊞-inj (ℕ.compare _ _) y y≤ xs (ℕ-≡.m≤m+n _ _) ^ zero ∷↓ ys) [,]↓_
-  ⊞-le xs i≤n (Σ ((suc j , y) ∷ ys)) =
-    ((xs [,] (ℕ-≡.m≤m+n _ _)) ^ zero ∷↓ (j , y) ∷ ys) [,]↓_
+  ⊞-le xs xs≤ (Σ ((zero , (y≤ Π y) ,~ _ ) ∷ ys)) = _Π↓
+    (⊞-inj (ℕ.compare _ _) y y≤ xs (ℕ-≡.m≤m+n _ _) ^ zero ∷↓ ys)
+  ⊞-le xs i≤n (Σ ((suc j , y) ∷ ys)) = _Π↓
+    (((ℕ-≡.m≤m+n _ _) Π xs) ^ zero ∷↓ (j , y) ∷ ys)
 
   ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
   ⊞-coeffs [] ys = ys
@@ -207,8 +207,8 @@ mutual
 ----------------------------------------------------------------------
 
 ⊟_ : ∀ {n} → Poly n → Poly n
-⊟_ (Κ x [,] i≤n) = Κ (- x) [,] i≤n
-⊟_ (Σ xs [,] i≤n) = go xs [,]↓ i≤n
+⊟_ (i≤n Π Κ x) = i≤n Π Κ (- x)
+⊟_ (i≤n Π Σ xs) = i≤n Π↓ go xs
   where
   go : ∀ {n} → Coeffs n → Coeffs n
   go ((i , x ,~ _) ∷ xs) = ⊟ x ^ i ∷↓ go xs
@@ -224,16 +224,16 @@ mutual
 
   infixl 7 _⊠_
   _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
-  (xs [,] i≤n) ⊠ (ys [,] j≤n) = ⊠-inj (ℕ.compare _ _) xs i≤n ys j≤n
+  (i≤n Π xs) ⊠ (j≤n Π ys) = ⊠-inj (ℕ.compare _ _) xs i≤n ys j≤n
 
   ⊠-up : ∀ {i k n}
        → FlatPoly i
        → .(i ≤ n)
        → Coeffs (i ℕ.+ k)
        → Coeffs (i ℕ.+ k)
-  ⊠-up xs xs≤ [] = []
-  ⊠-up xs xs≤ (((j , (y [,] y≤) ,~ _ ) ∷ ys)) =
-    (⊠-inj (ℕ.compare _ _) y y≤ xs (ℕ-≡.m≤m+n _ _)) ^ j ∷↓ ⊠-up xs xs≤ ys
+  ⊠-up _ _ [] = []
+  ⊠-up xs i≤n (((j , (y≤  Π y) ,~ _ ) ∷ ys)) =
+    (⊠-inj (ℕ.compare _ _) y y≤ xs (ℕ-≡.m≤m+n _ _)) ^ j ∷↓ ⊠-up xs i≤n ys
 
   ⊠-inj : ∀ {i j n}
         → ℕ.Ordering i j
@@ -242,10 +242,17 @@ mutual
         → FlatPoly j
         → .(j ≤ n)
         → Poly n
-  ⊠-inj (ℕ.equal _) (Κ x) i≤n (Κ y) j≤n = Κ (x * y) [,] i≤n
-  ⊠-inj (ℕ.equal _) (Σ xs) i≤n (Σ ys) j≤n = ⊠-coeffs xs ys [,]↓ i≤n
-  ⊠-inj (ℕ.greater j k) (Σ xs) i≤n ys j≤n = ⊠-up ys j≤n xs [,]↓ i≤n
-  ⊠-inj (ℕ.less    i k) xs i≤n (Σ ys) j≤n = ⊠-up xs i≤n ys [,]↓ j≤n
+  ⊠-inj (ℕ.equal _) xs i≤n ys j≤n = ⊠-eq xs ys i≤n
+  ⊠-inj (ℕ.greater j k) (Σ xs) i≤n ys j≤n = i≤n Π↓ ⊠-up ys j≤n xs
+  ⊠-inj (ℕ.less    i k) xs i≤n (Σ ys) j≤n = j≤n Π↓ ⊠-up xs i≤n ys
+
+  ⊠-eq : ∀ {i n}
+       → FlatPoly i
+       → FlatPoly i
+       → .(i ≤ n)
+       → Poly n
+  ⊠-eq (Κ x)  (Κ y)  i≤n = i≤n Π Κ (x * y)
+  ⊠-eq (Σ xs) (Σ ys) i≤n = i≤n Π↓ ⊠-coeffs xs ys
 
   -- A simple shift-and-add algorithm.
   ⊠-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
@@ -262,7 +269,7 @@ mutual
 
 -- The constant polynomial
 κ : ∀ {n} → Carrier → Poly n
-κ x = (Κ x [,] ℕ.z≤n)
+κ x = ℕ.z≤n Π Κ x
 
 Fin⇒≤ : ∀ {n} → (x : Fin n) → suc (Fin.toℕ x) ≤ n
 Fin⇒≤ Fin.zero = ℕ.s≤s ℕ.z≤n
@@ -270,4 +277,4 @@ Fin⇒≤ (Fin.suc x) = ℕ.s≤s (Fin⇒≤ x)
 
 -- A variable
 ι : ∀ {n} → Fin n → Poly n
-ι i = (κ 1# ^ 1 ∷↓ []) [,]↓ Fin⇒≤ i
+ι i = Fin⇒≤ i Π↓ (κ 1# ^ 1 ∷↓ [])
