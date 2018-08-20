@@ -29,6 +29,45 @@ module Polynomials.Ring.Normal
   (zero-c? : Decidable Zero-C)
   where
 
+module Orders where
+  open ≡
+  open ≡.≡-Reasoning
+  open import Data.Nat
+  open import Data.Nat.Properties
+  import Relation.Binary.PropositionalEquality.TrustMe as TrustMe
+
+  ⇒≤-trans : ∀ {x y z n m} → n + x ≡ y → m + y ≡ z → (m + n) + x ≡ z
+  ⇒≤-trans {x} {y} {z} {n} {m} xs ys = TrustMe.erase $
+    begin
+      m + n + x
+    ≡⟨ +-assoc m n x ⟩
+      m + (n + x)
+    ≡⟨ cong (m +_) xs ⟩
+      m + y
+    ≡⟨ ys ⟩
+      z
+    ∎
+
+  x⇒0≤x : ∀ {x} → x + 0 ≡ x
+  x⇒0≤x = TrustMe.erase (+-identityʳ _)
+
+  ⇒≤-pred-l : ∀ {inj x y} → inj + suc x ≡ y → suc inj + x ≡ y
+  ⇒≤-pred-l xs = TrustMe.erase (trans (sym (+-suc _ _)) xs)
+
+  ⇒≤-pos : ∀ x y {i n} → i + x ≡ n → i + y ≡ n → x ≡ y
+  ⇒≤-pos _ _ xs ys = TrustMe.erase (+-cancelˡ-≡ _ (trans xs (sym ys)))
+
+  join-cmp : ∀ i k x y {n} → suc (i + k + y) ≡ n → i + x ≡ n → x ≡ suc (y + k)
+  join-cmp i k x y xpr ypr = TrustMe.erase lem
+    where
+    lem : x ≡ suc (y + k)
+    lem = sym (trans (cong suc (+-comm y k)) (+-cancelˡ-≡ i (trans (+-suc i (k + y)) (trans (cong suc (sym (+-assoc i k y))) (trans xpr (sym ypr))))))
+
+  cmpSwap : ∀ x y {n i j} → Ordering i j → i + x ≡ n → j + y ≡ n → Ordering x y
+  cmpSwap x y (less    i k) i+x≡n j+y≡n rewrite join-cmp i k x y j+y≡n i+x≡n = greater y k
+  cmpSwap x y (equal     m) i+x≡n j+y≡n rewrite ⇒≤-pos x y i+x≡n j+y≡n       = equal y
+  cmpSwap x y (greater j k) i+x≡n j+y≡n rewrite join-cmp j k y x i+x≡n j+y≡n = less x k
+
 open RawRing coeff
 
 ----------------------------------------------------------------------
