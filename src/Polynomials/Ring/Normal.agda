@@ -11,15 +11,13 @@ open import Data.Unit using (⊤; tt)
 open import Data.List as List using (_∷_; []; List)
 open import Data.Vec as Vec using (_∷_; []; Vec)
 open import Data.Nat as ℕ
-  using (ℕ; suc; zero; _≤_)
-open import Data.Nat.Properties as ℕ-≡
+  using (ℕ; suc; zero)
 
 open import Data.Product hiding (Σ)
 open import Data.Product.Irrelevant
 open import Function
 open import Data.Fin as Fin using (Fin)
 import Relation.Binary.PropositionalEquality as ≡
-import Data.Nat.Properties as ℕ-≡
 
 -- Multivariate polynomials.
 module Polynomials.Ring.Normal
@@ -29,44 +27,61 @@ module Polynomials.Ring.Normal
   (zero-c? : Decidable Zero-C)
   where
 
-module Orders where
+module Order where
   open ≡
   open ≡.≡-Reasoning
-  open import Data.Nat
-  open import Data.Nat.Properties
+  open import Data.Nat using () renaming (_≤″_ to _≤_) public
+  open import Data.Nat using (_+_)
+  import Data.Nat.Properties as ℕ-≡
   import Relation.Binary.PropositionalEquality.TrustMe as TrustMe
 
-  ⇒≤-trans : ∀ {x y z n m} → n + x ≡ y → m + y ≡ z → (m + n) + x ≡ z
-  ⇒≤-trans {x} {y} {z} {n} {m} xs ys = TrustMe.erase $
-    begin
-      m + n + x
-    ≡⟨ +-assoc m n x ⟩
-      m + (n + x)
-    ≡⟨ cong (m +_) xs ⟩
-      m + y
-    ≡⟨ ys ⟩
-      z
-    ∎
+  ≤-trans : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
+  ≤-trans {x} {y} {z} (ℕ.less-than-or-equal {k = k₁} xs) (ℕ.less-than-or-equal {k = k₂} ys) =
+    ℕ.less-than-or-equal {k = k₁ + k₂}
+      (TrustMe.erase (trans (trans (sym (ℕ-≡.+-assoc x k₁ k₂)) (cong (_+ k₂) xs)) ys))
 
-  x⇒0≤x : ∀ {x} → x + 0 ≡ x
-  x⇒0≤x = TrustMe.erase (+-identityʳ _)
+  ≤⇒pred≤ : ∀ {x y} → suc x ≤ y → x ≤ y
+  ≤⇒pred≤ (ℕ.less-than-or-equal {k = k} proof) =
+    ℕ.less-than-or-equal {k = suc k}
+    (TrustMe.erase (trans (ℕ-≡.+-suc _ k) proof))
 
-  ⇒≤-pred-l : ∀ {inj x y} → inj + suc x ≡ y → suc inj + x ≡ y
-  ⇒≤-pred-l xs = TrustMe.erase (trans (sym (+-suc _ _)) xs)
+  m≤m+n : ∀ {m n} → m ≤ m + n
+  m≤m+n = ℕ.less-than-or-equal refl
 
-  ⇒≤-pos : ∀ x y {i n} → i + x ≡ n → i + y ≡ n → x ≡ y
-  ⇒≤-pos _ _ xs ys = TrustMe.erase (+-cancelˡ-≡ _ (trans xs (sym ys)))
+  z≤n : ∀ {n} → zero ≤ n
+  z≤n = ℕ.less-than-or-equal refl
 
-  join-cmp : ∀ i k x y {n} → suc (i + k + y) ≡ n → i + x ≡ n → x ≡ suc (y + k)
-  join-cmp i k x y xpr ypr = TrustMe.erase lem
+  Fin⇒≤ : ∀ {n} → (x : Fin n) → suc (Fin.toℕ x) ≤ n
+  Fin⇒≤ x = ℕ.erase (ℕ.less-than-or-equal {k = k x} (proof x))
     where
-    lem : x ≡ suc (y + k)
-    lem = sym (trans (cong suc (+-comm y k)) (+-cancelˡ-≡ i (trans (+-suc i (k + y)) (trans (cong suc (sym (+-assoc i k y))) (trans xpr (sym ypr))))))
+    k : ∀ {n} → Fin n → ℕ
+    k {suc n} Fin.zero = n
+    k (Fin.suc x) = k x
 
-  cmpSwap : ∀ x y {n i j} → Ordering i j → i + x ≡ n → j + y ≡ n → Ordering x y
-  cmpSwap x y (less    i k) i+x≡n j+y≡n rewrite join-cmp i k x y j+y≡n i+x≡n = greater y k
-  cmpSwap x y (equal     m) i+x≡n j+y≡n rewrite ⇒≤-pos x y i+x≡n j+y≡n       = equal y
-  cmpSwap x y (greater j k) i+x≡n j+y≡n rewrite join-cmp j k y x i+x≡n j+y≡n = less x k
+    proof : ∀ {n} → (x : Fin n) → suc (Fin.toℕ x) + k x ≡ n
+    proof Fin.zero = refl
+    proof (Fin.suc x) = cong suc (proof x)
+
+  ≤-compare : ∀ {i j n}
+            → (i ≤ n)
+            → (j ≤ n)
+            → ℕ.Ordering i j
+  ≤-compare {i} {j} {n} (ℕ.less-than-or-equal xs) (ℕ.less-than-or-equal ys) = conv (ℕ.compare _ _) xs ys
+    where
+    +k-cong : ∀ {i j k n} → i + k ≡ n → j + k ≡ n → i ≡ j
+    +k-cong xs ys = ℕ-≡.+-cancelʳ-≡ _ _ (trans xs (sym ys))
+
+    conv : ∀ {x y}
+         → ℕ.Ordering x y
+         → i + x ≡ n
+         → j + y ≡ n
+         → ℕ.Ordering i j
+    conv (ℕ.less    x k) i+x≡n    j+sx+k≡n = {!!}
+    conv (ℕ.equal     k) i+k≡n    j+k≡n rewrite (+k-cong j+k≡n i+k≡n) = ℕ.equal _
+    conv (ℕ.greater y k) i+sy+k≡n j+y≡n = {!!}
+
+
+open Order
 
 open RawRing coeff
 
@@ -81,9 +96,9 @@ mutual
     inductive
     constructor _Π_
     field
-      {inj} : ℕ
-      .i≤n  : inj ≤ n
-      flat  : FlatPoly inj
+      {i} : ℕ
+      i≤n   : i ≤ n
+      flat  : FlatPoly i
 
   data FlatPoly : ℕ → Set (a ⊔ ℓ) where
     Κ : Carrier → FlatPoly 0
@@ -152,13 +167,13 @@ x ^ i ∷↓ xs with zero? x
 ... | no ¬p = (i , x ,~ ¬p) ∷ xs
 
 -- Inject a polynomial into a larger polynomoial with more variables
-_Π↑_ : ∀ {n m} → .(n ≤ m) → Poly n → Poly m
-n≤m Π↑ (i≤n Π xs) = (ℕ-≡.≤-trans i≤n n≤m) Π xs
+_Π↑_ : ∀ {n m} → (n ≤ m) → Poly n → Poly m
+n≤m Π↑ (i≤n Π xs) = (≤-trans i≤n n≤m) Π xs
 
 infixr 4 _Π↓_
-_Π↓_ : ∀ {i n} → .(suc i ≤ n) → Coeffs i → Poly n
-i≤n Π↓ []                       = ℕ.z≤n Π Κ 0#
-i≤n Π↓ ((zero , x ,~ _ )  ∷ []) = ℕ-≡.≤⇒pred≤ i≤n Π↑ x
+_Π↓_ : ∀ {i n} → suc i ≤ n → Coeffs i → Poly n
+i≤n Π↓ []                       = z≤n Π Κ 0#
+i≤n Π↓ ((zero , x ,~ _ )  ∷ []) = ≤⇒pred≤ i≤n Π↑ x
 i≤n Π↓ ((zero , x₁ ) ∷ x₂ ∷ xs) = i≤n Π Σ ((zero , x₁) ∷ x₂ ∷ xs)
 i≤n Π↓ ((suc j , x) ∷ xs)       = i≤n Π Σ ((suc j , x) ∷ xs)
 
@@ -200,9 +215,9 @@ mutual
   ⊞-inj : ∀ {i j n}
         → ℕ.Ordering i j
         → FlatPoly i
-        → .(i ≤ n)
+        → (i ≤ n)
         → FlatPoly j
-        → .(j ≤ n)
+        → (j ≤ n)
         → Poly n
   ⊞-inj (ℕ.equal   _  ) (Κ x) i≤n (Κ y) _ = i≤n Π Κ (x + y)
   ⊞-inj (ℕ.equal   _  ) (Σ xs) i≤n (Σ ys) _ = i≤n Π↓ ⊞-coeffs xs ys
@@ -211,15 +226,15 @@ mutual
 
   ⊞-le : ∀ {i k n}
        → FlatPoly i
-       → .(i ≤ n)
+       → (i ≤ n)
        → FlatPoly (suc (i ℕ.+ k))
-       → .(suc (i ℕ.+ k) ≤ n)
+       → (suc (i ℕ.+ k) ≤ n)
        → Poly n
   ⊞-le xs _ (Σ [] {()})
   ⊞-le xs xs≤ (Σ ((zero , (y≤ Π y) ,~ _ ) ∷ ys)) = _Π↓
-    (⊞-inj (ℕ.compare _ _) y y≤ xs (ℕ-≡.m≤m+n _ _) ^ zero ∷↓ ys)
+    (⊞-inj (ℕ.compare _ _) y y≤ xs m≤m+n ^ zero ∷↓ ys)
   ⊞-le xs i≤n (Σ ((suc j , y) ∷ ys)) = _Π↓
-    (((ℕ-≡.m≤m+n _ _) Π xs) ^ zero ∷↓ (j , y) ∷ ys)
+    ((m≤m+n Π xs) ^ zero ∷↓ (j , y) ∷ ys)
 
   ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
   ⊞-coeffs [] ys = ys
@@ -263,32 +278,31 @@ mutual
 
   infixl 7 _⊠_
   _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
-  (i≤n Π xs) ⊠ (j≤n Π ys) = ⊠-inj (ℕ.compare _ _) xs i≤n ys j≤n
+  (i≤n Π xs) ⊠ (j≤n Π ys) = ⊠-inj (≤-compare i≤n j≤n) xs i≤n ys j≤n
 
-  ⊠-up : ∀ {i k n}
+  ⊠-up : ∀ {i k}
        → FlatPoly i
-       → .(i ≤ n)
        → Coeffs (i ℕ.+ k)
        → Coeffs (i ℕ.+ k)
-  ⊠-up _ _ [] = []
-  ⊠-up xs i≤n (((j , (y≤  Π y) ,~ _ ) ∷ ys)) =
-    (⊠-inj (ℕ.compare _ _) y y≤ xs (ℕ-≡.m≤m+n _ _)) ^ j ∷↓ ⊠-up xs i≤n ys
+  ⊠-up _ [] = []
+  ⊠-up xs (((j , (j≤i+k Π y) ,~ _ ) ∷ ys)) =
+    (⊠-inj (≤-compare j≤i+k m≤m+n) y j≤i+k xs m≤m+n) ^ j ∷↓ ⊠-up xs ys
 
   ⊠-inj : ∀ {i j n}
         → ℕ.Ordering i j
         → FlatPoly i
-        → .(i ≤ n)
+        → (i ≤ n)
         → FlatPoly j
-        → .(j ≤ n)
+        → (j ≤ n)
         → Poly n
   ⊠-inj (ℕ.equal _) xs i≤n ys j≤n = ⊠-eq xs ys i≤n
-  ⊠-inj (ℕ.greater j k) (Σ xs) i≤n ys j≤n = i≤n Π↓ ⊠-up ys j≤n xs
-  ⊠-inj (ℕ.less    i k) xs i≤n (Σ ys) j≤n = j≤n Π↓ ⊠-up xs i≤n ys
+  ⊠-inj (ℕ.greater j k) (Σ xs) i≤n ys j≤n = i≤n Π↓ ⊠-up ys xs
+  ⊠-inj (ℕ.less    i k) xs i≤n (Σ ys) j≤n = j≤n Π↓ ⊠-up xs ys
 
   ⊠-eq : ∀ {i n}
        → FlatPoly i
        → FlatPoly i
-       → .(i ≤ n)
+       → (i ≤ n)
        → Poly n
   ⊠-eq (Κ x)  (Κ y)  i≤n = i≤n Π Κ (x * y)
   ⊠-eq (Σ xs) (Σ ys) i≤n = i≤n Π↓ ⊠-coeffs xs ys
@@ -300,7 +314,8 @@ mutual
 
   ⊠-step : ∀ {n} → Poly n → Coeffs n → Coeffs n → Coeffs n
   ⊠-step y ys [] = []
-  ⊠-step y ys ((i , x ,~ _ ) ∷ xs) = (x ⊠ y) ^ i ∷↓ ⊞-coeffs (x ⋊ ys) (⊠-step y ys xs)
+  ⊠-step y ys ((i , x ,~ _ ) ∷ xs) =
+    (x ⊠ y) ^ i ∷↓ ⊞-coeffs (x ⋊ ys) (⊠-step y ys xs)
 
 -- ----------------------------------------------------------------------
 -- -- Constants and Variables
@@ -308,11 +323,7 @@ mutual
 
 -- The constant polynomial
 κ : ∀ {n} → Carrier → Poly n
-κ x = ℕ.z≤n Π Κ x
-
-Fin⇒≤ : ∀ {n} → (x : Fin n) → suc (Fin.toℕ x) ≤ n
-Fin⇒≤ Fin.zero = ℕ.s≤s ℕ.z≤n
-Fin⇒≤ (Fin.suc x) = ℕ.s≤s (Fin⇒≤ x)
+κ x = z≤n Π Κ x
 
 -- A variable
 ι : ∀ {n} → Fin n → Poly n
