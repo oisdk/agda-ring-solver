@@ -30,29 +30,38 @@ module Polynomials.Ring.Normal
 module Order where
   open ≡
   open ≡.≡-Reasoning
-  open import Data.Nat using () renaming (_≤″_ to _≤_) public
   open import Data.Nat using (_+_)
   import Data.Nat.Properties as ℕ-≡
   import Relation.Binary.PropositionalEquality.TrustMe as TrustMe
 
+  infix 4 _≤_
+  record _≤_ (m n : ℕ) : Set where
+    constructor +-lte
+    field
+      {k} : ℕ
+      proof : m + k ≡ n
+
   ≤-trans : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
-  ≤-trans {x} {y} {z} (ℕ.less-than-or-equal {k = k₁} xs) (ℕ.less-than-or-equal {k = k₂} ys) =
-    ℕ.less-than-or-equal {k = k₁ + k₂}
+  ≤-trans {x} {y} {z} (+-lte {k = k₁} xs) (+-lte {k = k₂} ys) =
+    +-lte {k = k₁ + k₂}
       (TrustMe.erase (trans (trans (sym (ℕ-≡.+-assoc x k₁ k₂)) (cong (_+ k₂) xs)) ys))
 
   ≤⇒pred≤ : ∀ {x y} → suc x ≤ y → x ≤ y
-  ≤⇒pred≤ (ℕ.less-than-or-equal {k = k} proof) =
-    ℕ.less-than-or-equal {k = suc k}
+  ≤⇒pred≤ (+-lte {k = k} proof) =
+    +-lte {k = suc k}
     (TrustMe.erase (trans (ℕ-≡.+-suc _ k) proof))
 
+  ≤-trans-pred : ∀ {x y z} → x ≤ y → suc y ≤ z → x ≤ z
+  ≤-trans-pred xs ys = ≤-trans xs (≤⇒pred≤ ys)
+
   m≤m+n : ∀ {m n} → m ≤ m + n
-  m≤m+n = ℕ.less-than-or-equal refl
+  m≤m+n = +-lte refl
 
   z≤n : ∀ {n} → zero ≤ n
-  z≤n = ℕ.less-than-or-equal refl
+  z≤n = +-lte refl
 
   Fin⇒≤ : ∀ {n} → (x : Fin n) → suc (Fin.toℕ x) ≤ n
-  Fin⇒≤ x = ℕ.erase (ℕ.less-than-or-equal {k = k x} (proof x))
+  Fin⇒≤ x = +-lte {k = k x} (TrustMe.erase (proof x))
     where
     k : ∀ {n} → Fin n → ℕ
     k {suc n} Fin.zero = n
@@ -66,22 +75,74 @@ module Order where
             → (i ≤ n)
             → (j ≤ n)
             → ℕ.Ordering i j
-  ≤-compare {i} {j} {n} (ℕ.less-than-or-equal xs) (ℕ.less-than-or-equal ys) = conv (ℕ.compare _ _) xs ys
+  ≤-compare {i} {j} {n} (+-lte xs) (+-lte ys) = conv (ℕ.compare _ _) xs ys
     where
-    +k-cong : ∀ {i j k n} → i + k ≡ n → j + k ≡ n → i ≡ j
-    +k-cong xs ys = ℕ-≡.+-cancelʳ-≡ _ _ (trans xs (sym ys))
+    +k-cong : ∀ i j {k n} → i + k ≡ n → j + k ≡ n → i ≡ j
+    +k-cong _ _ xs ys = TrustMe.erase (ℕ-≡.+-cancelʳ-≡ _ _ (trans xs (sym ys)))
+
+    lem : ∀ i j k {x n} → j + suc (x + k) ≡ n → i + x ≡ n → i ≡ suc (j + k)
+    lem i j k {x} {n} jxk ix = TrustMe.erase $ ℕ-≡.+-cancelʳ-≡ i (suc (j + k)) $
+      begin
+        i + x
+      ≡⟨ ix ⟩
+        n
+      ≡⟨ sym jxk ⟩
+        j + suc (x + k)
+      ≡⟨ cong (j +_) (ℕ-≡.+-comm (suc x) k) ⟩
+        j + (k + suc x)
+      ≡⟨ sym (ℕ-≡.+-assoc j k _) ⟩
+        j + k + suc x
+      ≡⟨ ℕ-≡.+-suc _ x ⟩
+        suc (j + k) + x
+      ∎
 
     conv : ∀ {x y}
          → ℕ.Ordering x y
          → i + x ≡ n
          → j + y ≡ n
          → ℕ.Ordering i j
-    conv (ℕ.less    x k) i+x≡n    j+sx+k≡n = {!!}
-    conv (ℕ.equal     k) i+k≡n    j+k≡n rewrite (+k-cong j+k≡n i+k≡n) = ℕ.equal _
-    conv (ℕ.greater y k) i+sy+k≡n j+y≡n = {!!}
+    conv (ℕ.less    x k) i+x≡n j+sx+k≡n rewrite lem i j k j+sx+k≡n i+x≡n = ℕ.greater j k
+    conv (ℕ.equal     k) i+k≡n j+k≡n    rewrite +k-cong i j i+k≡n  j+k≡n = ℕ.equal j
+    conv (ℕ.greater y k) i+sy+k≡n j+y≡n rewrite lem j i k i+sy+k≡n j+y≡n = ℕ.less i k
+
+module Order-2 where
+  open import Data.Nat using () renaming (_≤′_ to _≤_) public
+
+  ≤-trans : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
+  ≤-trans xs ℕ.≤′-refl = xs
+  ≤-trans xs (ℕ.≤′-step ys) = ℕ.≤′-step (≤-trans xs ys)
+
+  ≤-trans-pred : ∀ {x y z} → x ≤ y → suc y ≤ z → x ≤ z
+  ≤-trans-pred xs ℕ.≤′-refl = ℕ.≤′-step xs
+  ≤-trans-pred xs (ℕ.≤′-step ys) = ℕ.≤′-step (≤-trans-pred xs ys)
+
+  data Ordering : ℕ → ℕ → Set where
+    less    : ∀ m k → m ≤ k → Ordering m (suc k)
+    equal   : ∀ m   → Ordering m m
+    greater : ∀ m k → m ≤ k → Ordering (suc k) m
+
+  ≤-compare : ∀ {i j n}
+            → (i ≤ n)
+            → (j ≤ n)
+            → Ordering i j
+  ≤-compare {i} {.i} ℕ.≤′-refl ℕ.≤′-refl = equal i
+  ≤-compare {.(suc _)} {j} ℕ.≤′-refl (ℕ.≤′-step j≤n) = greater _ _ j≤n
+  ≤-compare {i} {.(suc _)} (ℕ.≤′-step i≤n) ℕ.≤′-refl = less _ _ i≤n
+  ≤-compare {i} {j} (ℕ.≤′-step i≤n) (ℕ.≤′-step j≤n) = ≤-compare i≤n j≤n
+
+  Fin⇒≤ : ∀ {n} (x : Fin n) → suc (Fin.toℕ x) ≤ n
+  Fin⇒≤ = {!!}
+
+  z≤n : ∀ {n} → zero ≤ n
+  z≤n {zero} = ℕ.≤′-refl
+  z≤n {suc n} = ℕ.≤′-step z≤n
+
+  ≤-pred-l : ∀ {x y} → suc x ≤ y → x ≤ y
+  ≤-pred-l ℕ.≤′-refl = ℕ.≤′-step ℕ.≤′-refl
+  ≤-pred-l (ℕ.≤′-step xs) = ℕ.≤′-step (≤-pred-l xs)
 
 
-open Order
+open Order-2
 
 open RawRing coeff
 
@@ -167,13 +228,13 @@ x ^ i ∷↓ xs with zero? x
 ... | no ¬p = (i , x ,~ ¬p) ∷ xs
 
 -- Inject a polynomial into a larger polynomoial with more variables
-_Π↑_ : ∀ {n m} → (n ≤ m) → Poly n → Poly m
-n≤m Π↑ (i≤n Π xs) = (≤-trans i≤n n≤m) Π xs
+_Π↑_ : ∀ {n m} → (suc n ≤ m) → Poly n → Poly m
+n≤m Π↑ (i≤n Π xs) = (≤-trans-pred i≤n n≤m) Π xs
 
 infixr 4 _Π↓_
 _Π↓_ : ∀ {i n} → suc i ≤ n → Coeffs i → Poly n
 i≤n Π↓ []                       = z≤n Π Κ 0#
-i≤n Π↓ ((zero , x ,~ _ )  ∷ []) = ≤⇒pred≤ i≤n Π↑ x
+i≤n Π↓ ((zero , x ,~ _ )  ∷ []) = i≤n Π↑ x
 i≤n Π↓ ((zero , x₁ ) ∷ x₂ ∷ xs) = i≤n Π Σ ((zero , x₁) ∷ x₂ ∷ xs)
 i≤n Π↓ ((suc j , x) ∷ xs)       = i≤n Π Σ ((suc j , x) ∷ xs)
 
@@ -210,121 +271,123 @@ mutual
 
   infixl 6 _⊞_
   _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
-  (i≤n Π xs) ⊞ (j≤n Π ys) = ⊞-inj (ℕ.compare _ _) xs i≤n ys j≤n
+  (i≤n Π xs) ⊞ (j≤n Π ys) = ⊞-inj (≤-compare i≤n j≤n) xs i≤n ys j≤n
 
   ⊞-inj : ∀ {i j n}
-        → ℕ.Ordering i j
+        → Ordering i j
         → FlatPoly i
         → (i ≤ n)
         → FlatPoly j
         → (j ≤ n)
         → Poly n
-  ⊞-inj (ℕ.equal   _  ) (Κ x) i≤n (Κ y) _ = i≤n Π Κ (x + y)
-  ⊞-inj (ℕ.equal   _  ) (Σ xs) i≤n (Σ ys) _ = i≤n Π↓ ⊞-coeffs xs ys
-  ⊞-inj (ℕ.less    _ _) xs i≤n ys j≤n = ⊞-le xs i≤n ys j≤n
-  ⊞-inj (ℕ.greater _ _) xs i≤n ys j≤n = ⊞-le ys j≤n xs i≤n
+  ⊞-inj (less m k x) xs _ ys _ = {!!}
+  ⊞-inj (equal m) xs _ ys _ = {!!}
+  ⊞-inj (greater m k x) xs _ ys _ = {!!}
+  -- ⊞-inj (ℕ.equal   _  ) (Σ xs) i≤n (Σ ys) _ = i≤n Π↓ ⊞-coeffs xs ys
+  -- ⊞-inj (ℕ.less    _ _) xs i≤n ys j≤n = ⊞-le xs i≤n ys j≤n
+  -- ⊞-inj (ℕ.greater _ _) xs i≤n ys j≤n = ⊞-le ys j≤n xs i≤n
 
-  ⊞-le : ∀ {i k n}
-       → FlatPoly i
-       → (i ≤ n)
-       → FlatPoly (suc (i ℕ.+ k))
-       → (suc (i ℕ.+ k) ≤ n)
-       → Poly n
-  ⊞-le xs _ (Σ [] {()})
-  ⊞-le xs xs≤ (Σ ((zero , (y≤ Π y) ,~ _ ) ∷ ys)) = _Π↓
-    (⊞-inj (ℕ.compare _ _) y y≤ xs m≤m+n ^ zero ∷↓ ys)
-  ⊞-le xs i≤n (Σ ((suc j , y) ∷ ys)) = _Π↓
-    ((m≤m+n Π xs) ^ zero ∷↓ (j , y) ∷ ys)
+--   ⊞-le : ∀ {i k n}
+--        → FlatPoly i
+--        → (i ≤ n)
+--        → FlatPoly (suc (i ℕ.+ k))
+--        → (suc (i ℕ.+ k) ≤ n)
+--        → Poly n
+--   ⊞-le xs _ (Σ [] {()})
+--   ⊞-le xs xs≤ (Σ ((zero , (y≤ Π y) ,~ _ ) ∷ ys)) = _Π↓
+--     (⊞-inj (ℕ.compare _ _) y y≤ xs {!!} ^ zero ∷↓ ys)
+--   ⊞-le xs i≤n (Σ ((suc j , y) ∷ ys)) = _Π↓
+--     ((m≤m+n Π xs) ^ zero ∷↓ (j , y) ∷ ys)
 
-  ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
-  ⊞-coeffs [] ys = ys
-  ⊞-coeffs ((i , x) ∷ xs) = ⊞-ne-r i x xs
+--   ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
+--   ⊞-coeffs [] ys = ys
+--   ⊞-coeffs ((i , x) ∷ xs) = ⊞-ne-r i x xs
 
-  ⊞-ne : ∀ {p q n}
-       → ℕ.Ordering p q
-       → Coeff n
-       → Coeffs n
-       → Coeff n
-       → Coeffs n
-       → Coeffs n
-  ⊞-ne (ℕ.less    i k) x xs y ys = (i , x) ∷ ⊞-ne-r k y ys xs
-  ⊞-ne (ℕ.greater j k) x xs y ys = (j , y) ∷ ⊞-ne-r k x xs ys
-  ⊞-ne (ℕ.equal   i  ) (x ,~ _) xs (y ,~ _) ys =
-    (x ⊞ y) ^ i ∷↓ ⊞-coeffs xs ys
+--   ⊞-ne : ∀ {p q n}
+--        → ℕ.Ordering p q
+--        → Coeff n
+--        → Coeffs n
+--        → Coeff n
+--        → Coeffs n
+--        → Coeffs n
+--   ⊞-ne (ℕ.less    i k) x xs y ys = (i , x) ∷ ⊞-ne-r k y ys xs
+--   ⊞-ne (ℕ.greater j k) x xs y ys = (j , y) ∷ ⊞-ne-r k x xs ys
+--   ⊞-ne (ℕ.equal   i  ) (x ,~ _) xs (y ,~ _) ys =
+--     (x ⊞ y) ^ i ∷↓ ⊞-coeffs xs ys
 
-  ⊞-ne-r : ∀ {n} → ℕ → Coeff n → Coeffs n → Coeffs n → Coeffs n
-  ⊞-ne-r i x xs [] = (i , x) ∷ xs
-  ⊞-ne-r i x xs ((j , y) ∷ ys) = ⊞-ne (ℕ.compare i j) x xs y ys
-
-----------------------------------------------------------------------
--- Negation
-----------------------------------------------------------------------
-
-⊟_ : ∀ {n} → Poly n → Poly n
-⊟_ (i≤n Π Κ x) = i≤n Π Κ (- x)
-⊟_ (i≤n Π Σ xs) = i≤n Π↓ go xs
-  where
-  go : ∀ {n} → Coeffs n → Coeffs n
-  go ((i , x ,~ _) ∷ xs) = ⊟ x ^ i ∷↓ go xs
-  go [] = []
-
-----------------------------------------------------------------------
--- Multiplication
-----------------------------------------------------------------------
-mutual
-  _⋊_ : ∀ {n} → Poly n → Coeffs n → Coeffs n
-  xs ⋊ [] = []
-  xs ⋊ ((j , y ,~ y≠0) ∷ ys) = (xs ⊠ y) ^ j ∷↓ (xs ⋊ ys)
-
-  infixl 7 _⊠_
-  _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
-  (i≤n Π xs) ⊠ (j≤n Π ys) = ⊠-inj (≤-compare i≤n j≤n) xs i≤n ys j≤n
-
-  ⊠-up : ∀ {i k}
-       → FlatPoly i
-       → Coeffs (i ℕ.+ k)
-       → Coeffs (i ℕ.+ k)
-  ⊠-up _ [] = []
-  ⊠-up xs (((j , (j≤i+k Π y) ,~ _ ) ∷ ys)) =
-    (⊠-inj (≤-compare j≤i+k m≤m+n) y j≤i+k xs m≤m+n) ^ j ∷↓ ⊠-up xs ys
-
-  ⊠-inj : ∀ {i j n}
-        → ℕ.Ordering i j
-        → FlatPoly i
-        → (i ≤ n)
-        → FlatPoly j
-        → (j ≤ n)
-        → Poly n
-  ⊠-inj (ℕ.equal _) xs i≤n ys j≤n = ⊠-eq xs ys i≤n
-  ⊠-inj (ℕ.greater j k) (Σ xs) i≤n ys j≤n = i≤n Π↓ ⊠-up ys xs
-  ⊠-inj (ℕ.less    i k) xs i≤n (Σ ys) j≤n = j≤n Π↓ ⊠-up xs ys
-
-  ⊠-eq : ∀ {i n}
-       → FlatPoly i
-       → FlatPoly i
-       → (i ≤ n)
-       → Poly n
-  ⊠-eq (Κ x)  (Κ y)  i≤n = i≤n Π Κ (x * y)
-  ⊠-eq (Σ xs) (Σ ys) i≤n = i≤n Π↓ ⊠-coeffs xs ys
-
-  -- A simple shift-and-add algorithm.
-  ⊠-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
-  ⊠-coeffs _ [] = []
-  ⊠-coeffs xs ((j , y ,~ _ ) ∷ ys) = ⊠-step y ys xs ⍓ j
-
-  ⊠-step : ∀ {n} → Poly n → Coeffs n → Coeffs n → Coeffs n
-  ⊠-step y ys [] = []
-  ⊠-step y ys ((i , x ,~ _ ) ∷ xs) =
-    (x ⊠ y) ^ i ∷↓ ⊞-coeffs (x ⋊ ys) (⊠-step y ys xs)
+--   ⊞-ne-r : ∀ {n} → ℕ → Coeff n → Coeffs n → Coeffs n → Coeffs n
+--   ⊞-ne-r i x xs [] = (i , x) ∷ xs
+--   ⊞-ne-r i x xs ((j , y) ∷ ys) = ⊞-ne (ℕ.compare i j) x xs y ys
 
 -- ----------------------------------------------------------------------
--- -- Constants and Variables
+-- -- Negation
 -- ----------------------------------------------------------------------
 
--- The constant polynomial
-κ : ∀ {n} → Carrier → Poly n
-κ x = z≤n Π Κ x
+-- ⊟_ : ∀ {n} → Poly n → Poly n
+-- ⊟_ (i≤n Π Κ x) = i≤n Π Κ (- x)
+-- ⊟_ (i≤n Π Σ xs) = i≤n Π↓ go xs
+--   where
+--   go : ∀ {n} → Coeffs n → Coeffs n
+--   go ((i , x ,~ _) ∷ xs) = ⊟ x ^ i ∷↓ go xs
+--   go [] = []
 
--- A variable
-ι : ∀ {n} → Fin n → Poly n
-ι i = Fin⇒≤ i Π↓ (κ 1# ^ 1 ∷↓ [])
+-- ----------------------------------------------------------------------
+-- -- Multiplication
+-- ----------------------------------------------------------------------
+-- mutual
+--   _⋊_ : ∀ {n} → Poly n → Coeffs n → Coeffs n
+--   xs ⋊ [] = []
+--   xs ⋊ ((j , y ,~ y≠0) ∷ ys) = (xs ⊠ y) ^ j ∷↓ (xs ⋊ ys)
+
+--   infixl 7 _⊠_
+--   _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
+--   (i≤n Π xs) ⊠ (j≤n Π ys) = ⊠-inj (≤-compare i≤n j≤n) xs i≤n ys j≤n
+
+--   ⊠-up : ∀ {i k}
+--        → FlatPoly i
+--        → Coeffs (i ℕ.+ k)
+--        → Coeffs (i ℕ.+ k)
+--   ⊠-up _ [] = []
+--   ⊠-up xs (((j , (j≤i+k Π y) ,~ _ ) ∷ ys)) =
+--     (⊠-inj (≤-compare j≤i+k m≤m+n) y j≤i+k xs m≤m+n) ^ j ∷↓ ⊠-up xs ys
+
+--   ⊠-inj : ∀ {i j n}
+--         → ℕ.Ordering i j
+--         → FlatPoly i
+--         → (i ≤ n)
+--         → FlatPoly j
+--         → (j ≤ n)
+--         → Poly n
+--   ⊠-inj (ℕ.equal _) xs i≤n ys j≤n = ⊠-eq xs ys i≤n
+--   ⊠-inj (ℕ.greater j k) (Σ xs) i≤n ys j≤n = i≤n Π↓ ⊠-up ys xs
+--   ⊠-inj (ℕ.less    i k) xs i≤n (Σ ys) j≤n = j≤n Π↓ ⊠-up xs ys
+
+--   ⊠-eq : ∀ {i n}
+--        → FlatPoly i
+--        → FlatPoly i
+--        → (i ≤ n)
+--        → Poly n
+--   ⊠-eq (Κ x)  (Κ y)  i≤n = i≤n Π Κ (x * y)
+--   ⊠-eq (Σ xs) (Σ ys) i≤n = i≤n Π↓ ⊠-coeffs xs ys
+
+--   -- A simple shift-and-add algorithm.
+--   ⊠-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
+--   ⊠-coeffs _ [] = []
+--   ⊠-coeffs xs ((j , y ,~ _ ) ∷ ys) = ⊠-step y ys xs ⍓ j
+
+--   ⊠-step : ∀ {n} → Poly n → Coeffs n → Coeffs n → Coeffs n
+--   ⊠-step y ys [] = []
+--   ⊠-step y ys ((i , x ,~ _ ) ∷ xs) =
+--     (x ⊠ y) ^ i ∷↓ ⊞-coeffs (x ⋊ ys) (⊠-step y ys xs)
+
+-- -- ----------------------------------------------------------------------
+-- -- -- Constants and Variables
+-- -- ----------------------------------------------------------------------
+
+-- -- The constant polynomial
+-- κ : ∀ {n} → Carrier → Poly n
+-- κ x = z≤n Π Κ x
+
+-- -- A variable
+-- ι : ∀ {n} → Fin n → Poly n
+-- ι i = Fin⇒≤ i Π↓ (κ 1# ^ 1 ∷↓ [])
