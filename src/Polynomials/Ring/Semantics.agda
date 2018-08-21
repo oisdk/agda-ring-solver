@@ -29,10 +29,9 @@ _^_ : Carrier → ℕ → Carrier
 x ^ zero = 1#
 x ^ suc n = x * x ^ n
 
-
-drop : ∀ {i n} → i ℕ.≤′ n → Vec Carrier n → Vec Carrier i
-drop ℕ.≤′-refl xs = xs
-drop (ℕ.≤′-step i≤n) (_ ∷ xs) = drop i≤n xs
+drop : ∀ {i n} → i ≤ n → Vec Carrier n → Vec Carrier i
+drop m≤m xs = xs
+drop (≤-s i≤n) (_ ∷ xs) = drop i≤n xs
 
 -- Evaluation
 ⟦_⟧ : ∀ {n} → Poly n → Vec Carrier n → Carrier
@@ -43,6 +42,6 @@ drop (ℕ.≤′-step i≤n) (_ ∷ xs) = drop i≤n xs
   eval {suc n} (Σ xs) (ρ ∷ Ρ) = go xs
     where
     go : Coeffs n → Carrier
-    go ((i , c ,~ _) ∷ xs) = (⟦ c ⟧ Ρ + go xs * ρ) * ρ ^ i
+    go (c ≠0 Δ i ∷ xs) = (⟦ c ⟧ Ρ + go xs * ρ) * ρ ^ i
     go [] = 0#
 
