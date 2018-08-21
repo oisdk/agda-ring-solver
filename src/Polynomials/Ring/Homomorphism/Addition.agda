@@ -60,7 +60,7 @@ mutual
       ⟦ ⊞-coeffs xs ys Π↓ i≤n ⟧ Ρ
     ≈⟨ Π↓-hom (⊞-coeffs xs ys) i≤n Ρ ⟩
       Σ⟦ ⊞-coeffs xs ys ⟧ (drop-1 i≤n Ρ)
-    ≈⟨  ⊞-coeffs-hom xs ys (drop-1 i≤n Ρ) ⟩
+    ≈⟨ ⊞-coeffs-hom xs ys (drop-1 i≤n Ρ) ⟩
       Σ⟦ xs ⟧ (drop-1 i≤n Ρ) + Σ⟦ ys ⟧ (drop-1 i≤n Ρ)
     ≈⟨ {!!} ⟩
       Σ⟦ xs ⟧ (drop-1 i≤n Ρ) + Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
