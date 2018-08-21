@@ -38,6 +38,7 @@ open import Data.Vec as Vec using (Vec; _∷_; [])
 open import Data.Product.Irrelevant
 open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
+open Coeff
 
 mutual
   ⊞-hom : ∀ {n}
@@ -75,103 +76,98 @@ mutual
               → (Ρ : Carrier × Vec Carrier n)
               → Σ⟦ ⊞-coeffs xs ys ⟧ Ρ ≈ Σ⟦ xs ⟧ Ρ + Σ⟦ ys ⟧ Ρ
   ⊞-coeffs-hom [] ys Ρ = sym (+-identityˡ (Σ⟦ ys ⟧ Ρ))
-  ⊞-coeffs-hom (x Δ i ∷ xs) = {!!} -- ⊞-ne-r-hom i x xs
+  ⊞-coeffs-hom (x Δ i ∷ xs) = {!!} -- ⊞-zip-r-hom i x xs
 
---   ⊞-ne-hom : ∀ {n i j}
---            → (c : ℕ.Ordering i j)
---            → (x : Coeff n)
---            → (xs : Coeffs n)
---            → (y : Coeff n)
---            → (ys : Coeffs n)
---            → (ρ : Carrier)
---            → (Ρ : Vec Carrier n)
---            → ⟦ ⊞-ne c x xs y ys ⟧ (ρ ∷ Ρ)
---            ≈ ⟦ (x , i) ∷ xs ⟧ (ρ ∷ Ρ) + ⟦ (y , j) ∷ ys ⟧ (ρ ∷ Ρ)
---   ⊞-ne-hom (ℕ.equal i) x xs y ys ρ Ρ =
---     let x′  = ⟦ proj₁~ x ⟧ Ρ
---         y′  = ⟦ proj₁~ y ⟧ Ρ
---         xs′ = ⟦ xs ⟧ (ρ ∷ Ρ)
---         ys′ = ⟦ ys ⟧ (ρ ∷ Ρ)
---     in
---     begin
---       ⟦ (proj₁~ x ⊞ proj₁~ y , i) ∷↓ xs ⊞ ys ⟧ (ρ ∷ Ρ)
---     ≈⟨ ∷↓-hom _ i (xs ⊞ ys) ρ Ρ ⟩
---       (⟦ proj₁~ x ⊞ proj₁~ y ⟧ Ρ + ⟦ xs ⊞ ys ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ i
---     ≈⟨ ≪* begin
---             ⟦ proj₁~ x ⊞ proj₁~ y ⟧ Ρ + ⟦ xs ⊞ ys ⟧ (ρ ∷ Ρ) * ρ
---           ≈⟨ ⊞-hom (proj₁~ x) (proj₁~ y) Ρ ⟨ +-cong ⟩ (≪* ⊞-coeffs-hom xs ys ρ Ρ) ⟩
---             (x′ + y′) + (xs′ + ys′) * ρ
---           ≈⟨ +≫ distribʳ ρ _ _ ⟩
---             (x′ + y′) + (xs′ * ρ + ys′ * ρ)
---           ≈⟨ +-assoc x′ y′ _ ⟩
---             x′ + (y′ + (xs′ * ρ + ys′ * ρ))
---           ≈⟨ +≫ sym ( +-assoc y′ _ _ ) ⟩
---             x′ + ((y′ + xs′ * ρ) + ys′ * ρ)
---           ≈⟨ +≫ ≪+ +-comm y′ _ ⟩
---             x′ + ((xs′ * ρ + y′) + ys′ * ρ)
---           ≈⟨ +≫ +-assoc _ y′ _ ⟩
---             x′ + (xs′ * ρ + (y′ + ys′ * ρ))
---           ≈⟨ sym (+-assoc x′ _ _) ⟩
---             (x′ + xs′ * ρ) + (y′ + ys′ * ρ)
---           ∎ ⟩
---       ((x′ + xs′ * ρ) + (y′ + ys′ * ρ)) * ρ ^ i
---     ≈⟨ distribʳ (ρ ^ i) _ _ ⟩
---       (x′ + xs′ * ρ) * ρ ^ i + (y′ + ys′ * ρ) * ρ ^ i
---     ∎
---   ⊞-ne-hom (ℕ.less i k) x xs y ys ρ Ρ = ⊞-ne-r-step-hom i k y ys x xs ρ Ρ ︔ +-comm _ _
---   ⊞-ne-hom (ℕ.greater j k) = ⊞-ne-r-step-hom j k
+  ⊞-zip-hom : ∀ {n i j}
+           → (c : ℕ.Ordering i j)
+           → (x : Coeff n)
+           → (xs : Coeffs n)
+           → (y : Coeff n)
+           → (ys : Coeffs n)
+           → (Ρ : Carrier × Vec Carrier n)
+           → Σ⟦ ⊞-zip c x xs y ys ⟧ Ρ
+           ≈ Σ⟦ x Δ i ∷ xs ⟧ Ρ + Σ⟦ y Δ j ∷ ys ⟧ Ρ
+  ⊞-zip-hom (ℕ.equal i) x xs y ys (ρ , Ρ) =
+    let x′  = ⟦ poly x ⟧ Ρ
+        y′  = ⟦ poly y ⟧ Ρ
+        xs′ = Σ⟦ xs ⟧ (ρ , Ρ)
+        ys′ = Σ⟦ ys ⟧ (ρ , Ρ)
+    in
+    begin
+      Σ⟦ poly x ⊞ poly y ^ i ∷↓ ⊞-coeffs xs ys ⟧ (ρ , Ρ)
+    ≈⟨ ∷↓-hom (poly x ⊞ poly y) i (⊞-coeffs xs ys) ρ Ρ ⟩
+      (⟦ poly x ⊞ poly y ⟧ Ρ + Σ⟦ ⊞-coeffs xs ys ⟧ (ρ , Ρ) * ρ) * ρ ^ i
+    ≈⟨ ≪* begin
+            ⟦ poly x ⊞ poly y ⟧ Ρ + Σ⟦ ⊞-coeffs xs ys ⟧ (ρ , Ρ) * ρ
+          ≈⟨ ⊞-hom (poly x) (poly y) Ρ ⟨ +-cong ⟩ (≪* ⊞-coeffs-hom xs ys (ρ , Ρ)) ⟩
+            (x′ + y′) + (xs′ + ys′) * ρ
+          ≈⟨ +≫ distribʳ ρ _ _ ⟩
+            (x′ + y′) + (xs′ * ρ + ys′ * ρ)
+          ≈⟨ +-assoc x′ y′ _ ⟩
+            x′ + (y′ + (xs′ * ρ + ys′ * ρ))
+          ≈⟨ +≫ sym ( +-assoc y′ _ _ ) ⟩
+            x′ + ((y′ + xs′ * ρ) + ys′ * ρ)
+          ≈⟨ +≫ ≪+ +-comm y′ _ ⟩
+            x′ + ((xs′ * ρ + y′) + ys′ * ρ)
+          ≈⟨ +≫ +-assoc _ y′ _ ⟩
+            x′ + (xs′ * ρ + (y′ + ys′ * ρ))
+          ≈⟨ sym (+-assoc x′ _ _) ⟩
+            (x′ + xs′ * ρ) + (y′ + ys′ * ρ)
+          ∎ ⟩
+      ((x′ + xs′ * ρ) + (y′ + ys′ * ρ)) * ρ ^ i
+    ≈⟨ distribʳ (ρ ^ i) _ _ ⟩
+      (x′ + xs′ * ρ) * ρ ^ i + (y′ + ys′ * ρ) * ρ ^ i
+    ∎
+  ⊞-zip-hom (ℕ.less i k) x xs y ys (ρ , Ρ) = ⊞-zip-r-step-hom i k y ys x xs (ρ , Ρ) ︔ +-comm _ _
+  ⊞-zip-hom (ℕ.greater j k) = ⊞-zip-r-step-hom j k
 
---   ⊞-ne-r-step-hom : ∀ {n} j k
---                   → (x : Coeff n)
---                   → (xs : Coeffs n)
---                   → (y : Coeff n)
---                   → (ys : Coeffs n)
---                   → (ρ : Carrier)
---                   → (Ρ : Vec Carrier n)
---                   → ⟦ (y , j) ∷ ⊞-ne-r k x xs ys ⟧ (ρ ∷ Ρ)
---                   ≈ ⟦ (x , suc (j ℕ.+ k)) ∷ xs ⟧ (ρ ∷ Ρ) + ⟦ (y , j) ∷ ys ⟧ (ρ ∷ Ρ)
---   ⊞-ne-r-step-hom j k x xs y ys ρ Ρ =
---     let x′  = ⟦ proj₁~ x ⟧ Ρ
---         y′  = ⟦ proj₁~ y ⟧ Ρ
---         xs′ = ⟦ xs ⟧ (ρ ∷ Ρ)
---         ys′ = ⟦ ys ⟧ (ρ ∷ Ρ)
---     in
---     begin
---       (y′ + ⟦ ⊞-ne-r k x xs ys ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ j
---     ≈⟨ ≪* +≫ ≪* ⊞-ne-r-hom k x xs ys ρ Ρ ⟩
---       (y′ + ((x′ + xs′ * ρ) * ρ ^ k + ys′) * ρ) * ρ ^ j
---     ≈⟨ ≪* +≫ distribʳ ρ _ _ ⟩
---       (y′ + ((x′ + xs′ * ρ) * ρ ^ k * ρ + ys′ * ρ)) * ρ ^ j
---     ≈⟨ ≪* (sym (+-assoc _ _ _) ︔ ≪+ +-comm _ _ ︔ +-assoc _ _ _) ⟩
---       ((x′ + xs′ * ρ) * ρ ^ k * ρ + (y′ + ys′ * ρ)) * ρ ^ j
---     ≈⟨ distribʳ (ρ ^ j) _ _ ⟩
---       (x′ + xs′ * ρ) * ρ ^ k * ρ * ρ ^ j + (y′ + ys′ * ρ) * ρ ^ j
---     ≈⟨ ≪+ begin
---              (((x′ + xs′ * ρ) * ρ ^ k) * ρ) * ρ ^ j
---            ≈⟨ *-assoc _ ρ (ρ ^ j) ⟩
---              ((x′ + xs′ * ρ) * ρ ^ k) * (ρ * ρ ^ j)
---            ≈⟨ *-assoc _ _ _ ⟩
---              (x′ + xs′ * ρ) * (ρ ^ k * (ρ * ρ ^ j))
---            ≈⟨ *≫ begin
---                     ρ ^ k * (ρ * ρ ^ j)
---                   ≈⟨ pow-add ρ k _ ⟩
---                     ρ ^ (k ℕ.+ suc j)
---                   ≡⟨ ≡.cong (ρ ^_) (ℕ-≡.+-comm k (suc j)) ⟩
---                     ρ ^ suc (j ℕ.+ k)
---                   ∎ ⟩
---              (x′ + xs′ * ρ) * ρ ^ suc (j ℕ.+ k)
---            ∎ ⟩
---       (x′ + xs′ * ρ) * ρ ^ suc (j ℕ.+ k) + (y′ + ys′ * ρ) * ρ ^ j
---     ≡⟨⟩
---       ⟦ (x , suc (j ℕ.+ k)) ∷ xs ⟧ (ρ ∷ Ρ) + ⟦ (y , j) ∷ ys ⟧ (ρ ∷ Ρ)
---     ∎
+  ⊞-zip-r-step-hom : ∀ {n} j k
+                  → (x : Coeff n)
+                  → (xs : Coeffs n)
+                  → (y : Coeff n)
+                  → (ys : Coeffs n)
+                  → (Ρ : Carrier × Vec Carrier n)
+                  → Σ⟦ y Δ j ∷ ⊞-zip-r x k xs ys ⟧ ( Ρ)
+                  ≈ Σ⟦ x Δ suc (j ℕ.+ k) ∷ xs ⟧ ( Ρ) + Σ⟦ y Δ j ∷ ys ⟧ ( Ρ)
+  ⊞-zip-r-step-hom j k x xs y ys (ρ , Ρ) =
+    let x′  = ⟦ poly x ⟧ Ρ
+        y′  = ⟦ poly y ⟧ Ρ
+        xs′ = Σ⟦ xs ⟧ (ρ , Ρ)
+        ys′ = Σ⟦ ys ⟧ (ρ , Ρ)
+    in
+    begin
+      (y′ + Σ⟦ ⊞-zip-r x k xs ys ⟧ (ρ , Ρ) * ρ) * ρ ^ j
+    ≈⟨ ≪* +≫ ≪* ⊞-zip-r-hom k x xs ys (ρ , Ρ) ⟩
+      (y′ + ((x′ + xs′ * ρ) * ρ ^ k + ys′) * ρ) * ρ ^ j
+    ≈⟨ ≪* +≫ distribʳ ρ _ _ ⟩
+      (y′ + ((x′ + xs′ * ρ) * ρ ^ k * ρ + ys′ * ρ)) * ρ ^ j
+    ≈⟨ ≪* (sym (+-assoc _ _ _) ︔ ≪+ +-comm _ _ ︔ +-assoc _ _ _) ⟩
+      ((x′ + xs′ * ρ) * ρ ^ k * ρ + (y′ + ys′ * ρ)) * ρ ^ j
+    ≈⟨ distribʳ (ρ ^ j) _ _ ⟩
+      (x′ + xs′ * ρ) * ρ ^ k * ρ * ρ ^ j + (y′ + ys′ * ρ) * ρ ^ j
+    ≈⟨ ≪+ begin
+             (((x′ + xs′ * ρ) * ρ ^ k) * ρ) * ρ ^ j
+           ≈⟨ *-assoc _ ρ (ρ ^ j) ⟩
+             ((x′ + xs′ * ρ) * ρ ^ k) * (ρ * ρ ^ j)
+           ≈⟨ *-assoc _ _ _ ⟩
+             (x′ + xs′ * ρ) * (ρ ^ k * (ρ * ρ ^ j))
+           ≈⟨ *≫ begin
+                    ρ ^ k * (ρ * ρ ^ j)
+                  ≈⟨ pow-add ρ k _ ⟩
+                    ρ ^ (k ℕ.+ suc j)
+                  ≡⟨ ≡.cong (ρ ^_) (ℕ-≡.+-comm k (suc j)) ⟩
+                    ρ ^ suc (j ℕ.+ k)
+                  ∎ ⟩
+             (x′ + xs′ * ρ) * ρ ^ suc (j ℕ.+ k)
+           ∎ ⟩
+      (x′ + xs′ * ρ) * ρ ^ suc (j ℕ.+ k) + (y′ + ys′ * ρ) * ρ ^ j
+    ∎
 
---   ⊞-ne-r-hom : ∀ {n} i
---              → (x : Coeff n)
---              → (xs : Coeffs n)
---              → (ys : Coeffs n)
---              → (ρ : Carrier)
---              → (Ρ : Vec Carrier n)
---              → ⟦ ⊞-ne-r i x xs ys ⟧ (ρ ∷ Ρ) ≈ ⟦ (x , i) ∷ xs ⟧ (ρ ∷ Ρ) + ⟦ ys ⟧ (ρ ∷ Ρ)
---   ⊞-ne-r-hom i x xs [] ρ Ρ = sym (+-identityʳ _)
---   ⊞-ne-r-hom i x xs ((y , j) ∷ ys) = ⊞-ne-hom (ℕ.compare i j) x xs y ys
+  ⊞-zip-r-hom : ∀ {n} i
+             → (x : Coeff n)
+             → (xs : Coeffs n)
+             → (ys : Coeffs n)
+             → (Ρ : Carrier × Vec Carrier n)
+             → Σ⟦ ⊞-zip-r x i xs ys ⟧ (Ρ) ≈ Σ⟦ x Δ i ∷ xs ⟧ ( Ρ) + Σ⟦ ys ⟧ ( Ρ)
+  ⊞-zip-r-hom i x xs [] (ρ , Ρ) = sym (+-identityʳ _)
+  ⊞-zip-r-hom i x xs ((y Δ j) ∷ ys) = ⊞-zip-hom (ℕ.compare i j) x xs y ys
