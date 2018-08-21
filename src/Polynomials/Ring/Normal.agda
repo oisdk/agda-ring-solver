@@ -13,8 +13,7 @@ open import Data.Vec as Vec using (_∷_; []; Vec)
 open import Data.Nat as ℕ
   using (ℕ; suc; zero)
 
-open import Data.Product hiding (Σ)
-open import Data.Product.Irrelevant
+-- open import Data.Product hiding (Σ)
 open import Function
 open import Data.Fin as Fin using (Fin)
 import Relation.Binary.PropositionalEquality as ≡
@@ -22,8 +21,8 @@ import Relation.Binary.PropositionalEquality as ≡
 -- Multivariate polynomials.
 module Polynomials.Ring.Normal
   {a ℓ}
-  (coeff : RawRing a)
-  (Zero-C : Pred (RawRing.Carrier coeff) ℓ)
+  (coeffs : RawRing a)
+  (Zero-C : Pred (RawRing.Carrier coeffs) ℓ)
   (zero-c? : Decidable Zero-C)
   where
 
@@ -110,13 +109,13 @@ module Order where
     ≤⇒≤+ zero y≤z = y≤z
     ≤⇒≤+ (suc x) y≤z = ℕ.≤′-step (≤⇒≤+ x y≤z)
 
-    proof : ∀ {n} → (x : Fin n) → (suc (Fin.toℕ x) ℕ.+ k x) ≡.≡ n
+    proof : ∀ {n} → (x : Fin n) → suc (Fin.toℕ x) ℕ.+ k x ≡.≡ n
     proof Fin.zero = ≡.refl
     proof (Fin.suc x) = ≡.cong suc (proof x)
 
 open Order
 
-open RawRing coeff
+open RawRing coeffs
 
 ----------------------------------------------------------------------
 -- Definitions
@@ -124,7 +123,7 @@ open RawRing coeff
 
 mutual
   -- A Polynomial is indexed by the number of variables it contains.
-  infixr 4 _Π_
+  infixl 6 _Π_
   record Poly (n : ℕ) : Set (a ⊔ ℓ) where
     inductive
     constructor _Π_
@@ -152,13 +151,26 @@ mutual
   --   x⁰ * (3 + x * x¹ * (2 + x * x² * (4 + x * x¹ * (2 + x * 0))))
   --
   -- This is sparse Horner normal form.
+  infixl 6 _Δ_
+  record CoeffExp (i : ℕ) : Set (a ⊔ ℓ) where
+    inductive
+    constructor _Δ_
+    field
+      coeff : Coeff i
+      pow   : ℕ
+
   Coeffs : ℕ → Set (a ⊔ ℓ)
-  Coeffs n = List (ℕ × Coeff n)
+  Coeffs n = List (CoeffExp n)
 
   -- We disallow zeroes in the coefficient list. This condition alone
   -- is enough to ensure a unique representation for any polynomial.
-  Coeff : ℕ → Set (a ⊔ ℓ)
-  Coeff i = Σ~[ x ∈ Poly i ] ¬ Zero x
+  infixl 6 _≠0
+  record Coeff (i : ℕ) : Set (a ⊔ ℓ) where
+    inductive
+    constructor _≠0
+    field
+      poly : Poly i
+      .{poly≠0} : ¬ Zero poly
 
   Zero : ∀ {n} → Poly n → Set ℓ
   Zero (_ Π Κ x      ) = Zero-C x
@@ -167,9 +179,9 @@ mutual
 
   Norm : ∀ {i} → Coeffs i → Set
   Norm [] = ⊥
-  Norm ((zero  , _) ∷ []) = ⊥
-  Norm ((zero  , _) ∷ _ ∷ _) = ⊤
-  Norm ((suc _ , _) ∷ _) = ⊤
+  Norm (_ Δ zero  ∷ []) = ⊥
+  Norm (_ Δ zero  ∷ _ ∷ _) = ⊤
+  Norm (_ Δ suc _ ∷ _) = ⊤
 
 open Poly public
 
@@ -190,14 +202,14 @@ zero? (_ Π Σ (_ ∷ _)) = no lower
 infixr 8 _⍓_
 _⍓_ : ∀ {n} → Coeffs n → ℕ → Coeffs n
 [] ⍓ i = []
-((j , x) ∷ xs) ⍓ i = (j ℕ.+ i , x) ∷ xs
+(x Δ j ∷ xs) ⍓ i = x Δ (j ℕ.+ i) ∷ xs
 
 -- Normalising cons
 infixr 5 _^_∷↓_
 _^_∷↓_ : ∀ {n} → Poly n → ℕ → Coeffs n → Coeffs n
 x ^ i ∷↓ xs with zero? x
 ... | yes p = xs ⍓ suc i
-... | no ¬p = (i , x ,~ ¬p) ∷ xs
+... | no ¬p = _≠0 x {¬p} Δ i ∷ xs
 
 -- Inject a polynomial into a larger polynomoial with more variables
 _Π↑_ : ∀ {n m} → (suc n ≤ m) → Poly n → Poly m
@@ -205,10 +217,10 @@ n≤m Π↑ (i≤n Π xs) = (≤-trans-pred i≤n n≤m) Π xs
 
 infixr 4 _Π↓_
 _Π↓_ : ∀ {i n} → suc i ≤ n → Coeffs i → Poly n
-i≤n Π↓ []                      = z≤n Π Κ 0#
-i≤n Π↓ ((zero , x ,~ _ ) ∷ []) = i≤n Π↑ x
-i≤n Π↓ ((zero , x₁) ∷ x₂ ∷ xs) = i≤n Π Σ ((zero , x₁) ∷ x₂ ∷ xs)
-i≤n Π↓ ((suc j , x) ∷ xs)      = i≤n Π Σ ((suc j , x) ∷ xs)
+i≤n Π↓ []                           = z≤n Π Κ 0#
+i≤n Π↓ (x ≠0 Δ zero  ∷ [])      = i≤n Π↑ x
+i≤n Π↓ (x₁   Δ zero  ∷ x₂ ∷ xs) = i≤n Π Σ (x₁ Δ zero  ∷ x₂ ∷ xs)
+i≤n Π↓ (x    Δ suc j ∷ xs)      = i≤n Π Σ (x  Δ suc j ∷ xs)
 
 ----------------------------------------------------------------------
 -- Arithmetic
@@ -263,14 +275,14 @@ mutual
        → FlatPoly (suc k)
        → Coeffs k
   ⊞-le i≤k xs (Σ [] {()})
-  ⊞-le i≤k xs (Σ ((zero , (j≤k Π y) ,~ _ ) ∷ ys)) =
+  ⊞-le i≤k xs (Σ (j≤k Π y ≠0 Δ zero ∷ ys)) =
     ⊞-inj (≤-compare j≤k i≤k) y j≤k xs i≤k ^ zero ∷↓ ys
-  ⊞-le i≤k xs (Σ ((suc j , y) ∷ ys)) =
-    (i≤k Π xs) ^ zero ∷↓ (j , y) ∷ ys
+  ⊞-le i≤k xs (Σ (y Δ suc j ∷ ys)) =
+    i≤k Π xs ^ zero ∷↓ y Δ j ∷ ys
 
   ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
   ⊞-coeffs [] ys = ys
-  ⊞-coeffs ((i , x) ∷ xs) = ⊞-ne-r i x xs
+  ⊞-coeffs (x Δ i ∷ xs) = ⊞-ne-r i x xs
 
   ⊞-ne : ∀ {p q n}
        → ℕ.Ordering p q
@@ -279,14 +291,14 @@ mutual
        → Coeff n
        → Coeffs n
        → Coeffs n
-  ⊞-ne (ℕ.less    i k) x xs y ys = (i , x) ∷ ⊞-ne-r k y ys xs
-  ⊞-ne (ℕ.greater j k) x xs y ys = (j , y) ∷ ⊞-ne-r k x xs ys
-  ⊞-ne (ℕ.equal   i  ) (x ,~ _) xs (y ,~ _) ys =
+  ⊞-ne (ℕ.less    i k) x xs y ys = x Δ i ∷ ⊞-ne-r k y ys xs
+  ⊞-ne (ℕ.greater j k) x xs y ys = y Δ j ∷ ⊞-ne-r k x xs ys
+  ⊞-ne (ℕ.equal   i  ) (x ≠0) xs (y ≠0) ys =
     (x ⊞ y) ^ i ∷↓ ⊞-coeffs xs ys
 
   ⊞-ne-r : ∀ {n} → ℕ → Coeff n → Coeffs n → Coeffs n → Coeffs n
-  ⊞-ne-r i x xs [] = (i , x) ∷ xs
-  ⊞-ne-r i x xs ((j , y) ∷ ys) = ⊞-ne (ℕ.compare i j) x xs y ys
+  ⊞-ne-r i x xs [] = x Δ i ∷ xs
+  ⊞-ne-r i x xs (y Δ j ∷ ys) = ⊞-ne (ℕ.compare i j) x xs y ys
 
 ----------------------------------------------------------------------
 -- Negation
@@ -297,7 +309,7 @@ mutual
 ⊟_ (i≤n Π Σ xs) = i≤n Π↓ go xs
   where
   go : ∀ {n} → Coeffs n → Coeffs n
-  go ((i , x ,~ _) ∷ xs) = ⊟ x ^ i ∷↓ go xs
+  go (x ≠0 Δ i  ∷ xs) = ⊟ x ^ i ∷↓ go xs
   go [] = []
 
 ----------------------------------------------------------------------
@@ -313,8 +325,8 @@ mutual
        → FlatPoly i
        → Coeffs k
        → Coeffs k
-  ⊠-le i≤k x [] = []
-  ⊠-le i≤k x ((p , ((j≤k Π y) ,~ _)) ∷ ys) =
+  ⊠-le _ _ [] = []
+  ⊠-le i≤k x (j≤k Π y ≠0 Δ p ∷ ys) =
     ⊠-inj (≤-compare i≤k j≤k) x i≤k y j≤k ^ p ∷↓ ⊠-le i≤k x ys
 
   ⊠-inj : ∀ {i j n}
@@ -332,12 +344,12 @@ mutual
   -- A simple shift-and-add algorithm.
   ⊠-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
   ⊠-coeffs _ [] = []
-  ⊠-coeffs xs ((j , y ,~ _ ) ∷ ys) = ⊠-step y ys xs ⍓ j
+  ⊠-coeffs xs (y ≠0 Δ j ∷ ys) = ⊠-step y ys xs ⍓ j
 
   ⊠-step : ∀ {n} → Poly n → Coeffs n → Coeffs n → Coeffs n
   ⊠-step y ys [] = []
-  ⊠-step y ys ((i , (j≤n Π x) ,~ _ ) ∷ xs) =
-    ((j≤n Π x) ⊠ y) ^ i ∷↓ ⊞-coeffs (⊠-le j≤n x ys) (⊠-step y ys xs)
+  ⊠-step y ys (j≤n Π x ≠0 Δ i ∷ xs) =
+    (j≤n Π x) ⊠ y ^ i ∷↓ ⊞-coeffs (⊠-le j≤n x ys) (⊠-step y ys xs)
 
 ----------------------------------------------------------------------
 -- Constants and Variables
