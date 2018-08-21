@@ -62,6 +62,6 @@ open import Data.Fin as Fin using (Fin)
     1# * ρ
   ≈⟨ *-identityˡ ρ ⟩
     ρ
-  ≈⟨ drop-1⇒lookup i Ρ′ ⟩
+  ≡⟨ drop-1⇒lookup i Ρ′ ⟩
     Vec.lookup i Ρ′
   ∎

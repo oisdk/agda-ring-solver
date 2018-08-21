@@ -38,23 +38,43 @@ open import Data.Product.Irrelevant
 open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
 
--- mutual
---   ⊞-hom : ∀ {n}
---         → (xs : Poly n)
---         → (ys : Poly n)
---         → (Ρ : Vec Carrier n)
---         → ⟦ xs ⊞ ys ⟧ Ρ ≈ ⟦ xs ⟧ Ρ + ⟦ ys ⟧ Ρ
---   ⊞-hom {ℕ.zero} xs ys [] = +-homo _ _
---   ⊞-hom {suc n} xs ys (ρ ∷ Ρ) = ⊞-coeffs-hom xs ys ρ Ρ
+mutual
+  ⊞-hom : ∀ {n}
+        → (xs : Poly n)
+        → (ys : Poly n)
+        → (Ρ : Vec Carrier n)
+        → ⟦ xs ⊞ ys ⟧ Ρ ≈ ⟦ xs ⟧ Ρ + ⟦ ys ⟧ Ρ
+  ⊞-hom (xs Π i≤n) (ys Π j≤n) = ⊞-match-hom (≤-compare i≤n j≤n) xs i≤n ys j≤n
 
---   ⊞-coeffs-hom : ∀ {n}
---               → (xs : Coeffs n)
---               → (ys : Coeffs n)
---               → (ρ : Carrier)
---               → (Ρ : Vec Carrier n)
---               → ⟦ ⊞-coeffs xs ys ⟧ (ρ ∷ Ρ) ≈ ⟦ xs ⟧ (ρ ∷ Ρ) + ⟦ ys ⟧ (ρ ∷ Ρ)
---   ⊞-coeffs-hom [] ys ρ Ρ = sym (+-identityˡ (⟦ ys ⟧ (ρ ∷ Ρ)))
---   ⊞-coeffs-hom ((x , i) ∷ xs) = ⊞-ne-r-hom i x xs
+  ⊞-match-hom : ∀ {i j n}
+              → (cmp : Ordering i j)
+              → (xs : FlatPoly i)
+              → (i≤n : i ≤ n)
+              → (ys : FlatPoly j)
+              → (j≤n : j ≤ n)
+              → (Ρ : Vec Carrier n)
+              → ⟦ ⊞-match cmp xs i≤n ys j≤n ⟧ Ρ ≈ ⟦ xs Π i≤n ⟧ Ρ + ⟦ ys Π j≤n ⟧ Ρ
+  ⊞-match-hom equal (Κ x) i≤n (Κ y) j≤n Ρ = +-homo x y
+  ⊞-match-hom equal (Σ xs) i≤n (Σ ys) j≤n Ρ =
+    begin
+      ⟦ ⊞-coeffs xs ys Π↓ i≤n ⟧ Ρ
+    ≈⟨ Π↓-hom (⊞-coeffs xs ys) i≤n Ρ ⟩
+      Σ⟦ ⊞-coeffs xs ys ⟧ (drop-1 i≤n Ρ)
+    ≈⟨  ⊞-coeffs-hom xs ys (drop-1 i≤n Ρ) ⟩
+      Σ⟦ xs ⟧ (drop-1 i≤n Ρ) + Σ⟦ ys ⟧ (drop-1 i≤n Ρ)
+    ≈⟨ {!!} ⟩
+      Σ⟦ xs ⟧ (drop-1 i≤n Ρ) + Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
+    ∎
+  ⊞-match-hom (less i≤j-1) xs i≤n ys j≤n Ρ = {!!}
+  ⊞-match-hom (greater j≤i-1) xs i≤n ys j≤n Ρ = {!!}
+
+  ⊞-coeffs-hom : ∀ {n}
+              → (xs : Coeffs n)
+              → (ys : Coeffs n)
+              → (Ρ : Carrier × Vec Carrier n)
+              → Σ⟦ ⊞-coeffs xs ys ⟧ Ρ ≈ Σ⟦ xs ⟧ Ρ + Σ⟦ ys ⟧ Ρ
+  ⊞-coeffs-hom [] ys Ρ = sym (+-identityˡ (Σ⟦ ys ⟧ Ρ))
+  ⊞-coeffs-hom (x Δ i ∷ xs) = {!!} -- ⊞-ne-r-hom i x xs
 
 --   ⊞-ne-hom : ∀ {n i j}
 --            → (c : ℕ.Ordering i j)

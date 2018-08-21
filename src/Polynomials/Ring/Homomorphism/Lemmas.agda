@@ -128,6 +128,44 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
 drop-1⇒lookup : ∀ {n}
               → (i : Fin n)
               → (Ρ : Vec Carrier n)
-              → proj₁ (drop-1 (Fin⇒≤ i) Ρ) ≈ Vec.lookup i Ρ
-drop-1⇒lookup Fin.zero (ρ ∷ Ρ) = refl
+              → proj₁ (drop-1 (Fin⇒≤ i) Ρ) ≡.≡ Vec.lookup i Ρ
+drop-1⇒lookup Fin.zero (ρ ∷ Ρ) = ≡.refl
 drop-1⇒lookup (Fin.suc i) (ρ ∷ Ρ) = drop-1⇒lookup i Ρ
+
+data IsLT : (i j : ℕ) → Ordering i j → Set where
+  IsLT′ : ∀ {i j-1} → (i≤j-1 : i ≤ j-1) → IsLT i (suc j-1) (less i≤j-1)
+
+data IsEQ : (i j n : ℕ) → (i ≤ n) → (j ≤ n) → Ordering i j → Set where
+  IsEQ′ : ∀ {i n} → (i≤n : i ≤ n) → IsEQ i i n i≤n i≤n equal
+
+data IsGT : (i j : ℕ) → Ordering i j → Set where
+  IsGT′ : ∀ {i-1 j} → (j≤i-1 : j ≤ i-1) → IsGT (suc i-1) j (greater j≤i-1)
+
+data Ordering-≡ {i j n : ℕ}
+                (i≤n : i ≤ n)
+                (j≤n : j ≤ n)
+                (ord : Ordering i j)
+                : Set
+  where
+  less-≡    : IsLT i j ord → Ordering-≡ i≤n j≤n ord
+  equal-≡   : IsEQ i j n i≤n j≤n ord → Ordering-≡ i≤n j≤n ord
+  greater-≡ : IsGT i j ord → Ordering-≡ i≤n j≤n ord
+
+suc-Ordering-≡ : ∀ {i j n}
+               → (i≤n : i ≤ n)
+               → (j≤n : j ≤ n)
+               → (ord : Ordering i j)
+               → Ordering-≡ i≤n j≤n ord
+               → Ordering-≡ (≤-s i≤n) (≤-s j≤n) ord
+suc-Ordering-≡ i≤n j≤n ord (less-≡ x) = less-≡ x
+suc-Ordering-≡ i≤n .i≤n .equal (equal-≡ (IsEQ′ .i≤n)) = equal-≡ (IsEQ′ (≤-s i≤n))
+suc-Ordering-≡ i≤n j≤n ord (greater-≡ x) = greater-≡ x
+
+≤-compare-≡ : ∀ {i j n}
+            → (i≤n : i ≤ n)
+            → (j≤n : j ≤ n)
+            → Ordering-≡ i≤n j≤n (≤-compare i≤n j≤n)
+≤-compare-≡ m≤m m≤m = equal-≡ (IsEQ′ m≤m)
+≤-compare-≡ m≤m (≤-s j≤n) = greater-≡ (IsGT′ j≤n)
+≤-compare-≡ (≤-s i≤n) m≤m = less-≡ (IsLT′ i≤n)
+≤-compare-≡ (≤-s i≤n) (≤-s j≤n) = suc-Ordering-≡ _ _ _ (≤-compare-≡ i≤n j≤n)
