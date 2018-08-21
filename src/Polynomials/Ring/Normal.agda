@@ -324,17 +324,19 @@ mutual
         → Poly n
   ⊞-inj equal (Κ x)  i≤n (Κ y)  j≤n   = i≤n Π Κ (x + y)
   ⊞-inj equal (Σ xs) i≤n (Σ ys) j≤n   = i≤n Π↓ ⊞-coeffs xs ys
-  ⊞-inj (less    i≤j-1) xs i≤n ys j≤n = j≤n Π↓ ⊞-le xs ys i≤j-1
-  ⊞-inj (greater j≤i-1) xs i≤n ys j≤n = i≤n Π↓ ⊞-le ys xs j≤i-1
+  ⊞-inj (less    i≤j-1) xs i≤n ys j≤n = j≤n Π↓ ⊞-le i≤j-1 xs ys
+  ⊞-inj (greater j≤i-1) xs i≤n ys j≤n = i≤n Π↓ ⊞-le j≤i-1 ys xs
 
   ⊞-le : ∀ {i k}
+       → (i ≤ k)
        → FlatPoly i
        → FlatPoly (suc k)
-       → (i ≤ k)
        → Coeffs k
-  ⊞-le xs (Σ [] {()})
-  ⊞-le xs (Σ ((zero , (y≤ Π y) ,~ _ ) ∷ ys)) i≤k = ⊞-inj (≤-compare y≤ i≤k) y y≤ xs i≤k ^ zero ∷↓ ys
-  ⊞-le xs (Σ ((suc j , y) ∷ ys)) i≤k = (i≤k Π xs) ^ zero ∷↓ (j , y) ∷ ys
+  ⊞-le i≤k xs (Σ [] {()})
+  ⊞-le i≤k xs (Σ ((zero , (j≤k Π y) ,~ _ ) ∷ ys)) =
+    ⊞-inj (≤-compare j≤k i≤k) y j≤k xs i≤k ^ zero ∷↓ ys
+  ⊞-le i≤k xs (Σ ((suc j , y) ∷ ys)) =
+    (i≤k Π xs) ^ zero ∷↓ (j , y) ∷ ys
 
   ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
   ⊞-coeffs [] ys = ys
@@ -368,63 +370,57 @@ mutual
   go ((i , x ,~ _) ∷ xs) = ⊟ x ^ i ∷↓ go xs
   go [] = []
 
--- ----------------------------------------------------------------------
--- -- Multiplication
--- ----------------------------------------------------------------------
--- mutual
---   _⋊_ : ∀ {n} → Poly n → Coeffs n → Coeffs n
---   xs ⋊ [] = []
---   xs ⋊ ((j , y ,~ y≠0) ∷ ys) = (xs ⊠ y) ^ j ∷↓ (xs ⋊ ys)
+----------------------------------------------------------------------
+-- Multiplication
+----------------------------------------------------------------------
+mutual
+  _⋊_ : ∀ {n} → Poly n → Coeffs n → Coeffs n
+  xs ⋊ [] = []
+  xs ⋊ ((j , y ,~ y≠0) ∷ ys) = (xs ⊠ y) ^ j ∷↓ (xs ⋊ ys)
 
---   infixl 7 _⊠_
---   _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
---   (i≤n Π xs) ⊠ (j≤n Π ys) = ⊠-inj (≤-compare i≤n j≤n) xs i≤n ys j≤n
+  infixl 7 _⊠_
+  _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
+  (i≤n Π xs) ⊠ (j≤n Π ys) = ⊠-inj (≤-compare i≤n j≤n) xs i≤n ys j≤n
 
---   ⊠-up : ∀ {i k}
---        → FlatPoly i
---        → Coeffs (i ℕ.+ k)
---        → Coeffs (i ℕ.+ k)
---   ⊠-up _ [] = []
---   ⊠-up xs (((j , (j≤i+k Π y) ,~ _ ) ∷ ys)) =
---     (⊠-inj (≤-compare j≤i+k m≤m+n) y j≤i+k xs m≤m+n) ^ j ∷↓ ⊠-up xs ys
+  ⊠-le : ∀ {i k}
+       → i ≤ k
+       → FlatPoly i
+       → Coeffs k
+       → Coeffs k
+  ⊠-le i≤k x [] = []
+  ⊠-le i≤k x ((p , ((j≤k Π y) ,~ _)) ∷ ys) =
+    ⊠-inj (≤-compare i≤k j≤k) x i≤k y j≤k ^ p ∷↓ ⊠-le i≤k x ys
 
---   ⊠-inj : ∀ {i j n}
---         → ℕ.Ordering i j
---         → FlatPoly i
---         → (i ≤ n)
---         → FlatPoly j
---         → (j ≤ n)
---         → Poly n
---   ⊠-inj (ℕ.equal _) xs i≤n ys j≤n = ⊠-eq xs ys i≤n
---   ⊠-inj (ℕ.greater j k) (Σ xs) i≤n ys j≤n = i≤n Π↓ ⊠-up ys xs
---   ⊠-inj (ℕ.less    i k) xs i≤n (Σ ys) j≤n = j≤n Π↓ ⊠-up xs ys
+  ⊠-inj : ∀ {i j n}
+        → Ordering i j
+        → FlatPoly i
+        → (i ≤ n)
+        → FlatPoly j
+        → (j ≤ n)
+        → Poly n
+  ⊠-inj equal (Κ x)  i≤n (Κ y)  j≤n = i≤n Π Κ (x + y)
+  ⊠-inj equal (Σ xs) i≤n (Σ ys) j≤n = i≤n Π↓ ⊠-coeffs xs ys
+  ⊠-inj (less    i≤j-1) xs i≤n (Σ ys) j≤n = j≤n Π↓ ⊠-le i≤j-1 xs ys
+  ⊠-inj (greater j≤i-1) (Σ xs) i≤n ys j≤n = i≤n Π↓ ⊠-le j≤i-1 ys xs
 
---   ⊠-eq : ∀ {i n}
---        → FlatPoly i
---        → FlatPoly i
---        → (i ≤ n)
---        → Poly n
---   ⊠-eq (Κ x)  (Κ y)  i≤n = i≤n Π Κ (x * y)
---   ⊠-eq (Σ xs) (Σ ys) i≤n = i≤n Π↓ ⊠-coeffs xs ys
+  -- A simple shift-and-add algorithm.
+  ⊠-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
+  ⊠-coeffs _ [] = []
+  ⊠-coeffs xs ((j , y ,~ _ ) ∷ ys) = ⊠-step y ys xs ⍓ j
 
---   -- A simple shift-and-add algorithm.
---   ⊠-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
---   ⊠-coeffs _ [] = []
---   ⊠-coeffs xs ((j , y ,~ _ ) ∷ ys) = ⊠-step y ys xs ⍓ j
+  ⊠-step : ∀ {n} → Poly n → Coeffs n → Coeffs n → Coeffs n
+  ⊠-step y ys [] = []
+  ⊠-step y ys ((i , x ,~ _ ) ∷ xs) =
+    (x ⊠ y) ^ i ∷↓ ⊞-coeffs (x ⋊ ys) (⊠-step y ys xs)
 
---   ⊠-step : ∀ {n} → Poly n → Coeffs n → Coeffs n → Coeffs n
---   ⊠-step y ys [] = []
---   ⊠-step y ys ((i , x ,~ _ ) ∷ xs) =
---     (x ⊠ y) ^ i ∷↓ ⊞-coeffs (x ⋊ ys) (⊠-step y ys xs)
+----------------------------------------------------------------------
+-- Constants and Variables
+----------------------------------------------------------------------
 
--- -- ----------------------------------------------------------------------
--- -- -- Constants and Variables
--- -- ----------------------------------------------------------------------
+-- The constant polynomial
+κ : ∀ {n} → Carrier → Poly n
+κ x = z≤n Π Κ x
 
--- -- The constant polynomial
--- κ : ∀ {n} → Carrier → Poly n
--- κ x = z≤n Π Κ x
-
--- -- A variable
--- ι : ∀ {n} → Fin n → Poly n
--- ι i = Fin⇒≤ i Π↓ (κ 1# ^ 1 ∷↓ [])
+-- A variable
+ι : ∀ {n} → Fin n → Poly n
+ι i = Fin⇒≤ i Π↓ (κ 1# ^ 1 ∷↓ [])
