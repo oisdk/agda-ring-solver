@@ -249,18 +249,18 @@ mutual
         → Poly n
   ⊞-match equal (Κ x)  i≤n (Κ y)  j≤n   = Κ (x + y)         Π  i≤n
   ⊞-match equal (Σ xs) i≤n (Σ ys) j≤n   = ⊞-coeffs    xs ys Π↓ i≤n
-  ⊞-match (less    i≤j-1) xs i≤n ys j≤n = ⊞-inj i≤j-1 xs ys Π↓ j≤n
-  ⊞-match (greater j≤i-1) xs i≤n ys j≤n = ⊞-inj j≤i-1 ys xs Π↓ i≤n
+  ⊞-match (less    i≤j-1) xs i≤n (Σ ys) j≤n = ⊞-inj i≤j-1 xs ys Π↓ j≤n
+  ⊞-match (greater j≤i-1) (Σ xs) i≤n ys j≤n = ⊞-inj j≤i-1 ys xs Π↓ i≤n
 
   ⊞-inj : ∀ {i k}
        → (i ≤ k)
        → FlatPoly i
-       → FlatPoly (suc k)
        → Coeffs k
-  ⊞-inj i≤k xs (Σ [] {()})
-  ⊞-inj i≤k xs (Σ (y Π j≤k ≠0 Δ zero ∷ ys)) =
+       → Coeffs k
+  ⊞-inj i≤k xs [] = xs Π i≤k ^ zero ∷↓ []
+  ⊞-inj i≤k xs (y Π j≤k ≠0 Δ zero ∷ ys) =
     ⊞-match (≤-compare j≤k i≤k) y j≤k xs i≤k ^ zero ∷↓ ys
-  ⊞-inj i≤k xs (Σ (y Δ suc j ∷ ys)) =
+  ⊞-inj i≤k xs (y Δ suc j ∷ ys) =
     xs Π i≤k ^ zero ∷↓ y Δ j ∷ ys
 
   ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n

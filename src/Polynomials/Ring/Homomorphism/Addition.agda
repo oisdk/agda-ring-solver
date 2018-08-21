@@ -67,8 +67,51 @@ mutual
       ≡⟨ ≡.cong (λ iltn → Σ⟦ xs ⟧ (drop-1 i≤n Ρ) + Σ⟦ ys ⟧ (drop-1 iltn Ρ)) (≤-irrel i≤n j≤n) ⟩
       Σ⟦ xs ⟧ (drop-1 i≤n Ρ) + Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
     ∎
-  ⊞-match-hom (less i≤j-1) xs i≤n ys j≤n Ρ = {!!}
   ⊞-match-hom (greater j≤i-1) xs i≤n ys j≤n Ρ = {!!}
+  ⊞-match-hom (less    i≤j-1) xs i≤n (Σ ys) j≤n Ρ =
+    let (ρ , Ρ′) = drop-1 j≤n Ρ
+    in
+    begin
+      ⟦ ⊞-inj i≤j-1 xs ys Π↓ j≤n ⟧ Ρ
+    ≈⟨ Π↓-hom (⊞-inj i≤j-1 xs ys) j≤n Ρ ⟩
+      Σ⟦ ⊞-inj i≤j-1 xs ys ⟧ (drop-1 j≤n Ρ)
+    ≈⟨ ⊞-inj-hom i≤j-1 xs ys ρ Ρ′ ⟩
+      ⟦ xs Π i≤j-1 ⟧ Ρ′ + Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
+    ≅⟨ ≪+_ ⟩
+      ⟦ xs Π i≤j-1 ⟧ Ρ′
+    ≈⟨ {!!} ⟩
+      ⟦ xs Π i≤n ⟧ Ρ
+    ∎
+
+  ⊞-inj-hom : ∀ {i k}
+            → (i≤k : i ≤ k)
+            → (x : FlatPoly i)
+            → (ys : Coeffs k)
+            → (ρ : Carrier)
+            → (Ρ : Vec Carrier k)
+            → Σ⟦ ⊞-inj i≤k x ys ⟧ (ρ , Ρ) ≈ ⟦ x Π i≤k ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ)
+  ⊞-inj-hom i≤k xs [] = {!!}
+  ⊞-inj-hom i≤k xs (y Π j≤k ≠0 Δ zero ∷ ys) ρ Ρ = {!!}
+  ⊞-inj-hom i≤k xs (y Δ suc j ∷ ys) ρ Ρ =
+    let y′ = poly y
+    in
+    begin
+      Σ⟦ ⊞-inj i≤k xs (y Δ suc j ∷ ys) ⟧ (ρ , Ρ)
+    ≡⟨⟩
+      Σ⟦ xs Π i≤k ^ zero ∷↓ y Δ j ∷ ys ⟧ (ρ , Ρ)
+    ≈⟨ ∷↓-hom (xs Π i≤k) zero (y Δ j ∷ ys) ρ Ρ ⟩
+      (⟦ xs Π i≤k ⟧ Ρ + Σ⟦ y Δ j ∷ ys ⟧ (ρ , Ρ) * ρ) * ρ ^ zero
+    ≈⟨ *-identityʳ _ ⟩
+      ⟦ xs Π i≤k ⟧ Ρ + Σ⟦ y Δ j ∷ ys ⟧ (ρ , Ρ) * ρ
+    ≡⟨⟩
+      ⟦ xs Π i≤k ⟧ Ρ + ((⟦ y′ ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ) * ρ ^ j ) * ρ
+    ≈⟨ +≫  *-assoc _ _ ρ ⟩
+      ⟦ xs Π i≤k ⟧ Ρ + (⟦ y′ ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ) * (ρ ^ j  * ρ)
+    ≈⟨ +≫ *≫  *-comm _ ρ ⟩
+      ⟦ xs Π i≤k ⟧ Ρ + (⟦ y′ ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ) * ρ ^ suc j
+    ≡⟨⟩
+      ⟦ xs Π i≤k ⟧ Ρ + Σ⟦ y Δ suc j ∷ ys ⟧ (ρ , Ρ)
+    ∎
 
   ⊞-coeffs-hom : ∀ {n}
               → (xs : Coeffs n)

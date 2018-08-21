@@ -58,3 +58,10 @@ open import Data.Empty
 ≤-irrel (≤-s x) (≤-s y) = ≡.cong ≤-s (≤-irrel x y)
 ≤-irrel (≤-s x) m≤m = ⊥-elim (1+n≰n (≤′⇒≤ x))
 ≤-irrel m≤m (≤-s x) = ⊥-elim (1+n≰n (≤′⇒≤ x))
+
+≤-inj : ∀ {i j n}
+      → (x : i ≤ n)
+      → (y : j ≤ n)
+      → i ≡.≡ j
+      → (xs : Vec Carrier n)
+      → ⟦ 
