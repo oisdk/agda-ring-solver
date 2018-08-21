@@ -69,7 +69,7 @@ module Polynomials.Ring.Normal
 -- This structure works best. It effectively inducts on the k in 2.,
 -- but does so while providing evidence about the overall length.
 
-module Order-2 where
+module Order where
   open import Data.Nat using () renaming (_≤′_ to _≤_) public
   import Data.Nat.Properties as ℕ-≡
   import Relation.Binary.PropositionalEquality.TrustMe as TrustMe
@@ -114,7 +114,7 @@ module Order-2 where
     proof Fin.zero = ≡.refl
     proof (Fin.suc x) = ≡.cong suc (proof x)
 
-open Order-2
+open Order
 
 open RawRing coeff
 
@@ -205,10 +205,10 @@ n≤m Π↑ (i≤n Π xs) = (≤-trans-pred i≤n n≤m) Π xs
 
 infixr 4 _Π↓_
 _Π↓_ : ∀ {i n} → suc i ≤ n → Coeffs i → Poly n
-i≤n Π↓ []                       = z≤n Π Κ 0#
-i≤n Π↓ ((zero , x ,~ _ )  ∷ []) = i≤n Π↑ x
-i≤n Π↓ ((zero , x₁ ) ∷ x₂ ∷ xs) = i≤n Π Σ ((zero , x₁) ∷ x₂ ∷ xs)
-i≤n Π↓ ((suc j , x) ∷ xs)       = i≤n Π Σ ((suc j , x) ∷ xs)
+i≤n Π↓ []                      = z≤n Π Κ 0#
+i≤n Π↓ ((zero , x ,~ _ ) ∷ []) = i≤n Π↑ x
+i≤n Π↓ ((zero , x₁) ∷ x₂ ∷ xs) = i≤n Π Σ ((zero , x₁) ∷ x₂ ∷ xs)
+i≤n Π↓ ((suc j , x) ∷ xs)      = i≤n Π Σ ((suc j , x) ∷ xs)
 
 ----------------------------------------------------------------------
 -- Arithmetic
@@ -304,10 +304,6 @@ mutual
 -- Multiplication
 ----------------------------------------------------------------------
 mutual
-  _⋊_ : ∀ {n} → Poly n → Coeffs n → Coeffs n
-  xs ⋊ [] = []
-  xs ⋊ ((j , y ,~ y≠0) ∷ ys) = (xs ⊠ y) ^ j ∷↓ (xs ⋊ ys)
-
   infixl 7 _⊠_
   _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
   (i≤n Π xs) ⊠ (j≤n Π ys) = ⊠-inj (≤-compare i≤n j≤n) xs i≤n ys j≤n
@@ -340,8 +336,8 @@ mutual
 
   ⊠-step : ∀ {n} → Poly n → Coeffs n → Coeffs n → Coeffs n
   ⊠-step y ys [] = []
-  ⊠-step y ys ((i , x ,~ _ ) ∷ xs) =
-    (x ⊠ y) ^ i ∷↓ ⊞-coeffs (x ⋊ ys) (⊠-step y ys xs)
+  ⊠-step y ys ((i , (j≤n Π x) ,~ _ ) ∷ xs) =
+    ((j≤n Π x) ⊠ y) ^ i ∷↓ ⊞-coeffs (⊠-le j≤n x ys) (⊠-step y ys xs)
 
 ----------------------------------------------------------------------
 -- Constants and Variables
