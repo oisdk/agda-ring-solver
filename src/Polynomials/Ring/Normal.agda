@@ -171,7 +171,7 @@ mutual
   Norm ((zero  , _) ∷ _ ∷ _) = ⊤
   Norm ((suc _ , _) ∷ _) = ⊤
 
-open Poly
+open Poly public
 
 ----------------------------------------------------------------------
 -- Construction
