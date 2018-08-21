@@ -76,7 +76,7 @@ mutual
               → (Ρ : Carrier × Vec Carrier n)
               → Σ⟦ ⊞-coeffs xs ys ⟧ Ρ ≈ Σ⟦ xs ⟧ Ρ + Σ⟦ ys ⟧ Ρ
   ⊞-coeffs-hom [] ys Ρ = sym (+-identityˡ (Σ⟦ ys ⟧ Ρ))
-  ⊞-coeffs-hom (x Δ i ∷ xs) = {!!} -- ⊞-zip-r-hom i x xs
+  ⊞-coeffs-hom (x Δ i ∷ xs) = ⊞-zip-r-hom i x xs
 
   ⊞-zip-hom : ∀ {n i j}
            → (c : ℕ.Ordering i j)
