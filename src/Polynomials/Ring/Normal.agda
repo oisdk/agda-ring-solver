@@ -105,6 +105,48 @@ module Order where
     conv (ℕ.equal     k) i+k≡n j+k≡n    rewrite +k-cong i j i+k≡n  j+k≡n = ℕ.equal j
     conv (ℕ.greater y k) i+sy+k≡n j+y≡n rewrite lem j i k i+sy+k≡n j+y≡n = ℕ.less i k
 
+-- This is the one to go for.
+--
+-- Of the three options, we have:
+--
+-- 1.
+-- data _≤_ : Rel ℕ 0ℓ where
+--   z≤n : ∀ {n}                 → zero  ≤ n
+--   s≤s : ∀ {m n} (m≤n : m ≤ n) → suc m ≤ suc n
+--
+-- This follows the structure oof its first argument. In other words:
+--
+--   n ≤ m ≅ fold s≤s z≤n n
+--
+-- This isn't good, as that first argument is the length of the *rest*
+-- of the list:
+--
+--   [(⋯ , 5 ≤ 6) , (4 ≤ 5), (3 ≤ 4), (1 ≤ 3), (0 ≤ 1)]
+--
+-- Meaning that consuming it the normal way will be quadratic.
+--
+-- 2.
+-- record _≤″_ (m n : ℕ) : Set where
+--   constructor less-than-or-equal
+--   field
+--     {k}   : ℕ
+--     proof : m + k ≡ n
+--
+-- Also not advantageuos. While it does store the k (which is the
+-- size of the gap, which is what we need to use to get linear
+-- performance), it doesn't provide any inductive structure, so
+-- computations on the k don't provide evidence about the m or n.
+-- That said, it works by storing an equality proof, so we could just
+-- aggresively erase it, but it's messy (and perhaps unsound).
+--
+-- 3.
+-- data _≤′_ (m : ℕ) : ℕ → Set where
+--   ≤′-refl :                         m ≤′ m
+--   ≤′-step : ∀ {n} (m≤′n : m ≤′ n) → m ≤′ suc n
+--
+-- This structure works best. It effectively inducts on the k in 2.,
+-- but does so while providing evidence about the overall length.
+
 module Order-2 where
   open import Data.Nat using () renaming (_≤′_ to _≤_) public
 
