@@ -33,15 +33,14 @@ drop : ∀ {i n} → i ≤ n → Vec Carrier n → Vec Carrier i
 drop m≤m xs = xs
 drop (≤-s i≤n) (_ ∷ xs) = drop i≤n xs
 
--- Evaluation
-⟦_⟧ : ∀ {n} → Poly n → Vec Carrier n → Carrier
-⟦ i≤n Π xs ⟧ Ρ = eval xs (drop i≤n Ρ)
-  where
-  eval : ∀ {n} → FlatPoly n → Vec Carrier n → Carrier
-  eval (Κ x) [] = ⟦ x ⟧ᵣ
-  eval {suc n} (Σ xs) (ρ ∷ Ρ) = go xs
-    where
-    go : Coeffs n → Carrier
-    go (c ≠0 Δ i ∷ xs) = (⟦ c ⟧ Ρ + go xs * ρ) * ρ ^ i
-    go [] = 0#
+mutual
+  Σ⟦_⟧ : ∀ {n} → Coeffs n →  Carrier → Vec Carrier n → Carrier
+  Σ⟦ c ≠0 Δ i ∷ xs ⟧ ρ Ρ = (⟦ c ⟧ Ρ + Σ⟦ xs ⟧ ρ Ρ * ρ) * ρ ^ i
+  Σ⟦ [] ⟧ _ _ = 0#
+
+  -- Evaluation
+  ⟦_⟧ : ∀ {n} → Poly n → Vec Carrier n → Carrier
+  ⟦ Κ x  Π i≤n ⟧ _ = ⟦ x ⟧ᵣ
+  ⟦ Σ xs Π i≤n ⟧ Ρ with drop i≤n Ρ
+  ... | (ρ ∷ Ρ′) = Σ⟦ xs ⟧ ρ Ρ′
 

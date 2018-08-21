@@ -31,7 +31,7 @@ module Polynomials.Ring.Normal
 --   z≤n : ∀ {n}                 → zero  ≤ n
 --   s≤s : ∀ {m n} (m≤n : m ≤ n) → suc m ≤ suc n
 --
--- This follows the structure oof its first argument. In other words:
+-- This follows the structure of its first argument. In other words:
 --
 --   n ≤ m ≅ fold s≤s z≤n n
 --
@@ -95,7 +95,7 @@ z≤n {suc n} = ≤-s z≤n
 -- As far as I know, that's necessarily 𝒪(n²). What we do in order
 -- to avoid that is we build up the type with the + the wrong way
 -- around, then at the very end we swap with +-comm. This proof can
--- be erased, so it shuold avoid the cost.
+-- be erased, so it should avoid the cost.
 Fin⇒≤ : ∀ {n} (x : Fin n) → suc (Fin.toℕ x) ≤ n
 Fin⇒≤ x = subst
           (suc (Fin.toℕ x) ≤_)
@@ -132,8 +132,8 @@ mutual
     constructor _Π_
     field
       {i} : ℕ
-      i≤n   : i ≤ n
       flat  : FlatPoly i
+      i≤n   : i ≤ n
 
   data FlatPoly : ℕ → Set (a ⊔ ℓ) where
     Κ : Carrier → FlatPoly 0
@@ -176,9 +176,9 @@ mutual
       .{poly≠0} : ¬ Zero poly
 
   Zero : ∀ {n} → Poly n → Set ℓ
-  Zero (_ Π Κ x      ) = Zero-C x
-  Zero (_ Π Σ []     ) = Lift ℓ ⊤
-  Zero (_ Π Σ (_ ∷ _)) = Lift ℓ ⊥
+  Zero (Κ x       Π _) = Zero-C x
+  Zero (Σ []      Π _) = Lift ℓ ⊤
+  Zero (Σ (_ ∷ _) Π _) = Lift ℓ ⊥
 
   Norm : ∀ {i} → Coeffs i → Set
   Norm []                  = ⊥
@@ -195,9 +195,9 @@ mutual
 
 -- Decision procedure for Zero
 zero? : ∀ {n} → (p : Poly n) → Dec (Zero p)
-zero? (_ Π Κ x      ) = zero-c? x
-zero? (_ Π Σ []     ) = yes (lift tt)
-zero? (_ Π Σ (_ ∷ _)) = no lower
+zero? (Κ x       Π _) = zero-c? x
+zero? (Σ []      Π _) = yes (lift tt)
+zero? (Σ (_ ∷ _) Π _) = no lower
 
 -- Exponentiate the first variable of a polynomial
 infixr 8 _⍓_
@@ -213,16 +213,16 @@ x ^ i ∷↓ xs with zero? x
 ... | no ¬p = _≠0 x {¬p} Δ i ∷ xs
 
 -- Inject a polynomial into a larger polynomoial with more variables
-_Π↑_ : ∀ {n m} → (suc n ≤ m) → Poly n → Poly m
-n≤m Π↑ (i≤n Π xs) = (≤-trans-pred i≤n n≤m) Π xs
+_Π↑_ : ∀ {n m} → Poly n → (suc n ≤ m) → Poly m
+(xs Π i≤n) Π↑ n≤m = xs Π (≤-trans-pred i≤n n≤m)
 
 -- Normalising Π
 infixr 4 _Π↓_
-_Π↓_ : ∀ {i n} → suc i ≤ n → Coeffs i → Poly n
-i≤n Π↓ []                           = z≤n Π Κ 0#
-i≤n Π↓ (x ≠0 Δ zero  ∷ [])      = i≤n Π↑ x
-i≤n Π↓ (x₁   Δ zero  ∷ x₂ ∷ xs) = i≤n Π Σ (x₁ Δ zero  ∷ x₂ ∷ xs)
-i≤n Π↓ (x    Δ suc j ∷ xs)      = i≤n Π Σ (x  Δ suc j ∷ xs)
+_Π↓_ : ∀ {i n} → Coeffs i → suc i ≤ n → Poly n
+[]                       Π↓ i≤n = Κ 0# Π z≤n
+(x ≠0 Δ zero  ∷ [])      Π↓ i≤n = x Π↑ i≤n
+(x₁   Δ zero  ∷ x₂ ∷ xs) Π↓ i≤n = Σ (x₁ Δ zero  ∷ x₂ ∷ xs) Π i≤n
+(x    Δ suc j ∷ xs)      Π↓ i≤n = Σ (x  Δ suc j ∷ xs) Π i≤n
 
 ----------------------------------------------------------------------
 -- Arithmetic
@@ -257,7 +257,7 @@ mutual
 
   infixl 6 _⊞_
   _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
-  (i≤n Π xs) ⊞ (j≤n Π ys) = ⊞-match (≤-compare i≤n j≤n) xs i≤n ys j≤n
+  (xs Π i≤n) ⊞ (ys Π j≤n) = ⊞-match (≤-compare i≤n j≤n) xs i≤n ys j≤n
 
   ⊞-match : ∀ {i j n}
         → Ordering i j
@@ -266,10 +266,10 @@ mutual
         → FlatPoly j
         → (j ≤ n)
         → Poly n
-  ⊞-match equal (Κ x)  i≤n (Κ y)  j≤n   = i≤n Π Κ (x + y)
-  ⊞-match equal (Σ xs) i≤n (Σ ys) j≤n   = i≤n Π↓ ⊞-coeffs xs ys
-  ⊞-match (less    i≤j-1) xs i≤n ys j≤n = j≤n Π↓ ⊞-inj i≤j-1 xs ys
-  ⊞-match (greater j≤i-1) xs i≤n ys j≤n = i≤n Π↓ ⊞-inj j≤i-1 ys xs
+  ⊞-match equal (Κ x)  i≤n (Κ y)  j≤n   = Κ (x + y)         Π  i≤n
+  ⊞-match equal (Σ xs) i≤n (Σ ys) j≤n   = ⊞-coeffs    xs ys Π↓ i≤n
+  ⊞-match (less    i≤j-1) xs i≤n ys j≤n = ⊞-inj i≤j-1 xs ys Π↓ j≤n
+  ⊞-match (greater j≤i-1) xs i≤n ys j≤n = ⊞-inj j≤i-1 ys xs Π↓ i≤n
 
   ⊞-inj : ∀ {i k}
        → (i ≤ k)
@@ -277,10 +277,10 @@ mutual
        → FlatPoly (suc k)
        → Coeffs k
   ⊞-inj i≤k xs (Σ [] {()})
-  ⊞-inj i≤k xs (Σ (j≤k Π y ≠0 Δ zero ∷ ys)) =
+  ⊞-inj i≤k xs (Σ (y Π j≤k ≠0 Δ zero ∷ ys)) =
     ⊞-match (≤-compare j≤k i≤k) y j≤k xs i≤k ^ zero ∷↓ ys
   ⊞-inj i≤k xs (Σ (y Δ suc j ∷ ys)) =
-    i≤k Π xs ^ zero ∷↓ y Δ j ∷ ys
+    xs Π i≤k ^ zero ∷↓ y Δ j ∷ ys
 
   ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
   ⊞-coeffs [] ys = ys
@@ -307,8 +307,8 @@ mutual
 ----------------------------------------------------------------------
 
 ⊟_ : ∀ {n} → Poly n → Poly n
-⊟_ (i≤n Π Κ x) = i≤n Π Κ (- x)
-⊟_ (i≤n Π Σ xs) = i≤n Π↓ go xs
+⊟_ (Κ x  Π i≤n) = Κ (- x) Π i≤n
+⊟_ (Σ xs Π i≤n) = go xs Π↓ i≤n
   where
   go : ∀ {n} → Coeffs n → Coeffs n
   go (x ≠0 Δ i  ∷ xs) = ⊟ x ^ i ∷↓ go xs
@@ -320,7 +320,7 @@ mutual
 mutual
   infixl 7 _⊠_
   _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
-  (i≤n Π xs) ⊠ (j≤n Π ys) = ⊠-match (≤-compare i≤n j≤n) xs i≤n ys j≤n
+  (xs Π i≤n) ⊠ (ys Π j≤n) = ⊠-match (≤-compare i≤n j≤n) xs i≤n ys j≤n
 
   ⊠-inj : ∀ {i k}
         → i ≤ k
@@ -328,7 +328,7 @@ mutual
         → Coeffs k
         → Coeffs k
   ⊠-inj _ _ [] = []
-  ⊠-inj i≤k x (j≤k Π y ≠0 Δ p ∷ ys) =
+  ⊠-inj i≤k x (y Π j≤k ≠0 Δ p ∷ ys) =
     ⊠-match (≤-compare i≤k j≤k) x i≤k y j≤k ^ p ∷↓ ⊠-inj i≤k x ys
 
   ⊠-match : ∀ {i j n}
@@ -338,10 +338,10 @@ mutual
           → FlatPoly j
           → (j ≤ n)
           → Poly n
-  ⊠-match equal (Κ x)  i≤n (Κ y)  j≤n = i≤n Π Κ (x + y)
-  ⊠-match equal (Σ xs) i≤n (Σ ys) j≤n = i≤n Π↓ ⊠-coeffs xs ys
-  ⊠-match (less    i≤j-1) xs i≤n (Σ ys) j≤n = j≤n Π↓ ⊠-inj i≤j-1 xs ys
-  ⊠-match (greater j≤i-1) (Σ xs) i≤n ys j≤n = i≤n Π↓ ⊠-inj j≤i-1 ys xs
+  ⊠-match equal (Κ x)  i≤n (Κ y)  j≤n       = Κ (x + y)         Π  i≤n
+  ⊠-match equal (Σ xs) i≤n (Σ ys) j≤n       = ⊠-coeffs xs ys    Π↓ i≤n
+  ⊠-match (less    i≤j-1) xs i≤n (Σ ys) j≤n = ⊠-inj i≤j-1 xs ys Π↓ j≤n
+  ⊠-match (greater j≤i-1) (Σ xs) i≤n ys j≤n = ⊠-inj j≤i-1 ys xs Π↓ i≤n
 
   -- A simple shift-and-add algorithm.
   ⊠-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
@@ -350,8 +350,8 @@ mutual
 
   ⊠-step : ∀ {n} → Poly n → Coeffs n → Coeffs n → Coeffs n
   ⊠-step y ys [] = []
-  ⊠-step y ys (j≤n Π x ≠0 Δ i ∷ xs) =
-    (j≤n Π x) ⊠ y ^ i ∷↓ ⊞-coeffs (⊠-inj j≤n x ys) (⊠-step y ys xs)
+  ⊠-step y ys (x Π j≤n ≠0 Δ i ∷ xs) =
+    (x Π j≤n) ⊠ y ^ i ∷↓ ⊞-coeffs (⊠-inj j≤n x ys) (⊠-step y ys xs)
 
 ----------------------------------------------------------------------
 -- Constants and Variables
@@ -359,8 +359,8 @@ mutual
 
 -- The constant polynomial
 κ : ∀ {n} → Carrier → Poly n
-κ x = z≤n Π Κ x
+κ x = Κ x Π z≤n
 
 -- A variable
 ι : ∀ {n} → Fin n → Poly n
-ι i = Fin⇒≤ i Π↓ (κ 1# ^ 1 ∷↓ [])
+ι i = (κ 1# ^ 1 ∷↓ []) Π↓ Fin⇒≤ i
