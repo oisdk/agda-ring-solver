@@ -19,6 +19,7 @@ module Polynomials.Ring.Homomorphism.Addition
   where
 
 open import Polynomials.Ring.Homomorphism.Lemmas coeff Zero-C zero-c? ring morphism Zero-C⟶Zero-R
+open import Polynomials.Ring.Homomorphism.K coeff Zero-C zero-c? ring morphism Zero-C⟶Zero-R
 
 open AlmostCommutativeRing ring hiding (zero)
 open import Polynomials.Ring.Reasoning ring
@@ -62,7 +63,7 @@ mutual
       Σ⟦ ⊞-coeffs xs ys ⟧ (drop-1 i≤n Ρ)
     ≈⟨ ⊞-coeffs-hom xs ys (drop-1 i≤n Ρ) ⟩
       Σ⟦ xs ⟧ (drop-1 i≤n Ρ) + Σ⟦ ys ⟧ (drop-1 i≤n Ρ)
-    ≈⟨ {!!} ⟩
+      ≡⟨ ≡.cong (λ iltn → Σ⟦ xs ⟧ (drop-1 i≤n Ρ) + Σ⟦ ys ⟧ (drop-1 iltn Ρ)) (≤-irrel i≤n j≤n) ⟩
       Σ⟦ xs ⟧ (drop-1 i≤n Ρ) + Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
     ∎
   ⊞-match-hom (less i≤j-1) xs i≤n ys j≤n Ρ = {!!}
