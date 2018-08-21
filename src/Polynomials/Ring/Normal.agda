@@ -27,84 +27,6 @@ module Polynomials.Ring.Normal
   (zero-c? : Decidable Zero-C)
   where
 
-module Order where
-  open ≡
-  open ≡.≡-Reasoning
-  open import Data.Nat using (_+_)
-  import Data.Nat.Properties as ℕ-≡
-  import Relation.Binary.PropositionalEquality.TrustMe as TrustMe
-
-  infix 4 _≤_
-  record _≤_ (m n : ℕ) : Set where
-    constructor +-lte
-    field
-      {k} : ℕ
-      proof : m + k ≡ n
-
-  ≤-trans : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
-  ≤-trans {x} {y} {z} (+-lte {k = k₁} xs) (+-lte {k = k₂} ys) =
-    +-lte {k = k₁ + k₂}
-      (TrustMe.erase (trans (trans (sym (ℕ-≡.+-assoc x k₁ k₂)) (cong (_+ k₂) xs)) ys))
-
-  ≤⇒pred≤ : ∀ {x y} → suc x ≤ y → x ≤ y
-  ≤⇒pred≤ (+-lte {k = k} proof) =
-    +-lte {k = suc k}
-    (TrustMe.erase (trans (ℕ-≡.+-suc _ k) proof))
-
-  ≤-trans-pred : ∀ {x y z} → x ≤ y → suc y ≤ z → x ≤ z
-  ≤-trans-pred xs ys = ≤-trans xs (≤⇒pred≤ ys)
-
-  m≤m+n : ∀ {m n} → m ≤ m + n
-  m≤m+n = +-lte refl
-
-  z≤n : ∀ {n} → zero ≤ n
-  z≤n = +-lte refl
-
-  Fin⇒≤ : ∀ {n} → (x : Fin n) → suc (Fin.toℕ x) ≤ n
-  Fin⇒≤ x = +-lte {k = k x} (TrustMe.erase (proof x))
-    where
-    k : ∀ {n} → Fin n → ℕ
-    k {suc n} Fin.zero = n
-    k (Fin.suc x) = k x
-
-    proof : ∀ {n} → (x : Fin n) → suc (Fin.toℕ x) + k x ≡ n
-    proof Fin.zero = refl
-    proof (Fin.suc x) = cong suc (proof x)
-
-  ≤-compare : ∀ {i j n}
-            → (i ≤ n)
-            → (j ≤ n)
-            → ℕ.Ordering i j
-  ≤-compare {i} {j} {n} (+-lte xs) (+-lte ys) = conv (ℕ.compare _ _) xs ys
-    where
-    +k-cong : ∀ i j {k n} → i + k ≡ n → j + k ≡ n → i ≡ j
-    +k-cong _ _ xs ys = TrustMe.erase (ℕ-≡.+-cancelʳ-≡ _ _ (trans xs (sym ys)))
-
-    lem : ∀ i j k {x n} → j + suc (x + k) ≡ n → i + x ≡ n → i ≡ suc (j + k)
-    lem i j k {x} {n} jxk ix = TrustMe.erase $ ℕ-≡.+-cancelʳ-≡ i (suc (j + k)) $
-      begin
-        i + x
-      ≡⟨ ix ⟩
-        n
-      ≡⟨ sym jxk ⟩
-        j + suc (x + k)
-      ≡⟨ cong (j +_) (ℕ-≡.+-comm (suc x) k) ⟩
-        j + (k + suc x)
-      ≡⟨ sym (ℕ-≡.+-assoc j k _) ⟩
-        j + k + suc x
-      ≡⟨ ℕ-≡.+-suc _ x ⟩
-        suc (j + k) + x
-      ∎
-
-    conv : ∀ {x y}
-         → ℕ.Ordering x y
-         → i + x ≡ n
-         → j + y ≡ n
-         → ℕ.Ordering i j
-    conv (ℕ.less    x k) i+x≡n j+sx+k≡n rewrite lem i j k j+sx+k≡n i+x≡n = ℕ.greater j k
-    conv (ℕ.equal     k) i+k≡n j+k≡n    rewrite +k-cong i j i+k≡n  j+k≡n = ℕ.equal j
-    conv (ℕ.greater y k) i+sy+k≡n j+y≡n rewrite lem j i k i+sy+k≡n j+y≡n = ℕ.less i k
-
 -- This is the one to go for.
 --
 -- Of the three options, we have:
@@ -149,10 +71,8 @@ module Order where
 
 module Order-2 where
   open import Data.Nat using () renaming (_≤′_ to _≤_) public
-
-  ≤-trans : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
-  ≤-trans xs ℕ.≤′-refl = xs
-  ≤-trans xs (ℕ.≤′-step ys) = ℕ.≤′-step (≤-trans xs ys)
+  import Data.Nat.Properties as ℕ-≡
+  import Relation.Binary.PropositionalEquality.TrustMe as TrustMe
 
   ≤-trans-pred : ∀ {x y z} → x ≤ y → suc y ≤ z → x ≤ z
   ≤-trans-pred xs ℕ.≤′-refl = ℕ.≤′-step xs
@@ -167,22 +87,32 @@ module Order-2 where
             → (i ≤ n)
             → (j ≤ n)
             → Ordering i j
-  ≤-compare {i} {.i} ℕ.≤′-refl ℕ.≤′-refl = equal
-  ≤-compare {.(suc _)} {j} ℕ.≤′-refl (ℕ.≤′-step j≤n) = greater j≤n
-  ≤-compare {i} {.(suc _)} (ℕ.≤′-step i≤n) ℕ.≤′-refl = less i≤n
-  ≤-compare {i} {j} (ℕ.≤′-step i≤n) (ℕ.≤′-step j≤n) = ≤-compare i≤n j≤n
-
-  Fin⇒≤ : ∀ {n} (x : Fin n) → suc (Fin.toℕ x) ≤ n
-  Fin⇒≤ = {!!}
+  ≤-compare ℕ.≤′-refl ℕ.≤′-refl = equal
+  ≤-compare ℕ.≤′-refl (ℕ.≤′-step j≤n) = greater j≤n
+  ≤-compare (ℕ.≤′-step i≤n) ℕ.≤′-refl = less i≤n
+  ≤-compare (ℕ.≤′-step i≤n) (ℕ.≤′-step j≤n) = ≤-compare i≤n j≤n
 
   z≤n : ∀ {n} → zero ≤ n
   z≤n {zero} = ℕ.≤′-refl
   z≤n {suc n} = ℕ.≤′-step z≤n
 
-  ≤-pred-l : ∀ {x y} → suc x ≤ y → x ≤ y
-  ≤-pred-l ℕ.≤′-refl = ℕ.≤′-step ℕ.≤′-refl
-  ≤-pred-l (ℕ.≤′-step xs) = ℕ.≤′-step (≤-pred-l xs)
+  Fin⇒≤ : ∀ {n} (x : Fin n) → suc (Fin.toℕ x) ≤ n
+  Fin⇒≤ x = ≡.subst
+              (suc (Fin.toℕ x) ≤_)
+              (TrustMe.erase (≡.trans (ℕ-≡.+-comm (k x) _) (proof x)))
+              (≤⇒≤+ _ ℕ.≤′-refl)
+    where
+    k : ∀ {n} → Fin n → ℕ
+    k {suc n} Fin.zero = n
+    k {suc _} (Fin.suc x) = k x
 
+    ≤⇒≤+ : ∀ x {y z} → y ≤ z → y ≤ x ℕ.+ z
+    ≤⇒≤+ zero y≤z = y≤z
+    ≤⇒≤+ (suc x) y≤z = ℕ.≤′-step (≤⇒≤+ x y≤z)
+
+    proof : ∀ {n} → (x : Fin n) → (suc (Fin.toℕ x) ℕ.+ k x) ≡.≡ n
+    proof Fin.zero = ≡.refl
+    proof (Fin.suc x) = ≡.cong suc (proof x)
 
 open Order-2
 
