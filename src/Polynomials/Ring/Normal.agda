@@ -159,17 +159,17 @@ module Order-2 where
   ≤-trans-pred xs (ℕ.≤′-step ys) = ℕ.≤′-step (≤-trans-pred xs ys)
 
   data Ordering : ℕ → ℕ → Set where
-    less    : ∀ m k → m ≤ k → Ordering m (suc k)
-    equal   : ∀ m   → Ordering m m
-    greater : ∀ m k → m ≤ k → Ordering (suc k) m
+    less    : ∀ {i j-1} → (i≤j-1 : i ≤ j-1) → Ordering i (suc j-1)
+    equal   : ∀ {i}     → Ordering i i
+    greater : ∀ {i-1 j} → (j≤i-1 : j ≤ i-1) → Ordering (suc i-1) j
 
   ≤-compare : ∀ {i j n}
             → (i ≤ n)
             → (j ≤ n)
             → Ordering i j
-  ≤-compare {i} {.i} ℕ.≤′-refl ℕ.≤′-refl = equal i
-  ≤-compare {.(suc _)} {j} ℕ.≤′-refl (ℕ.≤′-step j≤n) = greater _ _ j≤n
-  ≤-compare {i} {.(suc _)} (ℕ.≤′-step i≤n) ℕ.≤′-refl = less _ _ i≤n
+  ≤-compare {i} {.i} ℕ.≤′-refl ℕ.≤′-refl = equal
+  ≤-compare {.(suc _)} {j} ℕ.≤′-refl (ℕ.≤′-step j≤n) = greater j≤n
+  ≤-compare {i} {.(suc _)} (ℕ.≤′-step i≤n) ℕ.≤′-refl = less i≤n
   ≤-compare {i} {j} (ℕ.≤′-step i≤n) (ℕ.≤′-step j≤n) = ≤-compare i≤n j≤n
 
   Fin⇒≤ : ∀ {n} (x : Fin n) → suc (Fin.toℕ x) ≤ n
@@ -322,56 +322,51 @@ mutual
         → FlatPoly j
         → (j ≤ n)
         → Poly n
-  ⊞-inj (less m k x) xs _ ys _ = {!!}
-  ⊞-inj (equal m) xs _ ys _ = {!!}
-  ⊞-inj (greater m k x) xs _ ys _ = {!!}
-  -- ⊞-inj (ℕ.equal   _  ) (Σ xs) i≤n (Σ ys) _ = i≤n Π↓ ⊞-coeffs xs ys
-  -- ⊞-inj (ℕ.less    _ _) xs i≤n ys j≤n = ⊞-le xs i≤n ys j≤n
-  -- ⊞-inj (ℕ.greater _ _) xs i≤n ys j≤n = ⊞-le ys j≤n xs i≤n
+  ⊞-inj equal (Κ x)  i≤n (Κ y)  j≤n   = i≤n Π Κ (x + y)
+  ⊞-inj equal (Σ xs) i≤n (Σ ys) j≤n   = i≤n Π↓ ⊞-coeffs xs ys
+  ⊞-inj (less    i≤j-1) xs i≤n ys j≤n = j≤n Π↓ ⊞-le xs ys i≤j-1
+  ⊞-inj (greater j≤i-1) xs i≤n ys j≤n = i≤n Π↓ ⊞-le ys xs j≤i-1
 
---   ⊞-le : ∀ {i k n}
---        → FlatPoly i
---        → (i ≤ n)
---        → FlatPoly (suc (i ℕ.+ k))
---        → (suc (i ℕ.+ k) ≤ n)
---        → Poly n
---   ⊞-le xs _ (Σ [] {()})
---   ⊞-le xs xs≤ (Σ ((zero , (y≤ Π y) ,~ _ ) ∷ ys)) = _Π↓
---     (⊞-inj (ℕ.compare _ _) y y≤ xs {!!} ^ zero ∷↓ ys)
---   ⊞-le xs i≤n (Σ ((suc j , y) ∷ ys)) = _Π↓
---     ((m≤m+n Π xs) ^ zero ∷↓ (j , y) ∷ ys)
+  ⊞-le : ∀ {i k}
+       → FlatPoly i
+       → FlatPoly (suc k)
+       → (i ≤ k)
+       → Coeffs k
+  ⊞-le xs (Σ [] {()})
+  ⊞-le xs (Σ ((zero , (y≤ Π y) ,~ _ ) ∷ ys)) i≤k = ⊞-inj (≤-compare y≤ i≤k) y y≤ xs i≤k ^ zero ∷↓ ys
+  ⊞-le xs (Σ ((suc j , y) ∷ ys)) i≤k = (i≤k Π xs) ^ zero ∷↓ (j , y) ∷ ys
 
---   ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
---   ⊞-coeffs [] ys = ys
---   ⊞-coeffs ((i , x) ∷ xs) = ⊞-ne-r i x xs
+  ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
+  ⊞-coeffs [] ys = ys
+  ⊞-coeffs ((i , x) ∷ xs) = ⊞-ne-r i x xs
 
---   ⊞-ne : ∀ {p q n}
---        → ℕ.Ordering p q
---        → Coeff n
---        → Coeffs n
---        → Coeff n
---        → Coeffs n
---        → Coeffs n
---   ⊞-ne (ℕ.less    i k) x xs y ys = (i , x) ∷ ⊞-ne-r k y ys xs
---   ⊞-ne (ℕ.greater j k) x xs y ys = (j , y) ∷ ⊞-ne-r k x xs ys
---   ⊞-ne (ℕ.equal   i  ) (x ,~ _) xs (y ,~ _) ys =
---     (x ⊞ y) ^ i ∷↓ ⊞-coeffs xs ys
+  ⊞-ne : ∀ {p q n}
+       → ℕ.Ordering p q
+       → Coeff n
+       → Coeffs n
+       → Coeff n
+       → Coeffs n
+       → Coeffs n
+  ⊞-ne (ℕ.less    i k) x xs y ys = (i , x) ∷ ⊞-ne-r k y ys xs
+  ⊞-ne (ℕ.greater j k) x xs y ys = (j , y) ∷ ⊞-ne-r k x xs ys
+  ⊞-ne (ℕ.equal   i  ) (x ,~ _) xs (y ,~ _) ys =
+    (x ⊞ y) ^ i ∷↓ ⊞-coeffs xs ys
 
---   ⊞-ne-r : ∀ {n} → ℕ → Coeff n → Coeffs n → Coeffs n → Coeffs n
---   ⊞-ne-r i x xs [] = (i , x) ∷ xs
---   ⊞-ne-r i x xs ((j , y) ∷ ys) = ⊞-ne (ℕ.compare i j) x xs y ys
+  ⊞-ne-r : ∀ {n} → ℕ → Coeff n → Coeffs n → Coeffs n → Coeffs n
+  ⊞-ne-r i x xs [] = (i , x) ∷ xs
+  ⊞-ne-r i x xs ((j , y) ∷ ys) = ⊞-ne (ℕ.compare i j) x xs y ys
 
--- ----------------------------------------------------------------------
--- -- Negation
--- ----------------------------------------------------------------------
+----------------------------------------------------------------------
+-- Negation
+----------------------------------------------------------------------
 
--- ⊟_ : ∀ {n} → Poly n → Poly n
--- ⊟_ (i≤n Π Κ x) = i≤n Π Κ (- x)
--- ⊟_ (i≤n Π Σ xs) = i≤n Π↓ go xs
---   where
---   go : ∀ {n} → Coeffs n → Coeffs n
---   go ((i , x ,~ _) ∷ xs) = ⊟ x ^ i ∷↓ go xs
---   go [] = []
+⊟_ : ∀ {n} → Poly n → Poly n
+⊟_ (i≤n Π Κ x) = i≤n Π Κ (- x)
+⊟_ (i≤n Π Σ xs) = i≤n Π↓ go xs
+  where
+  go : ∀ {n} → Coeffs n → Coeffs n
+  go ((i , x ,~ _) ∷ xs) = ⊟ x ^ i ∷↓ go xs
+  go [] = []
 
 -- ----------------------------------------------------------------------
 -- -- Multiplication
