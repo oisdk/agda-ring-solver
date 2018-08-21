@@ -91,32 +91,13 @@ z≤n : ∀ {n} → zero ≤ n
 z≤n {zero} = m≤m
 z≤n {suc n} = ≤-s z≤n
 
--- This essentially requires a commutativity proof somewhere in it.
--- As far as I know, that's necessarily 𝒪(n²). What we do in order
--- to avoid that is we build up the type with the + the wrong way
--- around, then at the very end we swap with +-comm. This proof can
--- be erased, so it should avoid the cost.
-Fin⇒≤ : ∀ {n} (x : Fin n) → suc (Fin.toℕ x) ≤ n
-Fin⇒≤ x = subst
-          (suc (Fin.toℕ x) ≤_)
-          (TrustMe.erase (trans (+-comm (k x) _) (proof x)))
-          (≤⇒≤+ _ m≤m)
-  where
-  open import Data.Nat.Properties using (+-comm)
-  open import Relation.Binary.PropositionalEquality
-  import Relation.Binary.PropositionalEquality.TrustMe as TrustMe
+space : ∀ {n} → Fin n → ℕ
+space {suc n} Fin.zero = n
+space {suc _} (Fin.suc x) = space x
 
-  k : ∀ {n} → Fin n → ℕ
-  k {suc n} Fin.zero = n
-  k {suc _} (Fin.suc x) = k x
-
-  ≤⇒≤+ : ∀ x {y z} → y ≤ z → y ≤ x ℕ.+ z
-  ≤⇒≤+ zero y≤z = y≤z
-  ≤⇒≤+ (suc x) y≤z = ≤-s (≤⇒≤+ x y≤z)
-
-  proof : ∀ {n} → (x : Fin n) → suc (Fin.toℕ x) ℕ.+ k x ≡ n
-  proof Fin.zero = refl
-  proof (Fin.suc x) = cong suc (proof x)
+Fin⇒≤ : ∀ {n} (x : Fin n) → suc (space x) ≤ n
+Fin⇒≤ Fin.zero = m≤m
+Fin⇒≤ (Fin.suc x) = ≤-s (Fin⇒≤ x)
 
 open RawRing coeffs
 

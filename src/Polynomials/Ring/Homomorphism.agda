@@ -18,7 +18,7 @@ module Polynomials.Ring.Homomorphism
   (Zero-C⟶Zero-R : ∀ x → Zero-C x → AlmostCommutativeRing._≈_ ring (_-Raw-AlmostCommutative⟶_.⟦_⟧ morphism x) (AlmostCommutativeRing.0# ring))
   where
 
-open AlmostCommutativeRing ring
+open AlmostCommutativeRing ring hiding (zero)
 open import Polynomials.Ring.Reasoning ring
 open import Polynomials.Ring.Normal coeff Zero-C zero-c?
 open import Polynomials.Ring.Semantics coeff Zero-C zero-c? ring morphism
@@ -27,7 +27,7 @@ module Raw = RawRing coeff
 
 open import Relation.Nullary
 open import Data.Nat as ℕ using (ℕ; suc; zero)
-open import Data.Product
+open import Data.Product hiding (Σ)
 import Data.Nat.Properties as ℕ-≡
 import Relation.Binary.PropositionalEquality as ≡
 open import Function
@@ -36,11 +36,6 @@ open import Data.Vec as Vec using (Vec; _∷_; [])
 open import Data.Product.Irrelevant
 open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
-
-open FlatPoly
-open Poly
-open CoeffExp
-open Coeff
 
 pow-add : ∀ x i j → x ^ i * x ^ j ≈ x ^ (i ℕ.+ j)
 pow-add x zero j = *-identityˡ (x ^ j)
@@ -61,15 +56,14 @@ pow-hom : ∀ {n} i
         → (xs : Coeffs n)
         → (ρ : Carrier)
         → (Ρ : Vec Carrier n)
-        → Σ⟦ xs ⟧ ρ Ρ * ρ ^ i ≈ Σ⟦ xs ⍓ i ⟧ ρ Ρ
+        → Σ⟦ xs ⟧ (ρ , Ρ) * ρ ^ i ≈ Σ⟦ xs ⍓ i ⟧ (ρ , Ρ)
 pow-hom i [] ρ Ρ = zeroˡ (ρ ^ i)
 pow-hom i (x Δ j ∷ xs) ρ Ρ = *-assoc _ (ρ ^ j) (ρ ^ i) ︔ *≫ pow-add ρ j i
 
 zero-hom : ∀ {n} (p : Poly n) → Zero p → (Ρ : Vec Carrier n) → ⟦ p ⟧ Ρ ≈ 0#
 zero-hom (Κ x  Π i≤n) p≡0 Ρ = Zero-C⟶Zero-R x p≡0
 zero-hom (Σ (_ ∷ _) Π i≤n) (lift ())
-zero-hom (Σ [] Π i≤n) p≡0 Ρ with drop i≤n Ρ
-... | (ρ ∷ Ρ′) = refl
+zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
 
 ∷↓-hom : ∀ {n}
        → (x : Poly n)
@@ -77,19 +71,98 @@ zero-hom (Σ [] Π i≤n) p≡0 Ρ with drop i≤n Ρ
        → (xs : Coeffs n)
        → (ρ : Carrier)
        → (Ρ : Vec Carrier n)
-       → Σ⟦ x ^ i ∷↓ xs ⟧ ρ Ρ ≈ (⟦ x ⟧ Ρ + Σ⟦ xs ⟧ ρ Ρ * ρ) * ρ ^ i
+       → Σ⟦ x ^ i ∷↓ xs ⟧ (ρ , Ρ) ≈ (⟦ x ⟧ Ρ + Σ⟦ xs ⟧ (ρ , Ρ) * ρ) * ρ ^ i
 ∷↓-hom x i xs ρ Ρ with zero? x
 ∷↓-hom x i xs ρ Ρ | no ¬p = refl
 ∷↓-hom x i xs ρ Ρ | yes p =
   begin
-    Σ⟦ xs ⍓ suc i ⟧ ρ Ρ
+    Σ⟦ xs ⍓ suc i ⟧ (ρ , Ρ)
   ≈⟨ sym (pow-hom _ xs ρ Ρ) ⟩
-    Σ⟦ xs ⟧ ρ Ρ * ρ ^ (suc i)
+    Σ⟦ xs ⟧ (ρ , Ρ) * ρ ^ (suc i)
   ≈⟨ sym (*-assoc _ ρ _) ⟩
-    Σ⟦ xs ⟧ ρ Ρ * ρ * ρ ^ i
+    Σ⟦ xs ⟧ (ρ , Ρ) * ρ * ρ ^ i
   ≈⟨ ≪* (sym (+-identityˡ _) ︔ ≪+ sym (zero-hom x p _)) ⟩
-    (⟦ x ⟧ Ρ + Σ⟦ xs ⟧ ρ Ρ * ρ) * ρ ^ i
+    (⟦ x ⟧ Ρ + Σ⟦ xs ⟧ (ρ , Ρ) * ρ) * ρ ^ i
   ∎
+
+κ-hom : ∀ {n}
+      → (x : Raw.Carrier)
+      → (Ρ : Vec Carrier n)
+      → ⟦ κ x ⟧ Ρ ≈ ⟦ x ⟧ᵣ
+κ-hom x _ = refl
+
+Σ-Π↑-hom : ∀ {i n m}
+         → (xs : Coeffs i)
+         → (si≤n : suc i ≤ n)
+         → (sn≤m : suc n ≤ m)
+         → (Ρ : Vec Carrier m)
+         → Σ⟦ xs ⟧ (drop-1 (≤-trans-pred si≤n sn≤m) Ρ)
+         ≈ Σ⟦ xs ⟧ (drop-1 si≤n (proj₂ (drop-1 sn≤m Ρ)))
+Σ-Π↑-hom xs si≤n m≤m (ρ ∷ Ρ) = refl
+Σ-Π↑-hom xs si≤n (≤-s sn≤m) (_ ∷ Ρ) = Σ-Π↑-hom xs si≤n sn≤m Ρ
+
+Π↑-hom : ∀ {n m}
+       → (x : Poly n)
+       → (sn≤m : suc n ≤ m)
+       → (Ρ : Vec Carrier m)
+       → ⟦ x Π↑ sn≤m ⟧ Ρ ≈ ⟦ x ⟧ (proj₂ (drop-1 sn≤m Ρ))
+Π↑-hom (Κ x  Π i≤sn) sn≤m Ρ = refl
+Π↑-hom (Σ xs Π i≤sn) sn≤m Ρ = Σ-Π↑-hom xs i≤sn sn≤m Ρ
+
+Π↓-hom : ∀ {n m}
+       → (xs : Coeffs n)
+       → (sn≤m : suc n ≤ m)
+       → (Ρ : Vec Carrier m)
+       → ⟦ xs Π↓ sn≤m ⟧ Ρ ≈ Σ⟦ xs ⟧ (drop-1 sn≤m Ρ)
+Π↓-hom []                       sn≤m Ρ = 0-homo
+Π↓-hom (x₁   Δ zero  ∷ x₂ ∷ xs) sn≤m Ρ = refl
+Π↓-hom (x    Δ suc j ∷ xs)      sn≤m Ρ = refl
+Π↓-hom (_≠0 x {x≠0} Δ zero  ∷ []) sn≤m Ρ =
+  let (ρ , Ρ′) = drop-1 sn≤m Ρ
+  in
+  begin
+    ⟦ x Π↑ sn≤m ⟧ Ρ
+  ≈⟨ Π↑-hom x sn≤m Ρ ⟩
+    ⟦ x ⟧ Ρ′
+  ≈⟨ sym (*-identityʳ _) ⟩
+    ⟦ x ⟧ Ρ′ * 1#
+  ≈⟨ ≪* sym (+-identityʳ _) ⟩
+    (⟦ x ⟧ Ρ′ + 0#) * 1#
+  ≈⟨ ≪* +≫ sym (zeroˡ ρ) ⟩
+    (⟦ x ⟧ Ρ′ + 0# * ρ) * 1#
+  ≡⟨⟩
+    Σ⟦ _≠0 x {x≠0} Δ zero ∷ [] ⟧ (ρ , Ρ′)
+  ∎
+
+drop-1⇒lookup : ∀ {n}
+              → (i : Fin n)
+              → (Ρ : Vec Carrier n)
+              → proj₁ (drop-1 (Fin⇒≤ i) Ρ) ≈ Vec.lookup i Ρ
+drop-1⇒lookup Fin.zero (ρ ∷ Ρ) = refl
+drop-1⇒lookup (Fin.suc i) (ρ ∷ Ρ) = drop-1⇒lookup i Ρ
+
+ι-hom : ∀ {n} → (i : Fin n) → (Ρ : Vec Carrier n) → ⟦ ι i ⟧ Ρ ≈ Vec.lookup i Ρ
+ι-hom i Ρ′ =
+  let (ρ , Ρ) = drop-1 (Fin⇒≤ i) Ρ′
+  in
+  begin
+    ⟦ (κ Raw.1# ^ 1 ∷↓ []) Π↓ Fin⇒≤ i ⟧ Ρ′
+  ≈⟨ Π↓-hom (κ Raw.1# ^ 1 ∷↓ []) (Fin⇒≤ i) Ρ′ ⟩
+    Σ⟦ κ Raw.1# ^ 1 ∷↓ [] ⟧ (ρ , Ρ)
+  ≈⟨ ∷↓-hom (κ Raw.1#) 1 [] ρ Ρ  ⟩
+    (⟦ κ Raw.1# ⟧ Ρ + Σ⟦ [] ⟧ (ρ , Ρ) * ρ) * ρ ^ 1
+  ≡⟨⟩
+    (⟦ Raw.1# ⟧ᵣ + 0# * ρ) * (ρ * 1#)
+  ≈⟨ 1-homo ⟨ +-cong ⟩ zeroˡ ρ ⟨ *-cong ⟩ *-identityʳ ρ ⟩
+    (1# + 0#) * ρ
+  ≈⟨ ≪* +-identityʳ _ ⟩
+    1# * ρ
+  ≈⟨ *-identityˡ ρ ⟩
+    ρ
+  ≈⟨ drop-1⇒lookup i Ρ′ ⟩
+    Vec.lookup i Ρ′
+  ∎
+
 
 -- mutual
 --   ⊞-hom : ∀ {n}
@@ -353,45 +426,4 @@ zero-hom (Σ [] Π i≤n) p≡0 Ρ with drop i≤n Ρ
 --       xs′ * ⟦ (y ,~ y≠0 , j) ∷ ys ⟧ (ρ ∷ Ρ)
 --     ∎
 
--- κ-hom : ∀ {n}
---       → (x : Raw.Carrier)
---       → (Ρ : Vec Carrier n)
---       → ⟦ κ x ⟧ Ρ ≈ ⟦ x ⟧ᵣ
--- κ-hom x [] = refl
--- κ-hom x (ρ ∷ Ρ) =
---   begin
---     ⟦ κ x ⟧ (ρ ∷ Ρ)
---   ≈⟨ ∷↓-hom _ _ _ ρ Ρ ⟩
---     (⟦ κ x ⟧ Ρ + 0# * ρ) * ρ ^ 0
---   ≈⟨ *-identityʳ _ ⟩
---     ⟦ κ x ⟧ Ρ + 0# * ρ
---   ≈⟨ κ-hom x Ρ ⟨ +-cong ⟩ zeroˡ ρ ⟩
---     ⟦ x ⟧ᵣ + 0#
---   ≈⟨ +-identityʳ _ ⟩
---     ⟦ x ⟧ᵣ
---   ∎
-
--- ι-hom : ∀ {n} → (x : Fin n) → (Ρ : Vec Carrier n) → ⟦ ι x ⟧ Ρ ≈ Vec.lookup x Ρ
--- ι-hom Fin.zero (ρ ∷ Ρ) =
---   begin
---     ⟦ (κ Raw.1# , 1) ∷↓ [] ⟧ (ρ ∷ Ρ)
---   ≈⟨ ∷↓-hom _ _ _ ρ Ρ ⟩
---     (⟦ κ Raw.1# ⟧ Ρ + 0# * ρ) * ρ ^ 1
---   ≈⟨ ((κ-hom Raw.1# Ρ ⟨ +-cong ⟩ zeroˡ ρ) ︔ +-identityʳ _) ⟨ *-cong ⟩ *-identityʳ ρ ⟩
---     ⟦ Raw.1# ⟧ᵣ * ρ
---   ≈⟨ ≪* 1-homo ︔ *-identityˡ ρ ⟩
---     ρ
---   ∎
--- ι-hom (Fin.suc x) (ρ ∷ Ρ) =
---   begin
---     ⟦ (ι x , 0) ∷↓ [] ⟧ (ρ ∷ Ρ)
---   ≈⟨ ∷↓-hom _ _ _ ρ Ρ ⟩
---     (⟦ ι x ⟧ Ρ + 0# * ρ) * ρ ^ 0
---   ≈⟨ *-identityʳ _ ⟩
---     ⟦ ι x ⟧ Ρ + 0# * ρ
---   ≈⟨ ι-hom x Ρ ⟨ +-cong ⟩ zeroˡ ρ ⟩
---     Vec.lookup x Ρ + 0#
---   ≈⟨ +-identityʳ _ ⟩
---     Vec.lookup x Ρ
---   ∎
 

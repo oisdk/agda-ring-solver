@@ -29,18 +29,16 @@ _^_ : Carrier → ℕ → Carrier
 x ^ zero = 1#
 x ^ suc n = x * x ^ n
 
-drop : ∀ {i n} → i ≤ n → Vec Carrier n → Vec Carrier i
-drop m≤m xs = xs
-drop (≤-s i≤n) (_ ∷ xs) = drop i≤n xs
+drop-1 : ∀ {i n} → suc i ≤ n → Vec Carrier n → Carrier × Vec Carrier i
+drop-1 m≤m (ρ ∷ Ρ) = ρ , Ρ
+drop-1 (≤-s si≤n) (_ ∷ Ρ) = drop-1 si≤n Ρ
 
 mutual
-  Σ⟦_⟧ : ∀ {n} → Coeffs n →  Carrier → Vec Carrier n → Carrier
-  Σ⟦ c ≠0 Δ i ∷ xs ⟧ ρ Ρ = (⟦ c ⟧ Ρ + Σ⟦ xs ⟧ ρ Ρ * ρ) * ρ ^ i
-  Σ⟦ [] ⟧ _ _ = 0#
+  Σ⟦_⟧ : ∀ {n} → Coeffs n → (Carrier × Vec Carrier n) → Carrier
+  Σ⟦ c ≠0 Δ i ∷ xs ⟧ (ρ , Ρ) = (⟦ c ⟧ Ρ + Σ⟦ xs ⟧ (ρ , Ρ) * ρ) * ρ ^ i
+  Σ⟦ [] ⟧ _ = 0#
 
-  -- Evaluation
   ⟦_⟧ : ∀ {n} → Poly n → Vec Carrier n → Carrier
   ⟦ Κ x  Π i≤n ⟧ _ = ⟦ x ⟧ᵣ
-  ⟦ Σ xs Π i≤n ⟧ Ρ with drop i≤n Ρ
-  ... | (ρ ∷ Ρ′) = Σ⟦ xs ⟧ ρ Ρ′
+  ⟦ Σ xs Π i≤n ⟧ Ρ = Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
 
