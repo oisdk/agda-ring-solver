@@ -38,104 +38,78 @@ open import Data.Product.Irrelevant
 open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
 
--- mutual
---   ⋊-hom : ∀ {n}
---         → (x : Poly n)
---         → (ys : Poly (suc n))
---         → (ρ : Carrier)
---         → (Ρ : Vec Carrier n)
---         → ⟦ x ⋊ ys ⟧ (ρ ∷ Ρ) ≈ ⟦ x ⟧ Ρ * ⟦ ys ⟧ (ρ ∷ Ρ)
---   ⋊-hom x [] ρ Ρ = sym (zeroʳ (⟦ x ⟧ Ρ))
---   ⋊-hom x ((y , j) ∷ ys) ρ Ρ =
---     let x′  = ⟦ x ⟧ Ρ
---         y′  = ⟦ proj₁~ y ⟧ Ρ
---         ys′ = ⟦ ys ⟧ (ρ ∷ Ρ)
---     in
---     begin
---       ⟦ x ⋊ ((y , j) ∷ ys) ⟧ (ρ ∷ Ρ)
---     ≡⟨⟩
---       ⟦ (x ⊠ proj₁~ y , j) ∷↓ x ⋊ ys ⟧ (ρ ∷ Ρ)
---     ≈⟨ ∷↓-hom _ j (x ⋊ ys) ρ Ρ ⟩
---       (⟦ x ⊠ proj₁~ y ⟧ Ρ + ⟦ x ⋊ ys ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ j
---     ≈⟨ ≪* (⊠-hom x _ Ρ ⟨ +-cong ⟩ (≪* ⋊-hom x ys ρ Ρ ︔ *-assoc _ _ _))⟩
---       (x′ * y′ + x′ * (ys′ * ρ)) * ρ ^ j
---     ≈⟨ ≪* sym (distribˡ x′ _ _ ) ⟩
---       x′ * (y′ + ys′ * ρ) * ρ ^ j
---     ≈⟨ *-assoc _ _ _ ⟩
---       x′ * ((y′ + ys′ * ρ) * ρ ^ j)
---     ∎
+mutual
+  ⊠-hom : ∀ {n}
+        → (xs : Poly n)
+        → (ys : Poly n)
+        → (Ρ : Vec Carrier n)
+        → ⟦ xs ⊠ ys ⟧ Ρ ≈ ⟦ xs ⟧ Ρ * ⟦ ys ⟧ Ρ
+  ⊠-hom (xs Π i≤n) (ys Π j≤n) = {!!}
+  -- ⊠-hom {suc n} xs ys (ρ ∷ Ρ) = ⊠-coeffs-hom xs ys ρ Ρ
 
---   ⊠-hom : ∀ {n}
---         → (xs : Poly n)
---         → (ys : Poly n)
---         → (Ρ : Vec Carrier n)
---         → ⟦ xs ⊠ ys ⟧ Ρ ≈ ⟦ xs ⟧ Ρ * ⟦ ys ⟧ Ρ
---   ⊠-hom {ℕ.zero} xs ys [] = *-homo _ _
---   ⊠-hom {suc n} xs ys (ρ ∷ Ρ) = ⊠-coeffs-hom xs ys ρ Ρ
+  -- ⊠-step-hom : ∀ {n}
+  --            → (y : Poly n)
+  --            → (ys : Coeffs n)
+  --            → (xs : Coeffs n)
+  --            → (ρ : Carrier)
+  --            → (Ρ : Vec Carrier n)
+  --            → ⟦ List.foldr (⊠-step y ys) [] xs ⟧ (ρ ∷ Ρ)
+  --            ≈ ⟦ xs ⟧ (ρ ∷ Ρ) * (⟦ y ⟧ Ρ + ⟦ ys ⟧ (ρ ∷ Ρ) * ρ)
+  -- ⊠-step-hom y ys [] ρ Ρ = sym (zeroˡ _)
+  -- ⊠-step-hom y ys ((x ,~ x≠0 , i) ∷ xs) ρ Ρ =
+  --   let y′  = ⟦ y ⟧ Ρ
+  --       x′  = ⟦ x ⟧ Ρ
+  --       ys′ = ⟦ ys ⟧ (ρ ∷ Ρ)
+  --       xs′ = ⟦ xs ⟧ (ρ ∷ Ρ)
+  --       xs″ = List.foldr (⊠-step y ys) [] xs
+  --   in
+  --   begin
+  --     ⟦ (x ⊠ y , i) ∷↓ (x ⋊ ys ⊞ xs″) ⟧ (ρ ∷ Ρ)
+  --   ≈⟨  ∷↓-hom _ i _ ρ Ρ ⟩
+  --     (⟦ x ⊠ y ⟧ Ρ + ⟦ x ⋊ ys ⊞ xs″ ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ i
+  --   ≈⟨ ≪* begin
+  --           ⟦ x ⊠ y ⟧ Ρ + ⟦ x ⋊ ys ⊞ xs″ ⟧ (ρ ∷ Ρ) * ρ
+  --         ≈⟨ ⊠-hom x y Ρ ⟨ +-cong ⟩ (≪* ⊞-hom (x ⋊ ys) _ (ρ ∷ Ρ)) ⟩
+  --           x′ * y′ + (⟦ x ⋊ ys ⟧ (ρ ∷ Ρ) + ⟦ xs″ ⟧ (ρ ∷ Ρ)) * ρ
+  --         ≈⟨ +≫ ≪* (⋊-hom x ys ρ Ρ ⟨ +-cong ⟩ ⊠-step-hom y ys xs ρ Ρ) ⟩
+  --           x′ * y′ + (x′ * ys′ + xs′ * (y′ + ys′ * ρ)) * ρ
+  --         ≈⟨ +≫ distribʳ ρ _ _ ⟩
+  --           x′ * y′ + (x′ * ys′ * ρ + xs′ * (y′ + ys′ * ρ) * ρ)
+  --         ≈⟨ sym (+-assoc _ _ _) ⟩
+  --           (x′ * y′ + x′ * ys′ * ρ) + xs′ * (y′ + ys′ * ρ) * ρ
+  --         ≈⟨ (+≫ *-assoc _ _ _ ︔ sym (distribˡ _ _ _)) ⟨ +-cong ⟩
+  --            (*-assoc _ _ _ ︔ *≫ *-comm _ _ ︔ sym (*-assoc _ _ _)) ⟩
+  --           x′ * (y′ + ys′ * ρ) + xs′ * ρ * (y′ + ys′ * ρ)
+  --         ≈⟨ sym (distribʳ _ _ _) ⟩
+  --           (x′ + xs′ * ρ) * (y′ + ys′ * ρ)
+  --         ∎
+  --    ⟩
+  --     (x′ + xs′ * ρ) * (y′ + ys′ * ρ) * ρ ^ i
+  --   ≈⟨ *-assoc _ _ _ ︔ *≫ *-comm _ _ ︔ sym (*-assoc _ _ _) ⟩
+  --     (x′ + xs′ * ρ) * ρ ^ i * (y′ + ys′ * ρ)
+  --   ∎
 
---   ⊠-step-hom : ∀ {n}
---              → (y : Poly n)
---              → (ys : Coeffs n)
---              → (xs : Coeffs n)
---              → (ρ : Carrier)
---              → (Ρ : Vec Carrier n)
---              → ⟦ List.foldr (⊠-step y ys) [] xs ⟧ (ρ ∷ Ρ)
---              ≈ ⟦ xs ⟧ (ρ ∷ Ρ) * (⟦ y ⟧ Ρ + ⟦ ys ⟧ (ρ ∷ Ρ) * ρ)
---   ⊠-step-hom y ys [] ρ Ρ = sym (zeroˡ _)
---   ⊠-step-hom y ys ((x ,~ x≠0 , i) ∷ xs) ρ Ρ =
---     let y′  = ⟦ y ⟧ Ρ
---         x′  = ⟦ x ⟧ Ρ
---         ys′ = ⟦ ys ⟧ (ρ ∷ Ρ)
---         xs′ = ⟦ xs ⟧ (ρ ∷ Ρ)
---         xs″ = List.foldr (⊠-step y ys) [] xs
---     in
---     begin
---       ⟦ (x ⊠ y , i) ∷↓ (x ⋊ ys ⊞ xs″) ⟧ (ρ ∷ Ρ)
---     ≈⟨  ∷↓-hom _ i _ ρ Ρ ⟩
---       (⟦ x ⊠ y ⟧ Ρ + ⟦ x ⋊ ys ⊞ xs″ ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ i
---     ≈⟨ ≪* begin
---             ⟦ x ⊠ y ⟧ Ρ + ⟦ x ⋊ ys ⊞ xs″ ⟧ (ρ ∷ Ρ) * ρ
---           ≈⟨ ⊠-hom x y Ρ ⟨ +-cong ⟩ (≪* ⊞-hom (x ⋊ ys) _ (ρ ∷ Ρ)) ⟩
---             x′ * y′ + (⟦ x ⋊ ys ⟧ (ρ ∷ Ρ) + ⟦ xs″ ⟧ (ρ ∷ Ρ)) * ρ
---           ≈⟨ +≫ ≪* (⋊-hom x ys ρ Ρ ⟨ +-cong ⟩ ⊠-step-hom y ys xs ρ Ρ) ⟩
---             x′ * y′ + (x′ * ys′ + xs′ * (y′ + ys′ * ρ)) * ρ
---           ≈⟨ +≫ distribʳ ρ _ _ ⟩
---             x′ * y′ + (x′ * ys′ * ρ + xs′ * (y′ + ys′ * ρ) * ρ)
---           ≈⟨ sym (+-assoc _ _ _) ⟩
---             (x′ * y′ + x′ * ys′ * ρ) + xs′ * (y′ + ys′ * ρ) * ρ
---           ≈⟨ (+≫ *-assoc _ _ _ ︔ sym (distribˡ _ _ _)) ⟨ +-cong ⟩
---              (*-assoc _ _ _ ︔ *≫ *-comm _ _ ︔ sym (*-assoc _ _ _)) ⟩
---             x′ * (y′ + ys′ * ρ) + xs′ * ρ * (y′ + ys′ * ρ)
---           ≈⟨ sym (distribʳ _ _ _) ⟩
---             (x′ + xs′ * ρ) * (y′ + ys′ * ρ)
---           ∎
---      ⟩
---       (x′ + xs′ * ρ) * (y′ + ys′ * ρ) * ρ ^ i
---     ≈⟨ *-assoc _ _ _ ︔ *≫ *-comm _ _ ︔ sym (*-assoc _ _ _) ⟩
---       (x′ + xs′ * ρ) * ρ ^ i * (y′ + ys′ * ρ)
---     ∎
-
---   ⊠-coeffs-hom : ∀ {n}
---                → (xs : Coeffs n)
---                → (ys : Coeffs n)
---                → (ρ : Carrier)
---                → (Ρ : Vec Carrier n)
---                → ⟦ ⊠-coeffs xs ys ⟧ (ρ ∷ Ρ) ≈ ⟦ xs ⟧ (ρ ∷ Ρ) * ⟦ ys ⟧ (ρ ∷ Ρ)
---   ⊠-coeffs-hom xs [] ρ Ρ = sym (zeroʳ _)
---   ⊠-coeffs-hom xs ((y ,~ y≠0 , j) ∷ ys) ρ Ρ =
---     let xs′ = ⟦ xs ⟧ (ρ ∷ Ρ)
---         y′  = ⟦ y ⟧ Ρ
---         ys′ = ⟦ ys ⟧ (ρ ∷ Ρ)
---     in
---     begin
---       ⟦ List.foldr (⊠-step y ys) [] xs ⍓ j ⟧ (ρ ∷ Ρ)
---     ≈⟨ sym (pow-hom j (List.foldr (⊠-step y ys) [] xs) ρ Ρ) ⟩
---       ⟦ List.foldr (⊠-step y ys) [] xs ⟧ (ρ ∷ Ρ) * ρ ^ j
---     ≈⟨ ≪* ⊠-step-hom y ys xs ρ Ρ ⟩
---       xs′ * (y′ + ys′ * ρ) * ρ ^ j
---     ≈⟨ *-assoc _ _ _ ⟩
---       xs′ * ((y′ + ys′ * ρ) * ρ ^ j)
---     ≡⟨⟩
---       xs′ * ⟦ (y ,~ y≠0 , j) ∷ ys ⟧ (ρ ∷ Ρ)
---     ∎
+  -- ⊠-coeffs-hom : ∀ {n}
+  --              → (xs : Coeffs n)
+  --              → (ys : Coeffs n)
+  --              → (ρ : Carrier)
+  --              → (Ρ : Vec Carrier n)
+  --              → ⟦ ⊠-coeffs xs ys ⟧ (ρ ∷ Ρ) ≈ ⟦ xs ⟧ (ρ ∷ Ρ) * ⟦ ys ⟧ (ρ ∷ Ρ)
+  -- ⊠-coeffs-hom xs [] ρ Ρ = sym (zeroʳ _)
+  -- ⊠-coeffs-hom xs ((y ,~ y≠0 , j) ∷ ys) ρ Ρ =
+  --   let xs′ = ⟦ xs ⟧ (ρ ∷ Ρ)
+  --       y′  = ⟦ y ⟧ Ρ
+  --       ys′ = ⟦ ys ⟧ (ρ ∷ Ρ)
+  --   in
+  --   begin
+  --     ⟦ List.foldr (⊠-step y ys) [] xs ⍓ j ⟧ (ρ ∷ Ρ)
+  --   ≈⟨ sym (pow-hom j (List.foldr (⊠-step y ys) [] xs) ρ Ρ) ⟩
+  --     ⟦ List.foldr (⊠-step y ys) [] xs ⟧ (ρ ∷ Ρ) * ρ ^ j
+  --   ≈⟨ ≪* ⊠-step-hom y ys xs ρ Ρ ⟩
+  --     xs′ * (y′ + ys′ * ρ) * ρ ^ j
+  --   ≈⟨ *-assoc _ _ _ ⟩
+  --     xs′ * ((y′ + ys′ * ρ) * ρ ^ j)
+  --   ≡⟨⟩
+  --     xs′ * ⟦ (y ,~ y≠0 , j) ∷ ys ⟧ (ρ ∷ Ρ)
+  --   ∎
 

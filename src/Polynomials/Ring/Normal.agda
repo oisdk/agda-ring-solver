@@ -87,6 +87,27 @@ data Ordering : ℕ → ℕ → Set where
 ≤-compare (≤-s i≤n) m≤m       = less i≤n
 ≤-compare (≤-s i≤n) (≤-s j≤n) = ≤-compare i≤n j≤n
 
+data LeftOrdering {n : ℕ} : ∀ i j
+                          → (i≤n : i ≤ n)
+                          → (j≤n : j ≤ n)
+                          → Set
+                          where
+  less-l    : ∀ {i j-1} → (i≤j-1 : i ≤ j-1) → (sj-1≤n : suc j-1 ≤ n) → LeftOrdering i (suc j-1) (≤-trans-pred i≤j-1 sj-1≤n) sj-1≤n
+  greater-l : ∀ {i-1 j} → (j≤i-1 : j ≤ i-1) → (si-1≤n : suc i-1 ≤ n) → LeftOrdering (suc i-1) j si-1≤n (≤-trans-pred j≤i-1 si-1≤n)
+  equal-l   : ∀ {i} → (i≤n : i ≤ n) → LeftOrdering i i i≤n i≤n
+
+≤-compare-left : ∀ {i j n}
+               → (x : i ≤ n)
+               → (y : j ≤ n)
+               → LeftOrdering i j x y
+≤-compare-left m≤m m≤m = equal-l m≤m
+≤-compare-left m≤m (≤-s y) = greater-l y m≤m
+≤-compare-left (≤-s x) m≤m = less-l x m≤m
+≤-compare-left (≤-s x) (≤-s y) with ≤-compare-left x y
+≤-compare-left (≤-s .(≤-trans-pred i≤j-1 y)) (≤-s y) | less-l i≤j-1 .y = less-l i≤j-1 (≤-s y)
+≤-compare-left (≤-s x) (≤-s .(≤-trans-pred j≤i-1 x)) | greater-l j≤i-1 .x = greater-l j≤i-1 (≤-s x)
+≤-compare-left (≤-s x) (≤-s .x) | equal-l .x = equal-l (≤-s x)
+
 z≤n : ∀ {n} → zero ≤ n
 z≤n {zero} = m≤m
 z≤n {suc n} = ≤-s z≤n
