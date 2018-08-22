@@ -334,7 +334,7 @@ mutual
           → FlatPoly i
           → FlatPoly j
           → Poly n
-  ⊠-match (equal ij≤n) (Κ x)  (Κ y)     = Κ (x + y)         Π  ij≤n
+  ⊠-match (equal ij≤n) (Κ x)  (Κ y)     = Κ (x * y)         Π  ij≤n
   ⊠-match (equal ij≤n) (Σ xs) (Σ ys)    = ⊠-coeffs xs ys    Π↓ ij≤n
   ⊠-match (less    i≤j-1 j≤n) xs (Σ ys) = ⊠-inj i≤j-1 xs ys Π↓ j≤n
   ⊠-match (greater j≤i-1 i≤n) (Σ xs) ys = ⊠-inj j≤i-1 ys xs Π↓ i≤n
