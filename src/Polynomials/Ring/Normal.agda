@@ -11,20 +11,109 @@ open import Data.Unit using (⊤; tt)
 open import Data.List as List using (_∷_; []; List)
 open import Data.Vec as Vec using (_∷_; []; Vec)
 open import Data.Nat as ℕ using (ℕ; suc; zero)
-open import Data.Product
-open import Data.Product.Irrelevant
 open import Function
 open import Data.Fin as Fin using (Fin)
 
 -- Multivariate polynomials.
 module Polynomials.Ring.Normal
   {a ℓ}
-  (coeff : RawRing a)
-  (Zero-C : Pred (RawRing.Carrier coeff) ℓ)
+  (coeffs : RawRing a)
+  (Zero-C : Pred (RawRing.Carrier coeffs) ℓ)
   (zero-c? : Decidable Zero-C)
   where
 
-open RawRing coeff
+-- This is the one to go for.
+--
+-- Of the three options, we have:
+--
+-- 1.
+-- data _≤_ : Rel ℕ 0ℓ where
+--   z≤n : ∀ {n}                 → zero  ≤ n
+--   s≤s : ∀ {m n} (m≤n : m ≤ n) → suc m ≤ suc n
+--
+-- This follows the structure of its first argument. In other words:
+--
+--   n ≤ m ≅ fold s≤s z≤n n
+--
+-- This isn't good, as that first argument is the length of the *rest*
+-- of the list:
+--
+--   [(⋯ , 5 ≤ 6) , (4 ≤ 5), (3 ≤ 4), (1 ≤ 3), (0 ≤ 1)]
+--
+-- Meaning that consuming it the normal way will be quadratic.
+--
+-- 2.
+-- record _≤″_ (m n : ℕ) : Set where
+--   constructor less-than-or-equal
+--   field
+--     {k}   : ℕ
+--     proof : m + k ≡ n
+--
+-- Also not advantageuos. While it does store the k (which is the
+-- size of the gap, which is what we need to use to get linear
+-- performance), it doesn't provide any inductive structure, so
+-- computations on the k don't provide evidence about the m or n.
+-- That said, it works by storing an equality proof, so we could just
+-- aggresively erase it, but it's messy (and perhaps unsound).
+--
+-- 3.
+-- data _≤′_ (m : ℕ) : ℕ → Set where
+--   ≤′-refl :                         m ≤′ m
+--   ≤′-step : ∀ {n} (m≤′n : m ≤′ n) → m ≤′ suc n
+--
+-- This structure works best. It effectively inducts on the k in 2.,
+-- but does so while providing evidence about the overall length.
+
+infix 4 _≤_
+data _≤_ (m : ℕ) : ℕ → Set where
+  m≤m : m ≤ m
+  ≤-s : ∀ {n} → (m≤n : m ≤ n) → m ≤ suc n
+
+infixl 6 _⋈_
+_⋈_ : ∀ {x y z} → x ≤ y → suc y ≤ z → x ≤ z
+xs ⋈ m≤m = ≤-s xs
+xs ⋈ (≤-s ys) = ≤-s (xs ⋈ ys)
+
+data Ordering {n : ℕ} : ∀ {i j}
+                          → (i≤n : i ≤ n)
+                          → (j≤n : j ≤ n)
+                          → Set
+                          where
+  less    : ∀ {i j-1}
+          → (i≤j-1 : i ≤ j-1)
+          → (j≤n : suc j-1 ≤ n)
+          → Ordering (i≤j-1 ⋈ j≤n) j≤n
+  greater : ∀ {i-1 j}
+          → (j≤i-1 : j ≤ i-1)
+          → (i≤n : suc i-1 ≤ n)
+          → Ordering i≤n (j≤i-1 ⋈ i≤n)
+  equal   : ∀ {i} → (i≤n : i ≤ n) → Ordering i≤n i≤n
+
+≤-compare : ∀ {i j n}
+               → (x : i ≤ n)
+               → (y : j ≤ n)
+               → Ordering x y
+≤-compare m≤m m≤m = equal m≤m
+≤-compare m≤m (≤-s y) = greater y m≤m
+≤-compare (≤-s x) m≤m = less x m≤m
+≤-compare (≤-s x) (≤-s y) with ≤-compare x y
+≤-compare (≤-s .(i≤j-1 ⋈ y)) (≤-s y) | less i≤j-1 .y = less i≤j-1 (≤-s y)
+≤-compare (≤-s x) (≤-s .(j≤i-1 ⋈ x)) | greater j≤i-1 .x = greater j≤i-1 (≤-s x)
+≤-compare (≤-s x) (≤-s .x) | equal .x = equal (≤-s x)
+
+z≤n : ∀ {n} → zero ≤ n
+z≤n {zero} = m≤m
+z≤n {suc n} = ≤-s z≤n
+
+space : ∀ {n} → Fin n → ℕ
+space {suc n} Fin.zero = n
+space {suc _} (Fin.suc x) = space x
+
+Fin⇒≤ : ∀ {n} (x : Fin n) → suc (space x) ≤ n
+Fin⇒≤ Fin.zero = m≤m
+Fin⇒≤ (Fin.suc x) = ≤-s (Fin⇒≤ x)
+
+open RawRing coeffs
 
 ----------------------------------------------------------------------
 -- Definitions
@@ -32,9 +121,18 @@ open RawRing coeff
 
 mutual
   -- A Polynomial is indexed by the number of variables it contains.
-  Poly : ℕ → Set (a ⊔ ℓ)
-  Poly zero = Lift ℓ Carrier
-  Poly (suc n) = Coeffs n
+  infixl 6 _Π_
+  record Poly (n : ℕ) : Set (a ⊔ ℓ) where
+    inductive
+    constructor _Π_
+    field
+      {i} : ℕ
+      flat  : FlatPoly i
+      i≤n   : i ≤ n
+
+  data FlatPoly : ℕ → Set (a ⊔ ℓ) where
+    Κ : Carrier → FlatPoly 0
+    Σ : ∀ {n} → (xs : Coeffs n) → .{xn : Norm xs} → FlatPoly (suc n)
 
   -- A list of coefficients, paired with the exponent *gap* from the
   -- preceding coefficient. In other words, to represent the
@@ -51,18 +149,37 @@ mutual
   --   x⁰ * (3 + x * x¹ * (2 + x * x² * (4 + x * x¹ * (2 + x * 0))))
   --
   -- This is sparse Horner normal form.
+  infixl 6 _Δ_
+  record CoeffExp (i : ℕ) : Set (a ⊔ ℓ) where
+    inductive
+    constructor _Δ_
+    field
+      coeff : Coeff i
+      pow   : ℕ
+
   Coeffs : ℕ → Set (a ⊔ ℓ)
-  Coeffs n = List (Coeff n × ℕ)
+  Coeffs n = List (CoeffExp n)
 
   -- We disallow zeroes in the coefficient list. This condition alone
   -- is enough to ensure a unique representation for any polynomial.
-  Coeff : ℕ → Set (a ⊔ ℓ)
-  Coeff i = Σ~[ x ∈ Poly i ] ¬ Zero i x
+  infixl 6 _≠0
+  record Coeff (i : ℕ) : Set (a ⊔ ℓ) where
+    inductive
+    constructor _≠0
+    field
+      poly : Poly i
+      .{poly≠0} : ¬ Zero poly
 
-  Zero : ∀ n → Poly n → Set ℓ
-  Zero zero (lift x) = Zero-C x
-  Zero (suc n) [] = Lift ℓ ⊤
-  Zero (suc n) (x ∷ xs) = Lift ℓ ⊥
+  Zero : ∀ {n} → Poly n → Set ℓ
+  Zero (Κ x       Π _) = Zero-C x
+  Zero (Σ []      Π _) = Lift ℓ ⊤
+  Zero (Σ (_ ∷ _) Π _) = Lift ℓ ⊥
+
+  Norm : ∀ {i} → Coeffs i → Set
+  Norm []                  = ⊥
+  Norm (_ Δ zero  ∷ [])    = ⊥
+  Norm (_ Δ zero  ∷ _ ∷ _) = ⊤
+  Norm (_ Δ suc _ ∷ _)     = ⊤
 
 ----------------------------------------------------------------------
 -- Construction
@@ -72,29 +189,35 @@ mutual
 ----------------------------------------------------------------------
 
 -- Decision procedure for Zero
-zero? : ∀ {n} → (p : Poly n) → Dec (Zero n p)
-zero? {zero} (lift x) = zero-c? x
-zero? {suc n} [] = yes (lift tt)
-zero? {suc n} (x ∷ xs) = no lower
+zero? : ∀ {n} → (p : Poly n) → Dec (Zero p)
+zero? (Κ x       Π _) = zero-c? x
+zero? (Σ []      Π _) = yes (lift tt)
+zero? (Σ (_ ∷ _) Π _) = no lower
 
 -- Exponentiate the first variable of a polynomial
 infixr 8 _⍓_
 _⍓_ : ∀ {n} → Coeffs n → ℕ → Coeffs n
 [] ⍓ i = []
-((x , j) ∷ xs) ⍓ i = (x , j ℕ.+ i) ∷ xs
+(x Δ j ∷ xs) ⍓ i = x Δ (j ℕ.+ i) ∷ xs
 
 -- Normalising cons
-infixr 5 _∷↓_
-_∷↓_ : ∀ {n} → (Poly n × ℕ) → Coeffs n → Coeffs n
-(x , i) ∷↓ xs with zero? x
+infixr 5 _^_∷↓_
+_^_∷↓_ : ∀ {n} → Poly n → ℕ → Coeffs n → Coeffs n
+x ^ i ∷↓ xs with zero? x
 ... | yes p = xs ⍓ suc i
-... | no ¬p = (x ,~ ¬p , i) ∷ xs
+... | no ¬p = _≠0 x {¬p} Δ i ∷ xs
 
-map-poly : ∀ {n} → (Poly n → Poly n) → Coeffs n → Coeffs n
-map-poly {n} f = List.foldr cons []
-  where
-  cons : (Coeff n × ℕ) → Coeffs n → Coeffs n
-  cons (x ,~ _ , i) = _∷↓_ (f x , i)
+-- Inject a polynomial into a larger polynomoial with more variables
+_Π↑_ : ∀ {n m} → Poly n → (suc n ≤ m) → Poly m
+(xs Π i≤n) Π↑ n≤m = xs Π (i≤n ⋈ n≤m)
+
+-- Normalising Π
+infixr 4 _Π↓_
+_Π↓_ : ∀ {i n} → Coeffs i → suc i ≤ n → Poly n
+[]                       Π↓ i≤n = Κ 0# Π z≤n
+(x ≠0 Δ zero  ∷ [])      Π↓ i≤n = x Π↑ i≤n
+(x₁   Δ zero  ∷ x₂ ∷ xs) Π↓ i≤n = Σ (x₁ Δ zero  ∷ x₂ ∷ xs) Π i≤n
+(x    Δ suc j ∷ xs)      Π↓ i≤n = Σ (x  Δ suc j ∷ xs) Π i≤n
 
 ----------------------------------------------------------------------
 -- Arithmetic
@@ -125,62 +248,106 @@ mutual
   -- _⊞_ {suc n} [] ys = ys
   -- _⊞_ {suc n} (x ∷ xs) [] = x ∷ xs
   -- _⊞_ {suc n} ((x , p) ∷ xs) ((y , q) ∷ ys) =
-  --   ⊞-ne (ℕ.compare p q) x xs y ys
+  --   ⊞-zip (ℕ.compare p q) x xs y ys
 
   infixl 6 _⊞_
   _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
-  _⊞_ {zero} (lift x) (lift y) = lift (x + y)
-  _⊞_ {suc n} = ⊞-coeffs
+  (xs Π i≤n) ⊞ (ys Π j≤n) = ⊞-match (≤-compare i≤n j≤n) xs ys
+
+  ⊞-match : ∀ {i j n}
+        → {i≤n : i ≤ n}
+        → {j≤n : j ≤ n}
+        → Ordering i≤n j≤n
+        → FlatPoly i
+        → FlatPoly j
+        → Poly n
+  ⊞-match (equal ij≤n) (Κ x)  (Κ y)     = Κ (x + y)         Π  ij≤n
+  ⊞-match (equal ij≤n) (Σ xs) (Σ ys)    = ⊞-coeffs    xs ys Π↓ ij≤n
+  ⊞-match (less    i≤j-1 j≤n) xs (Σ ys) = ⊞-inj i≤j-1 xs ys Π↓ j≤n
+  ⊞-match (greater j≤i-1 i≤n) (Σ xs) ys = ⊞-inj j≤i-1 ys xs Π↓ i≤n
+
+  ⊞-inj : ∀ {i k}
+       → (i ≤ k)
+       → FlatPoly i
+       → Coeffs k
+       → Coeffs k
+  ⊞-inj i≤k xs [] = xs Π i≤k ^ zero ∷↓ []
+  ⊞-inj i≤k xs (y Π j≤k ≠0 Δ zero ∷ ys) =
+    ⊞-match (≤-compare j≤k i≤k) y xs ^ zero ∷↓ ys
+  ⊞-inj i≤k xs (y Δ suc j ∷ ys) =
+    xs Π i≤k ^ zero ∷↓ y Δ j ∷ ys
 
   ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
   ⊞-coeffs [] ys = ys
-  ⊞-coeffs ((x , i) ∷ xs) = ⊞-ne-r i x xs
+  ⊞-coeffs (x Δ i ∷ xs) = ⊞-zip-r x i xs
 
-  ⊞-ne : ∀ {p q n}
-       → ℕ.Ordering p q
-       → Coeff n
-       → Coeffs n
-       → Coeff n
-       → Coeffs n
-       → Coeffs n
-  ⊞-ne (ℕ.less    i k) x xs y ys = (x , i) ∷ ⊞-ne-r k y ys xs
-  ⊞-ne (ℕ.greater j k) x xs y ys = (y , j) ∷ ⊞-ne-r k x xs ys
-  ⊞-ne (ℕ.equal   i  ) (x ,~ _) xs (y ,~ _) ys =
-    (x ⊞ y , i) ∷↓ ⊞-coeffs xs ys
+  ⊞-zip : ∀ {p q n}
+        → ℕ.Ordering p q
+        → Coeff n
+        → Coeffs n
+        → Coeff n
+        → Coeffs n
+        → Coeffs n
+  ⊞-zip (ℕ.less    i k) x xs y ys = x Δ i ∷ ⊞-zip-r y k ys xs
+  ⊞-zip (ℕ.greater j k) x xs y ys = y Δ j ∷ ⊞-zip-r x k xs ys
+  ⊞-zip (ℕ.equal   i  ) (x ≠0) xs (y ≠0) ys =
+    (x ⊞ y) ^ i ∷↓ ⊞-coeffs xs ys
 
-  ⊞-ne-r : ∀ {n} → ℕ → Coeff n → Coeffs n → Coeffs n → Coeffs n
-  ⊞-ne-r i x xs [] = (x , i) ∷ xs
-  ⊞-ne-r i x xs ((y , j) ∷ ys) = ⊞-ne (ℕ.compare i j) x xs y ys
+  ⊞-zip-r : ∀ {n} → Coeff n → ℕ → Coeffs n → Coeffs n → Coeffs n
+  ⊞-zip-r x i xs [] = x Δ i ∷ xs
+  ⊞-zip-r x i xs (y Δ j ∷ ys) = ⊞-zip (ℕ.compare i j) x xs y ys
 
 ----------------------------------------------------------------------
 -- Negation
 ----------------------------------------------------------------------
 
-⊟_ : ∀ {n} → Poly n → Poly n
-⊟_ {zero} (lift x) = lift (- x)
-⊟_ {suc n} = map-poly ⊟_
+mutual
+  ⊟_ : ∀ {n} → Poly n → Poly n
+  ⊟_ (Κ x  Π i≤n) = Κ (- x) Π i≤n
+  ⊟_ (Σ xs Π i≤n) = ⊟-coeffs xs Π↓ i≤n
+
+  ⊟-coeffs : ∀ {n} → Coeffs n → Coeffs n
+  ⊟-coeffs (x ≠0 Δ i  ∷ xs) = ⊟ x ^ i ∷↓ ⊟-coeffs xs
+  ⊟-coeffs [] = []
 
 ----------------------------------------------------------------------
 -- Multiplication
 ----------------------------------------------------------------------
 mutual
-  -- Multiply a polynomial in degree n by a Polynomial in degree n-1.
-  infixl 7 _⋊_
-  _⋊_ : ∀ {n} → Poly n → Poly (suc n) → Poly (suc n)
-  _⋊_ = map-poly ∘ _⊠_
-
   infixl 7 _⊠_
   _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
-  _⊠_ {zero} (lift x) (lift y) = lift (x * y)
-  _⊠_ {suc n} = ⊠-coeffs
+  (xs Π i≤n) ⊠ (ys Π j≤n) = ⊠-match (≤-compare i≤n j≤n) xs ys
+
+  ⊠-inj : ∀ {i k}
+        → i ≤ k
+        → FlatPoly i
+        → Coeffs k
+        → Coeffs k
+  ⊠-inj _ _ [] = []
+  ⊠-inj i≤k x (y Π j≤k ≠0 Δ p ∷ ys) =
+    ⊠-match (≤-compare i≤k j≤k) x y ^ p ∷↓ ⊠-inj i≤k x ys
+
+  ⊠-match : ∀ {i j n}
+          → {i≤n : i ≤ n}
+          → {j≤n : j ≤ n}
+          → Ordering i≤n j≤n
+          → FlatPoly i
+          → FlatPoly j
+          → Poly n
+  ⊠-match (equal ij≤n) (Κ x)  (Κ y)     = Κ (x * y)         Π  ij≤n
+  ⊠-match (equal ij≤n) (Σ xs) (Σ ys)    = ⊠-coeffs xs ys    Π↓ ij≤n
+  ⊠-match (less    i≤j-1 j≤n) xs (Σ ys) = ⊠-inj i≤j-1 xs ys Π↓ j≤n
+  ⊠-match (greater j≤i-1 i≤n) (Σ xs) ys = ⊠-inj j≤i-1 ys xs Π↓ i≤n
 
   -- A simple shift-and-add algorithm.
   ⊠-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
   ⊠-coeffs _ [] = []
-  ⊠-coeffs xs ((y ,~ _ , j) ∷ ys) = List.foldr (⊠-step y ys) [] xs ⍓ j
+  ⊠-coeffs xs (y ≠0 Δ j ∷ ys) = ⊠-step y ys xs ⍓ j
 
-  ⊠-step : ∀ {n} → Poly n → Coeffs n → Coeff n × ℕ → Coeffs n → Coeffs n
-  ⊠-step y ys (x ,~ _ , i) xs = (x ⊠ y , i) ∷↓ (x ⋊ ys ⊞ xs)
+  ⊠-step : ∀ {n} → Poly n → Coeffs n → Coeffs n → Coeffs n
+  ⊠-step y ys [] = []
+  ⊠-step y ys (x Π j≤n ≠0 Δ i ∷ xs) =
+    (x Π j≤n) ⊠ y ^ i ∷↓ ⊞-coeffs (⊠-inj j≤n x ys) (⊠-step y ys xs)
 
 ----------------------------------------------------------------------
 -- Constants and Variables
@@ -188,10 +355,8 @@ mutual
 
 -- The constant polynomial
 κ : ∀ {n} → Carrier → Poly n
-κ {zero} x = lift x
-κ {suc n} x = (κ x , 0) ∷↓ []
+κ x = Κ x Π z≤n
 
 -- A variable
 ι : ∀ {n} → Fin n → Poly n
-ι Fin.zero = (κ 1# , 1) ∷↓ []
-ι (Fin.suc x) = (ι x , 0) ∷↓ []
+ι i = (κ 1# ^ 1 ∷↓ []) Π↓ Fin⇒≤ i
