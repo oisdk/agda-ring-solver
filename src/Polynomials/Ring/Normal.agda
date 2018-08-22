@@ -287,13 +287,14 @@ mutual
 -- Negation
 ----------------------------------------------------------------------
 
-⊟_ : ∀ {n} → Poly n → Poly n
-⊟_ (Κ x  Π i≤n) = Κ (- x) Π i≤n
-⊟_ (Σ xs Π i≤n) = go xs Π↓ i≤n
-  where
-  go : ∀ {n} → Coeffs n → Coeffs n
-  go (x ≠0 Δ i  ∷ xs) = ⊟ x ^ i ∷↓ go xs
-  go [] = []
+mutual
+  ⊟_ : ∀ {n} → Poly n → Poly n
+  ⊟_ (Κ x  Π i≤n) = Κ (- x) Π i≤n
+  ⊟_ (Σ xs Π i≤n) = ⊟-coeffs xs Π↓ i≤n
+
+  ⊟-coeffs : ∀ {n} → Coeffs n → Coeffs n
+  ⊟-coeffs (x ≠0 Δ i  ∷ xs) = ⊟ x ^ i ∷↓ ⊟-coeffs xs
+  ⊟-coeffs [] = []
 
 ----------------------------------------------------------------------
 -- Multiplication

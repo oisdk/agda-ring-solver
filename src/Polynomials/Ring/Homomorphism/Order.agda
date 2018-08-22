@@ -111,45 +111,45 @@ m≤k+m m (suc k) = ≤-s (m≤k+m m k)
 m≤m+k : ∀ {m k} → m ≤ m ℕ.+ k
 m≤m+k {m} {k} = ≡.subst (m ≤_) (ℕ-≡.+-comm k m) (m≤k+m m k)
 
-open import Data.Empty
+-- open import Data.Empty
 
-contra₁ : ∀ m k → suc (m ℕ.+ k) ≤ m → ⊥
-contra₁ zero k ()
-contra₁ (suc m) k prf = contra₁ m k (≤-pred-both prf)
+-- contra₁ : ∀ m k → suc (m ℕ.+ k) ≤ m → ⊥
+-- contra₁ zero k ()
+-- contra₁ (suc m) k prf = contra₁ m k (≤-pred-both prf)
 
-contra₂ : ∀ m → suc m ≤ m → ⊥
-contra₂ m = contra₁ m 0 ∘ ≡.subst (λ m′ → suc m′ ≤ m) (≡.sym (ℕ-≡.+-identityʳ _))
+-- contra₂ : ∀ m → suc m ≤ m → ⊥
+-- contra₂ m = contra₁ m 0 ∘ ≡.subst (λ m′ → suc m′ ≤ m) (≡.sym (ℕ-≡.+-identityʳ _))
 
-drop-irrel : ∀ i n
-           → .(i ≤ n)
-           → Vec Carrier n
-           → Vec Carrier i
-drop-irrel i n i≤n xs with ℕ.compare i n
-drop-irrel .m .(suc (m ℕ.+ k)) i≤n (x ∷ xs) | ℕ.less m k = drop-irrel _ _ m≤m+k xs
-drop-irrel .m .m i≤n xs               | ℕ.equal m = xs
-drop-irrel .(suc (m ℕ.+ k)) .m i≤n xs | ℕ.greater m k = Irrelevant.⊥-elim (contra₁ m k i≤n)
+-- drop-irrel : ∀ i n
+--            → .(i ≤ n)
+--            → Vec Carrier n
+--            → Vec Carrier i
+-- drop-irrel i n i≤n xs with ℕ.compare i n
+-- drop-irrel .m .(suc (m ℕ.+ k)) i≤n (x ∷ xs) | ℕ.less m k = drop-irrel _ _ m≤m+k xs
+-- drop-irrel .m .m i≤n xs               | ℕ.equal m = xs
+-- drop-irrel .(suc (m ℕ.+ k)) .m i≤n xs | ℕ.greater m k = Irrelevant.⊥-elim (contra₁ m k i≤n)
 
-drop-irrel-lem₁ : ∀ i n
-                → .(i≤sn : i ≤ suc n)
-                → .(i≤n  : i ≤ n)
-                → (x : Carrier)
-                → (xs : Vec Carrier n)
-                → drop-irrel i (suc n) i≤sn (x ∷ xs) ≡ drop-irrel i n i≤n xs
-drop-irrel-lem₁ i n i≤sn i≤n x xs with ℕ.compare i (suc n)
-drop-irrel-lem₁ i .(i ℕ.+ k) i≤sn i≤n x xs | ℕ.less .i k = ≡.refl
-drop-irrel-lem₁ .(suc n) n i≤sn i≤n x xs | ℕ.equal .(suc n) = Irrelevant.⊥-elim (contra₂ _ i≤n)
-drop-irrel-lem₁ .(suc (suc (n ℕ.+ k))) n i≤sn i≤n x xs | ℕ.greater .(suc n) k = Irrelevant.⊥-elim (contra₁ _ _ (≤-pred-both i≤sn))
+-- drop-irrel-lem₁ : ∀ i n
+--                 → .(i≤sn : i ≤ suc n)
+--                 → .(i≤n  : i ≤ n)
+--                 → (x : Carrier)
+--                 → (xs : Vec Carrier n)
+--                 → drop-irrel i (suc n) i≤sn (x ∷ xs) ≡ drop-irrel i n i≤n xs
+-- drop-irrel-lem₁ i n i≤sn i≤n x xs with ℕ.compare i (suc n)
+-- drop-irrel-lem₁ i .(i ℕ.+ k) i≤sn i≤n x xs | ℕ.less .i k = ≡.refl
+-- drop-irrel-lem₁ .(suc n) n i≤sn i≤n x xs | ℕ.equal .(suc n) = Irrelevant.⊥-elim (contra₂ _ i≤n)
+-- drop-irrel-lem₁ .(suc (suc (n ℕ.+ k))) n i≤sn i≤n x xs | ℕ.greater .(suc n) k = Irrelevant.⊥-elim (contra₁ _ _ (≤-pred-both i≤sn))
 
-drop-irrel-lem₂ : ∀ i
-                → .(i≤n : i ≤ i)
-                → (xs : Vec Carrier i)
-                → drop-irrel i i i≤n xs ≡ xs
-drop-irrel-lem₂ i i≤n xs with ℕ.compare i i
-drop-irrel-lem₂ i i≤n xs | res = {!res!}
+-- drop-irrel-lem₂ : ∀ i
+--                 → .(i≤n : i ≤ i)
+--                 → (xs : Vec Carrier i)
+--                 → drop-irrel i i i≤n xs ≡ xs
+-- drop-irrel-lem₂ i i≤n xs with ℕ.compare i i
+-- drop-irrel-lem₂ i i≤n xs | res = {!res!}
 
-drop-irrel-correct : ∀ {i n}
-                   → (i≤n : i ≤ n)
-                   → (xs : Vec Carrier n)
-                   → drop i≤n xs ≡ drop-irrel i n i≤n xs
-drop-irrel-correct {i} {.i} m≤m xs = {!!}
-drop-irrel-correct {i} {.(suc _)} (≤-s i≤n) (x ∷ xs) = ≡.trans (drop-irrel-correct i≤n xs) (≡.sym (drop-irrel-lem₁ _ _ (≤-s i≤n) i≤n x xs))
+-- drop-irrel-correct : ∀ {i n}
+--                    → (i≤n : i ≤ n)
+--                    → (xs : Vec Carrier n)
+--                    → drop i≤n xs ≡ drop-irrel i n i≤n xs
+-- drop-irrel-correct {i} {.i} m≤m xs = {!!}
+-- drop-irrel-correct {i} {.(suc _)} (≤-s i≤n) (x ∷ xs) = ≡.trans (drop-irrel-correct i≤n xs) (≡.sym (drop-irrel-lem₁ _ _ (≤-s i≤n) i≤n x xs))

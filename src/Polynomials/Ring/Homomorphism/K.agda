@@ -19,7 +19,6 @@ module Polynomials.Ring.Homomorphism.K
 open AlmostCommutativeRing ring hiding (zero)
 open import Polynomials.Ring.Reasoning ring
 open import Polynomials.Ring.Normal coeff Zero-C zero-c?
-open import Polynomials.Ring.Semantics coeff Zero-C zero-c? ring morphism
 open _-Raw-AlmostCommutative⟶_ morphism renaming (⟦_⟧ to ⟦_⟧ᵣ)
 
 open import Relation.Nullary
@@ -58,10 +57,3 @@ open import Data.Empty
 ≤-irrel (≤-s x) (≤-s y) = ≡.cong ≤-s (≤-irrel x y)
 ≤-irrel (≤-s x) m≤m = ⊥-elim (1+n≰n (≤′⇒≤ x))
 ≤-irrel m≤m (≤-s x) = ⊥-elim (1+n≰n (≤′⇒≤ x))
-
-≤-inj : ∀ {i j n}
-      → (x : i ≤ n)
-      → (y : j ≤ n)
-      → i ≡.≡ j
-      → (xs : Vec Carrier n)
-      → ⟦ 

@@ -38,46 +38,53 @@ open import Data.Product.Irrelevant
 open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
 
--- mutual
---   ⊟-hom : ∀ {n}
---         → (xs : Poly n)
---         → (Ρ : Vec Carrier n)
---         → ⟦ ⊟ xs ⟧ Ρ ≈ - ⟦ xs ⟧ Ρ
---   ⊟-hom {ℕ.zero} xs [] = -‿homo _
---   ⊟-hom {suc _} xs (ρ ∷ Ρ) = ⊟-coeffs-hom xs ρ Ρ
+mutual
+  ⊟-hom : ∀ {n}
+        → (xs : Poly n)
+        → (Ρ : Vec Carrier n)
+        → ⟦ ⊟ xs ⟧ Ρ ≈ - ⟦ xs ⟧ Ρ
+  ⊟-hom (Κ x  Π i≤n) Ρ = -‿homo x
+  ⊟-hom (Σ xs Π i≤n) Ρ =
+    begin
+      ⟦ ⊟-coeffs xs Π↓ i≤n ⟧ Ρ
+    ≈⟨ Π↓-hom (⊟-coeffs xs) i≤n Ρ ⟩
+      Σ⟦ ⊟-coeffs xs ⟧ (drop-1 i≤n Ρ)
+    ≈⟨ ⊟-coeffs-hom xs (drop-1 i≤n Ρ) ⟩
+      - Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
+    ∎
 
---   ⊟-coeffs-hom : ∀ {n}
---               → (xs : Coeffs n)
---               → (ρ : Carrier)
---               → (Ρ : Vec Carrier n)
---               → ⟦ ⊟ xs ⟧ (ρ ∷ Ρ) ≈ - ⟦ xs ⟧ (ρ ∷ Ρ)
---   ⊟-coeffs-hom [] ρ Ρ =
---     begin
---       ⟦ ⊟ [] ⟧ (ρ ∷ Ρ)
---     ≡⟨⟩
---       0#
---     ≈⟨ sym (zeroʳ _) ⟩
---       - 0# * 0#
---     ≈⟨ -‿*-distribˡ 0# 0# ⟩
---       - (0# * 0#)
---     ≈⟨ -‿cong (zeroˡ 0#) ⟩
---       - 0#
---     ≡⟨⟩
---       - ⟦ [] ⟧ (ρ ∷ Ρ)
---     ∎
---   ⊟-coeffs-hom  ((x ,~ x≠0 , i) ∷ xs) ρ Ρ =
---     begin
---       ⟦ ⊟ ((x ,~ x≠0 , i) ∷ xs) ⟧ (ρ ∷ Ρ)
---     ≡⟨⟩
---       ⟦ (⊟ x , i) ∷↓ ⊟ xs ⟧ (ρ ∷ Ρ)
---     ≈⟨ ∷↓-hom (⊟ x) i (⊟ xs) ρ Ρ ⟩
---       (⟦ ⊟ x ⟧ Ρ + ⟦ ⊟ xs ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ i
---     ≈⟨ ≪* (⊟-hom x Ρ ⟨ +-cong ⟩ (≪* ⊟-coeffs-hom xs ρ Ρ)) ⟩
---       (- ⟦ x ⟧ Ρ + - ⟦ xs ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ i
---     ≈⟨ ≪* +≫ -‿*-distribˡ _ ρ ⟩
---       (- ⟦ x ⟧ Ρ + - (⟦ xs ⟧ (ρ ∷ Ρ) * ρ)) * ρ ^ i
---     ≈⟨ ≪* -‿+-comm _ _ ⟩
---       - (⟦ x ⟧ Ρ + ⟦ xs ⟧ (ρ ∷ Ρ) * ρ) * ρ ^ i
---     ≈⟨ -‿*-distribˡ _ _ ⟩
---       - ⟦ (x ,~ x≠0 , i) ∷ xs ⟧ (ρ ∷ Ρ)
---     ∎
+  ⊟-coeffs-hom : ∀ {n}
+               → (xs : Coeffs n)
+               → (Ρ : Carrier × Vec Carrier n)
+               → Σ⟦ ⊟-coeffs xs ⟧ Ρ ≈ - Σ⟦ xs ⟧ Ρ
+  ⊟-coeffs-hom [] Ρ =
+    begin
+      Σ⟦ ⊟-coeffs [] ⟧ Ρ
+    ≡⟨⟩
+      0#
+    ≈⟨ sym (zeroʳ _) ⟩
+      - 0# * 0#
+    ≈⟨ -‿*-distribˡ 0# 0# ⟩
+      - (0# * 0#)
+    ≈⟨ -‿cong (zeroˡ 0#) ⟩
+      - 0#
+    ≡⟨⟩
+      - Σ⟦ [] ⟧ Ρ
+    ∎
+  ⊟-coeffs-hom  (x′ Δ i ∷ xs) Ρ =
+    let x ≠0 = x′
+        (ρ , Ρ′) = Ρ
+    in
+    begin
+      Σ⟦ ⊟ x ^ i ∷↓ ⊟-coeffs xs ⟧ Ρ
+    ≈⟨ ∷↓-hom (⊟ x) i (⊟-coeffs xs) ρ Ρ′ ⟩
+      (⟦ ⊟ x ⟧ Ρ′ + Σ⟦ ⊟-coeffs xs ⟧ (ρ , Ρ′) * ρ) * ρ ^ i
+    ≈⟨ ≪* (⊟-hom x Ρ′ ⟨ +-cong ⟩ (≪* ⊟-coeffs-hom xs Ρ)) ⟩
+      (- ⟦ x ⟧ Ρ′ + - Σ⟦ xs ⟧ Ρ * ρ) * ρ ^ i
+    ≈⟨ ≪* +≫ -‿*-distribˡ _ ρ ⟩
+      (- ⟦ x ⟧ Ρ′ + - (Σ⟦ xs ⟧ Ρ * ρ)) * ρ ^ i
+    ≈⟨ ≪* -‿+-comm _ _ ⟩
+      - (⟦ x ⟧ Ρ′ + Σ⟦ xs ⟧ Ρ * ρ) * ρ ^ i
+    ≈⟨ -‿*-distribˡ _ _ ⟩
+      - Σ⟦ x′ Δ i ∷ xs ⟧ Ρ
+    ∎

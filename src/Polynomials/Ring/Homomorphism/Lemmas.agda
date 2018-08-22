@@ -125,4 +125,4 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
     Σ⟦ _≠0 x {x≠0} Δ zero ∷ [] ⟧ (ρ , Ρ′)
   ∎
 
-open import Polynomials.Ring.Homomorphism.Order coeff Zero-C zero-c? ring morphism Zero-C⟶Zero-R public
+open import Polynomials.Ring.Homomorphism.K coeff Zero-C zero-c? ring morphism Zero-C⟶Zero-R public

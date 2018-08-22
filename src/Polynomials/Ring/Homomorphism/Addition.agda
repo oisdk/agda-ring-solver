@@ -19,7 +19,6 @@ module Polynomials.Ring.Homomorphism.Addition
   where
 
 open import Polynomials.Ring.Homomorphism.Lemmas coeff Zero-C zero-c? ring morphism Zero-C⟶Zero-R
-open import Polynomials.Ring.Homomorphism.K coeff Zero-C zero-c? ring morphism Zero-C⟶Zero-R
 
 open AlmostCommutativeRing ring hiding (zero)
 open import Polynomials.Ring.Reasoning ring
