@@ -45,29 +45,40 @@ mutual
         → (ys : Poly n)
         → (Ρ : Vec Carrier n)
         → ⟦ xs ⊞ ys ⟧ Ρ ≈ ⟦ xs ⟧ Ρ + ⟦ ys ⟧ Ρ
-  ⊞-hom (xs Π i≤n) (ys Π j≤n) = ⊞-match-hom (≤-compare i≤n j≤n) xs i≤n ys j≤n
+  ⊞-hom (xs Π i≤n) (ys Π j≤n) = ⊞-match-hom (≤-compare i≤n j≤n) xs ys
 
   ⊞-match-hom : ∀ {i j n}
-              → (cmp : Ordering i j)
+              → {i≤n : i ≤ n}
+              → {j≤n : j ≤ n}
+              → (cmp : Ordering i≤n j≤n)
               → (xs : FlatPoly i)
-              → (i≤n : i ≤ n)
               → (ys : FlatPoly j)
-              → (j≤n : j ≤ n)
               → (Ρ : Vec Carrier n)
-              → ⟦ ⊞-match cmp xs i≤n ys j≤n ⟧ Ρ ≈ ⟦ xs Π i≤n ⟧ Ρ + ⟦ ys Π j≤n ⟧ Ρ
-  ⊞-match-hom equal (Κ x) i≤n (Κ y) j≤n Ρ = +-homo x y
-  ⊞-match-hom equal (Σ xs) i≤n (Σ ys) j≤n Ρ =
+              → ⟦ ⊞-match cmp xs ys ⟧ Ρ ≈ ⟦ xs Π i≤n ⟧ Ρ + ⟦ ys Π j≤n ⟧ Ρ
+  ⊞-match-hom (equal ij≤n) (Κ x) (Κ y) Ρ = +-homo x y
+  ⊞-match-hom (equal ij≤n) (Σ xs) (Σ ys) Ρ =
     begin
-      ⟦ ⊞-coeffs xs ys Π↓ i≤n ⟧ Ρ
-    ≈⟨ Π↓-hom (⊞-coeffs xs ys) i≤n Ρ ⟩
-      Σ⟦ ⊞-coeffs xs ys ⟧ (drop-1 i≤n Ρ)
-    ≈⟨ ⊞-coeffs-hom xs ys (drop-1 i≤n Ρ) ⟩
-      Σ⟦ xs ⟧ (drop-1 i≤n Ρ) + Σ⟦ ys ⟧ (drop-1 i≤n Ρ)
-      ≡⟨ ≡.cong (λ iltn → Σ⟦ xs ⟧ (drop-1 i≤n Ρ) + Σ⟦ ys ⟧ (drop-1 iltn Ρ)) (≤-irrel i≤n j≤n) ⟩
-      Σ⟦ xs ⟧ (drop-1 i≤n Ρ) + Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
+      ⟦ ⊞-coeffs xs ys Π↓ ij≤n ⟧ Ρ
+    ≈⟨ Π↓-hom (⊞-coeffs xs ys) ij≤n Ρ ⟩
+      Σ⟦ ⊞-coeffs xs ys ⟧ (drop-1 ij≤n Ρ)
+    ≈⟨ ⊞-coeffs-hom xs ys (drop-1 ij≤n Ρ) ⟩
+      Σ⟦ xs ⟧ (drop-1 ij≤n Ρ) + Σ⟦ ys ⟧ (drop-1 ij≤n Ρ)
     ∎
-  ⊞-match-hom (greater j≤i-1) xs i≤n ys j≤n Ρ = {!!}
-  ⊞-match-hom (less    i≤j-1) xs i≤n (Σ ys) j≤n Ρ =
+  ⊞-match-hom (greater j≤i-1 i≤n) (Σ xs) ys Ρ =
+    let (ρ , Ρ′) = drop-1 i≤n Ρ
+    in
+    begin
+      ⟦ ⊞-inj j≤i-1 ys xs Π↓ i≤n ⟧ Ρ
+    ≈⟨ Π↓-hom (⊞-inj j≤i-1 ys xs) i≤n Ρ ⟩
+      Σ⟦ ⊞-inj j≤i-1 ys xs ⟧ (drop-1 i≤n Ρ)
+    ≈⟨ ⊞-inj-hom j≤i-1 ys xs ρ Ρ′ ⟩
+      ⟦ ys Π j≤i-1 ⟧ (proj₂ (drop-1 i≤n Ρ)) + Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
+    ≈⟨ ≪+ ⋈-hom j≤i-1 i≤n ys Ρ ⟩
+      ⟦ ys Π (j≤i-1 ⋈ i≤n) ⟧ Ρ + Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
+    ≈⟨ +-comm _ _ ⟩
+      Σ⟦ xs ⟧ (drop-1 i≤n Ρ) + ⟦ ys Π (j≤i-1 ⋈ i≤n) ⟧ Ρ
+    ∎
+  ⊞-match-hom (less    i≤j-1 j≤n) xs (Σ ys) Ρ =
     let (ρ , Ρ′) = drop-1 j≤n Ρ
     in
     begin
@@ -75,11 +86,9 @@ mutual
     ≈⟨ Π↓-hom (⊞-inj i≤j-1 xs ys) j≤n Ρ ⟩
       Σ⟦ ⊞-inj i≤j-1 xs ys ⟧ (drop-1 j≤n Ρ)
     ≈⟨ ⊞-inj-hom i≤j-1 xs ys ρ Ρ′ ⟩
-      ⟦ xs Π i≤j-1 ⟧ Ρ′ + Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
-    ≅⟨ ≪+_ ⟩
-      ⟦ xs Π i≤j-1 ⟧ Ρ′
-    ≈⟨ {!!} ⟩
-      ⟦ xs Π i≤n ⟧ Ρ
+      ⟦ xs Π i≤j-1 ⟧ (proj₂ (drop-1 j≤n Ρ)) + Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
+    ≈⟨ ≪+ ⋈-hom i≤j-1 j≤n xs Ρ ⟩
+      ⟦ xs Π (i≤j-1 ⋈ j≤n) ⟧ Ρ + Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
     ∎
 
   ⊞-inj-hom : ∀ {i k}
@@ -89,7 +98,7 @@ mutual
             → (ρ : Carrier)
             → (Ρ : Vec Carrier k)
             → Σ⟦ ⊞-inj i≤k x ys ⟧ (ρ , Ρ) ≈ ⟦ x Π i≤k ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ)
-  ⊞-inj-hom i≤k xs [] = {!!}
+  ⊞-inj-hom i≤k xs [] ρ Ρ = {!!}
   ⊞-inj-hom i≤k xs (y Π j≤k ≠0 Δ zero ∷ ys) ρ Ρ = {!!}
   ⊞-inj-hom i≤k xs (y Δ suc j ∷ ys) ρ Ρ =
     let y′ = poly y

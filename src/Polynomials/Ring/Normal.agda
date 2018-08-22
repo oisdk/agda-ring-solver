@@ -69,44 +69,37 @@ data _≤_ (m : ℕ) : ℕ → Set where
   m≤m : m ≤ m
   ≤-s : ∀ {n} → (m≤n : m ≤ n) → m ≤ suc n
 
-≤-trans-pred : ∀ {x y z} → x ≤ y → suc y ≤ z → x ≤ z
-≤-trans-pred xs m≤m = ≤-s xs
-≤-trans-pred xs (≤-s ys) = ≤-s (≤-trans-pred xs ys)
+infixl 6 _⋈_
+_⋈_ : ∀ {x y z} → x ≤ y → suc y ≤ z → x ≤ z
+xs ⋈ m≤m = ≤-s xs
+xs ⋈ (≤-s ys) = ≤-s (xs ⋈ ys)
 
-data Ordering : ℕ → ℕ → Set where
-  less    : ∀ {i j-1} → (i≤j-1 : i ≤ j-1) → Ordering i (suc j-1)
-  equal   : ∀ {i}     → Ordering i i
-  greater : ∀ {i-1 j} → (j≤i-1 : j ≤ i-1) → Ordering (suc i-1) j
-
-≤-compare : ∀ {i j n}
-          → (i ≤ n)
-          → (j ≤ n)
-          → Ordering i j
-≤-compare m≤m       m≤m       = equal
-≤-compare m≤m       (≤-s j≤n) = greater j≤n
-≤-compare (≤-s i≤n) m≤m       = less i≤n
-≤-compare (≤-s i≤n) (≤-s j≤n) = ≤-compare i≤n j≤n
-
-data LeftOrdering {n : ℕ} : ∀ i j
+data Ordering {n : ℕ} : ∀ {i j}
                           → (i≤n : i ≤ n)
                           → (j≤n : j ≤ n)
                           → Set
                           where
-  less-l    : ∀ {i j-1} → (i≤j-1 : i ≤ j-1) → (sj-1≤n : suc j-1 ≤ n) → LeftOrdering i (suc j-1) (≤-trans-pred i≤j-1 sj-1≤n) sj-1≤n
-  greater-l : ∀ {i-1 j} → (j≤i-1 : j ≤ i-1) → (si-1≤n : suc i-1 ≤ n) → LeftOrdering (suc i-1) j si-1≤n (≤-trans-pred j≤i-1 si-1≤n)
-  equal-l   : ∀ {i} → (i≤n : i ≤ n) → LeftOrdering i i i≤n i≤n
+  less    : ∀ {i j-1}
+          → (i≤j-1 : i ≤ j-1)
+          → (j≤n : suc j-1 ≤ n)
+          → Ordering (i≤j-1 ⋈ j≤n) j≤n
+  greater : ∀ {i-1 j}
+          → (j≤i-1 : j ≤ i-1)
+          → (i≤n : suc i-1 ≤ n)
+          → Ordering i≤n (j≤i-1 ⋈ i≤n)
+  equal   : ∀ {i} → (i≤n : i ≤ n) → Ordering i≤n i≤n
 
-≤-compare-left : ∀ {i j n}
+≤-compare : ∀ {i j n}
                → (x : i ≤ n)
                → (y : j ≤ n)
-               → LeftOrdering i j x y
-≤-compare-left m≤m m≤m = equal-l m≤m
-≤-compare-left m≤m (≤-s y) = greater-l y m≤m
-≤-compare-left (≤-s x) m≤m = less-l x m≤m
-≤-compare-left (≤-s x) (≤-s y) with ≤-compare-left x y
-≤-compare-left (≤-s .(≤-trans-pred i≤j-1 y)) (≤-s y) | less-l i≤j-1 .y = less-l i≤j-1 (≤-s y)
-≤-compare-left (≤-s x) (≤-s .(≤-trans-pred j≤i-1 x)) | greater-l j≤i-1 .x = greater-l j≤i-1 (≤-s x)
-≤-compare-left (≤-s x) (≤-s .x) | equal-l .x = equal-l (≤-s x)
+               → Ordering x y
+≤-compare m≤m m≤m = equal m≤m
+≤-compare m≤m (≤-s y) = greater y m≤m
+≤-compare (≤-s x) m≤m = less x m≤m
+≤-compare (≤-s x) (≤-s y) with ≤-compare x y
+≤-compare (≤-s .(i≤j-1 ⋈ y)) (≤-s y) | less i≤j-1 .y = less i≤j-1 (≤-s y)
+≤-compare (≤-s x) (≤-s .(j≤i-1 ⋈ x)) | greater j≤i-1 .x = greater j≤i-1 (≤-s x)
+≤-compare (≤-s x) (≤-s .x) | equal .x = equal (≤-s x)
 
 z≤n : ∀ {n} → zero ≤ n
 z≤n {zero} = m≤m
@@ -216,7 +209,7 @@ x ^ i ∷↓ xs with zero? x
 
 -- Inject a polynomial into a larger polynomoial with more variables
 _Π↑_ : ∀ {n m} → Poly n → (suc n ≤ m) → Poly m
-(xs Π i≤n) Π↑ n≤m = xs Π (≤-trans-pred i≤n n≤m)
+(xs Π i≤n) Π↑ n≤m = xs Π (i≤n ⋈ n≤m)
 
 -- Normalising Π
 infixr 4 _Π↓_
@@ -259,19 +252,19 @@ mutual
 
   infixl 6 _⊞_
   _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
-  (xs Π i≤n) ⊞ (ys Π j≤n) = ⊞-match (≤-compare i≤n j≤n) xs i≤n ys j≤n
+  (xs Π i≤n) ⊞ (ys Π j≤n) = ⊞-match (≤-compare i≤n j≤n) xs ys
 
   ⊞-match : ∀ {i j n}
-        → Ordering i j
+        → {i≤n : i ≤ n}
+        → {j≤n : j ≤ n}
+        → Ordering i≤n j≤n
         → FlatPoly i
-        → (i ≤ n)
         → FlatPoly j
-        → (j ≤ n)
         → Poly n
-  ⊞-match equal (Κ x)  i≤n (Κ y)  j≤n   = Κ (x + y)         Π  i≤n
-  ⊞-match equal (Σ xs) i≤n (Σ ys) j≤n   = ⊞-coeffs    xs ys Π↓ i≤n
-  ⊞-match (less    i≤j-1) xs i≤n (Σ ys) j≤n = ⊞-inj i≤j-1 xs ys Π↓ j≤n
-  ⊞-match (greater j≤i-1) (Σ xs) i≤n ys j≤n = ⊞-inj j≤i-1 ys xs Π↓ i≤n
+  ⊞-match (equal ij≤n) (Κ x)  (Κ y)     = Κ (x + y)         Π  ij≤n
+  ⊞-match (equal ij≤n) (Σ xs) (Σ ys)    = ⊞-coeffs    xs ys Π↓ ij≤n
+  ⊞-match (less    i≤j-1 j≤n) xs (Σ ys) = ⊞-inj i≤j-1 xs ys Π↓ j≤n
+  ⊞-match (greater j≤i-1 i≤n) (Σ xs) ys = ⊞-inj j≤i-1 ys xs Π↓ i≤n
 
   ⊞-inj : ∀ {i k}
        → (i ≤ k)
@@ -280,7 +273,7 @@ mutual
        → Coeffs k
   ⊞-inj i≤k xs [] = xs Π i≤k ^ zero ∷↓ []
   ⊞-inj i≤k xs (y Π j≤k ≠0 Δ zero ∷ ys) =
-    ⊞-match (≤-compare j≤k i≤k) y j≤k xs i≤k ^ zero ∷↓ ys
+    ⊞-match (≤-compare j≤k i≤k) y xs ^ zero ∷↓ ys
   ⊞-inj i≤k xs (y Δ suc j ∷ ys) =
     xs Π i≤k ^ zero ∷↓ y Δ j ∷ ys
 
@@ -323,7 +316,7 @@ mutual
 mutual
   infixl 7 _⊠_
   _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
-  (xs Π i≤n) ⊠ (ys Π j≤n) = ⊠-match (≤-compare i≤n j≤n) xs i≤n ys j≤n
+  (xs Π i≤n) ⊠ (ys Π j≤n) = ⊠-match (≤-compare i≤n j≤n) xs ys
 
   ⊠-inj : ∀ {i k}
         → i ≤ k
@@ -332,19 +325,19 @@ mutual
         → Coeffs k
   ⊠-inj _ _ [] = []
   ⊠-inj i≤k x (y Π j≤k ≠0 Δ p ∷ ys) =
-    ⊠-match (≤-compare i≤k j≤k) x i≤k y j≤k ^ p ∷↓ ⊠-inj i≤k x ys
+    ⊠-match (≤-compare i≤k j≤k) x y ^ p ∷↓ ⊠-inj i≤k x ys
 
   ⊠-match : ∀ {i j n}
-          → Ordering i j
+          → {i≤n : i ≤ n}
+          → {j≤n : j ≤ n}
+          → Ordering i≤n j≤n
           → FlatPoly i
-          → (i ≤ n)
           → FlatPoly j
-          → (j ≤ n)
           → Poly n
-  ⊠-match equal (Κ x)  i≤n (Κ y)  j≤n       = Κ (x + y)         Π  i≤n
-  ⊠-match equal (Σ xs) i≤n (Σ ys) j≤n       = ⊠-coeffs xs ys    Π↓ i≤n
-  ⊠-match (less    i≤j-1) xs i≤n (Σ ys) j≤n = ⊠-inj i≤j-1 xs ys Π↓ j≤n
-  ⊠-match (greater j≤i-1) (Σ xs) i≤n ys j≤n = ⊠-inj j≤i-1 ys xs Π↓ i≤n
+  ⊠-match (equal ij≤n) (Κ x)  (Κ y)     = Κ (x + y)         Π  ij≤n
+  ⊠-match (equal ij≤n) (Σ xs) (Σ ys)    = ⊠-coeffs xs ys    Π↓ ij≤n
+  ⊠-match (less    i≤j-1 j≤n) xs (Σ ys) = ⊠-inj i≤j-1 xs ys Π↓ j≤n
+  ⊠-match (greater j≤i-1 i≤n) (Σ xs) ys = ⊠-inj j≤i-1 ys xs Π↓ i≤n
 
   -- A simple shift-and-add algorithm.
   ⊠-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n

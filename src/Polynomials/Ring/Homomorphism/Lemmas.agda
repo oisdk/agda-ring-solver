@@ -87,7 +87,7 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
          → (si≤n : suc i ≤ n)
          → (sn≤m : suc n ≤ m)
          → (Ρ : Vec Carrier m)
-         → Σ⟦ xs ⟧ (drop-1 (≤-trans-pred si≤n sn≤m) Ρ)
+         → Σ⟦ xs ⟧ (drop-1 (si≤n ⋈ sn≤m) Ρ)
          ≈ Σ⟦ xs ⟧ (drop-1 si≤n (proj₂ (drop-1 sn≤m Ρ)))
 Σ-Π↑-hom xs si≤n m≤m (ρ ∷ Ρ) = refl
 Σ-Π↑-hom xs si≤n (≤-s sn≤m) (_ ∷ Ρ) = Σ-Π↑-hom xs si≤n sn≤m Ρ
@@ -99,6 +99,16 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
        → ⟦ x Π↑ sn≤m ⟧ Ρ ≈ ⟦ x ⟧ (proj₂ (drop-1 sn≤m Ρ))
 Π↑-hom (Κ x  Π i≤sn) sn≤m Ρ = refl
 Π↑-hom (Σ xs Π i≤sn) sn≤m Ρ = Σ-Π↑-hom xs i≤sn sn≤m Ρ
+
+⋈-hom : ∀ {i j-1 n}
+      → (i≤j-1 : i ≤ j-1)
+      → (j≤n   : suc j-1 ≤ n)
+      → (x : FlatPoly i)
+      → (Ρ : Vec Carrier n)
+      → ⟦ x Π i≤j-1 ⟧ (proj₂ (drop-1 j≤n Ρ)) ≈ ⟦ x Π (i≤j-1 ⋈ j≤n) ⟧ Ρ
+⋈-hom i≤j-1 j≤n (Κ x) Ρ = refl
+⋈-hom i≤j-1 m≤m (Σ x) (ρ ∷ Ρ) = refl
+⋈-hom i≤j-1 (≤-s j≤n) (Σ x {xn}) (ρ ∷ Ρ) = ⋈-hom i≤j-1 j≤n (Σ x {xn}) Ρ
 
 Π↓-hom : ∀ {n m}
        → (xs : Coeffs n)
@@ -125,4 +135,9 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
     Σ⟦ _≠0 x {x≠0} Δ zero ∷ [] ⟧ (ρ , Ρ′)
   ∎
 
-open import Polynomials.Ring.Homomorphism.K coeff Zero-C zero-c? ring morphism Zero-C⟶Zero-R public
+drop-1⇒lookup : ∀ {n}
+              → (i : Fin n)
+              → (Ρ : Vec Carrier n)
+              → proj₁ (drop-1 (Fin⇒≤ i) Ρ) ≡.≡ Vec.lookup i Ρ
+drop-1⇒lookup Fin.zero (ρ ∷ Ρ) = ≡.refl
+drop-1⇒lookup (Fin.suc i) (ρ ∷ Ρ) = drop-1⇒lookup i Ρ
