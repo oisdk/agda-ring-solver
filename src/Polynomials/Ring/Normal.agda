@@ -22,47 +22,109 @@ module Polynomials.Ring.Normal
   (zero-c? : Decidable Zero-C)
   where
 
--- This is the one to go for.
+----------------------------------------------------------------------
+-- Gaps
+----------------------------------------------------------------------
+-- Polynomials can be represented as lists of their coefficients,
+-- stored in increasing powers of x:
 --
--- Of the three options, we have:
+--   3 + 2x² + 4x⁵ + 2x⁷
+-- ≡⟨ making the missing xs explicit ⟩
+--   3x⁰ + 0x¹ + 2x² + 0x³ + 0x⁴ + 4x⁵ + 0x⁶ + 2x⁷
+-- ≡⟨ in list notation ⟩
+--   [3,0,2,0,0,4,0,2]
 --
--- 1.
+-- However, as described in:
+--   B. Grégoire and A. Mahboubi, ‘Proving Equalities in a Commutative
+--   Ring Done Right in Coq’, in Theorem Proving in Higher Order
+--   Logics, Berlin, Heidelberg, 2005, vol. 3603, pp. 98–113.
+--
+-- This approach is wasteful with space. Instead, we will pair each
+-- coefficient with the size of the preceding gap, meaning that the
+-- above expression is instead written as:
+--
+--   [(3,0),(2,1),(4,2),(2,1)]
+--
+-- Which can be thought of as a representation of the expression:
+--
+--   x⁰ * (3 + x * x¹ * (2 + x * x² * (4 + x * x¹ * (2 + x * 0))))
+--
+-- To add multiple variables to a polynomial, you can *nest* them,
+-- making the coefficients of the outer polynomial polynomials
+-- themselves. However, this is *also* wasteful, in a similar way to
+-- above: the constant polynomial, for instance, will be represented
+-- as many nestings of constant polynomials around a final variable.
+-- However, this approach presents a difficulty: the polynomial will
+-- have the kind ℕ → Set (...). In other words, it's indexed by the
+-- number of variables it contains. The gap we store, then, has to
+-- be accomanied with some information about how it relates to that
+-- index.
+--
+-- The first approach I tried was to forget about storing the gaps,
+-- and instead store the number of variables in the nested coefficient,
+-- along with a proof that the number was smaller than the outer. The
+-- proof was _≤_ from Data.Nat:
+--
 -- data _≤_ : Rel ℕ 0ℓ where
 --   z≤n : ∀ {n}                 → zero  ≤ n
 --   s≤s : ∀ {m n} (m≤n : m ≤ n) → suc m ≤ suc n
 --
--- This follows the structure of its first argument. In other words:
+-- While this worked, this will actually give you a worse complexity
+-- than the naive encoding without gaps.
 --
---   n ≤ m ≅ fold s≤s z≤n n
+-- For any of the binary operations, you need to be able to "line up"
+-- the two arguments in terms of the gaps. For addition, for instance,
+-- the argument with fewer variables should be added to the constant
+-- term of the argument with more. To do this, you need to compare the
+-- gaps.
 --
--- This isn't good, as that first argument is the length of the *rest*
--- of the list:
+-- To see why that's a problem, consider the following sequence of
+-- nestings:
 --
---   [(⋯ , 5 ≤ 6) , (4 ≤ 5), (3 ≤ 4), (1 ≤ 3), (0 ≤ 1)]
+--   (5 ≤ 6), (4 ≤ 5), (3 ≤ 4), (1 ≤ 3), (0 ≤ 1)
 --
--- Meaning that consuming it the normal way will be quadratic.
+-- The outer polynomial has 6 variables, but it has a gap to its inner
+-- polynomial of 5, and so on. What we compare in this case is the
+-- number of variables in the tail: like repeatedly taking the tail of
+-- a list, it's quadratic.
 --
--- 2.
+-- The second approach was to try and mimic the powers structure
+-- (which only compared the gaps, which is linear), and store the gaps
+-- in a proof like the following:
+--
 -- record _≤″_ (m n : ℕ) : Set where
 --   constructor less-than-or-equal
 --   field
 --     {k}   : ℕ
 --     proof : m + k ≡ n
 --
--- Also not advantageuos. While it does store the k (which is the
--- size of the gap, which is what we need to use to get linear
--- performance), it doesn't provide any inductive structure, so
--- computations on the k don't provide evidence about the m or n.
--- That said, it works by storing an equality proof, so we could just
--- aggresively erase it, but it's messy (and perhaps unsound).
+-- Here, k is the size of the gap. The problem of this approach was
+-- twofold: it was difficult to show that comparisons on the k
+-- corresponded to comparisons on the m, and working with ≡ instead of
+-- some inductive structure was messy. However, it had the advantage
+-- of being erasable: both proofs of the correspondence and the
+-- equality proof itself. That said, I'm not very familiar with the
+-- soundness of erasure, and in particular how it interacts with axiom
+-- K (which I'd managed to avoid up until this point, but started to
+-- creep in).
 --
--- 3.
+-- I may have had more luck if I swapped the arguments too +:
+--
+-- record _≤″_ (m n : ℕ) : Set where
+--   constructor less-than-or-equal
+--   field
+--     {k}   : ℕ
+--     proof : k + m ≡ n
+--
+-- But I did not try it. The solution I ended up with was superior,
+-- regardless:
+--
 -- data _≤′_ (m : ℕ) : ℕ → Set where
 --   ≤′-refl :                         m ≤′ m
 --   ≤′-step : ∀ {n} (m≤′n : m ≤′ n) → m ≤′ suc n
 --
--- This structure works best. It effectively inducts on the k in 2.,
--- but does so while providing evidence about the overall length.
+-- While this structure stores the same information as ≤, it does so
+-- by induction on the *gap*. 
 
 infix 4 _≤_
 data _≤_ (m : ℕ) : ℕ → Set where
@@ -261,10 +323,10 @@ mutual
         → FlatPoly i
         → FlatPoly j
         → Poly n
-  ⊞-match (eq ij≤n) (Κ x)  (Κ y)  = Κ (x + y)         Π  ij≤n
-  ⊞-match (eq ij≤n) (Σ xs) (Σ ys) = ⊞-coeffs    xs ys Π↓ ij≤n
-  ⊞-match (i≤j-1 < j≤n) xs (Σ ys) = ⊞-inj i≤j-1 xs ys Π↓ j≤n
-  ⊞-match (i≤n > j≤i-1) (Σ xs) ys = ⊞-inj j≤i-1 ys xs Π↓ i≤n
+  ⊞-match (eq i&j≤n)    (Κ x)  (Κ y)  = Κ (x + y)         Π  i&j≤n
+  ⊞-match (eq i&j≤n)    (Σ xs) (Σ ys) = ⊞-coeffs    xs ys Π↓ i&j≤n
+  ⊞-match (i≤j-1 < j≤n)  xs    (Σ ys) = ⊞-inj i≤j-1 xs ys Π↓ j≤n
+  ⊞-match (i≤n > j≤i-1) (Σ xs)  ys    = ⊞-inj j≤i-1 ys xs Π↓ i≤n
 
   ⊞-inj : ∀ {i k}
        → (i ≤ k)
@@ -334,8 +396,8 @@ mutual
           → FlatPoly i
           → FlatPoly j
           → Poly n
-  ⊠-match (eq ij≤n) (Κ x)  (Κ y)  = Κ (x * y)         Π  ij≤n
-  ⊠-match (eq ij≤n) (Σ xs) (Σ ys) = ⊠-coeffs xs ys    Π↓ ij≤n
+  ⊠-match (eq i&j≤n) (Κ x)  (Κ y)  = Κ (x * y)         Π  i&j≤n
+  ⊠-match (eq i&j≤n) (Σ xs) (Σ ys) = ⊠-coeffs xs ys    Π↓ i&j≤n
   ⊠-match (i≤j-1 < j≤n) xs (Σ ys) = ⊠-inj i≤j-1 xs ys Π↓ j≤n
   ⊠-match (i≤n > j≤i-1) (Σ xs) ys = ⊠-inj j≤i-1 ys xs Π↓ i≤n
 
