@@ -85,8 +85,8 @@ module Polynomials.Ring.Normal
 --
 -- The outer polynomial has 6 variables, but it has a gap to its inner
 -- polynomial of 5, and so on. What we compare in this case is the
--- number of variables in the tail: like repeatedly taking the tail of
--- a list, it's quadratic.
+-- number of variables in the tail: like repeatedly taking the length of
+-- the tail of a list, it's quadratic.
 --
 -- The second approach was to try and mimic the powers structure
 -- (which only compared the gaps, which is linear), and store the gaps
