@@ -124,17 +124,71 @@ module Polynomials.Ring.Normal
 --   ≤′-step : ∀ {n} (m≤′n : m ≤′ n) → m ≤′ suc n
 --
 -- While this structure stores the same information as ≤, it does so
--- by induction on the *gap*. 
+-- by induction on the *gap*. This became apparent when I realised you
+-- could use it to write a comparison function which was linear in the
+-- size of the gap (even though it was comparing the length of the
+-- tail):
+--
+-- infix 4 _≤_
+-- data _≤_ (m : ℕ) : ℕ → Set where
+--   m≤m : m ≤ m
+--   ≤-s : ∀ {n} → (m≤n : m ≤ n) → m ≤ suc n
 
+-- data Ordering : ℕ → ℕ → Set where
+--   less    : ∀ {n m} → n ≤ m → Ordering n (suc m)
+--   greater : ∀ {n m} → m ≤ n → Ordering (suc n) m
+--   equal   : ∀ {n}           → Ordering n n
+
+-- ≤-compare : ∀ {i j n}
+--           → (i≤n : i ≤ n)
+--           → (j≤n : j ≤ n)
+--           → Ordering i j
+-- ≤-compare m≤m m≤m = equal
+-- ≤-compare m≤m (≤-s m≤n) = greater m≤n
+-- ≤-compare (≤-s m≤n) m≤m = less m≤n
+-- ≤-compare (≤-s i≤n) (≤-s j≤n) = ≤-compare i≤n j≤n
+--
+-- A few things too note here:
+--
+-- 1. I'm using my own definition of _≤″_, rather than the one in
+--    Data.Nat.
+-- 2. The ≤-compare function is one of those reassuring ones for which
+--    Agda can completely fill in the type for me.
+-- 3. This function looks somewhat similar to the one for comparing ℕ
+--    in Data.Nat, and as a result, the "matching" logic for degree
+--    and number of variables began too look similar.
+--
+-- While this approach allowed me too write all the functions I
+-- needed, I hit another roadblock when it came time to prove the
+-- ring homomorphism. The first thing I realised I needed to prove was
+-- basically the following:
+--
+--   ∀ {i j n}
+--   → (i≤n : i ≤ n)
+--   → (j≤n : j ≤ n)
+--   → ∀ xs Ρ
+--   → Σ⟦ xs ⟧ (drop-1 i≤n Ρ) ≈ Σ⟦ xs ⟧ (drop-1 j≤n Ρ)
+--
+-- In effect, if the inequalities are over the same numbers, then
+-- they'll behave the same way when used in evaluation.
+--
+-- The above is really just a consequence of ≤ being irrelevant:
+--
+--   ∀ {i n}
+--   → (x : i ≤ n)
+--   → (y : i ≤ n)
+--   → x ≡ y
+--
 infix 4 _≤_
 data _≤_ (m : ℕ) : ℕ → Set where
   m≤m : m ≤ m
   ≤-s : ∀ {n} → (m≤n : m ≤ n) → m ≤ suc n
 
 infixl 6 _⋈_
-_⋈_ : ∀ {x y z} → x ≤ y → suc y ≤ z → x ≤ z
-xs ⋈ m≤m = ≤-s xs
+_⋈_ : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
+xs ⋈ m≤m = xs
 xs ⋈ (≤-s ys) = ≤-s (xs ⋈ ys)
+
 
 data Ordering {n : ℕ} : ∀ {i j}
                       → (i≤n : i ≤ n)
@@ -144,11 +198,11 @@ data Ordering {n : ℕ} : ∀ {i j}
   _<_ : ∀ {i j-1}
       → (i≤j-1 : i ≤ j-1)
       → (j≤n : suc j-1 ≤ n)
-      → Ordering (i≤j-1 ⋈ j≤n) j≤n
+      → Ordering (≤-s i≤j-1 ⋈ j≤n) j≤n
   _>_ : ∀ {i-1 j}
       → (i≤n : suc i-1 ≤ n)
       → (j≤i-1 : j ≤ i-1)
-      → Ordering i≤n (j≤i-1 ⋈ i≤n)
+      → Ordering i≤n (≤-s j≤i-1 ⋈ i≤n)
   eq : ∀ {i} → (i≤n : i ≤ n) → Ordering i≤n i≤n
 
 _∺_ : ∀ {i j n}
@@ -159,8 +213,8 @@ m≤m ∺ m≤m = eq m≤m
 m≤m ∺ ≤-s y = m≤m > y
 ≤-s x ∺ m≤m = x < m≤m
 ≤-s x ∺ ≤-s y with x ∺ y
-≤-s .(i≤j-1 ⋈ y) ∺ ≤-s y            | i≤j-1 < .y = i≤j-1 < ≤-s y
-≤-s x            ∺ ≤-s .(j≤i-1 ⋈ x) | .x > j≤i-1 = ≤-s x > j≤i-1
+≤-s .(≤-s i≤j-1 ⋈ y) ∺ ≤-s y            | i≤j-1 < .y = i≤j-1 < ≤-s y
+≤-s x            ∺ ≤-s .(≤-s j≤i-1 ⋈ x) | .x > j≤i-1 = ≤-s x > j≤i-1
 ≤-s x            ∺ ≤-s .x           | eq .x = eq (≤-s x)
 
 z≤n : ∀ {n} → zero ≤ n
@@ -271,7 +325,7 @@ x ^ i ∷↓ xs with zero? x
 
 -- Inject a polynomial into a larger polynomoial with more variables
 _Π↑_ : ∀ {n m} → Poly n → (suc n ≤ m) → Poly m
-(xs Π i≤n) Π↑ n≤m = xs Π (i≤n ⋈ n≤m)
+(xs Π i≤n) Π↑ n≤m = xs Π (≤-s i≤n ⋈ n≤m)
 
 -- Normalising Π
 infixr 4 _Π↓_

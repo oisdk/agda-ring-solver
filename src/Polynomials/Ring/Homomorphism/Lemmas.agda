@@ -82,7 +82,7 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
          → (si≤n : suc i ≤ n)
          → (sn≤m : suc n ≤ m)
          → (Ρ : Vec Carrier m)
-         → Σ⟦ xs ⟧ (drop-1 (si≤n ⋈ sn≤m) Ρ)
+         → Σ⟦ xs ⟧ (drop-1 (≤-s si≤n ⋈ sn≤m) Ρ)
          ≈ Σ⟦ xs ⟧ (drop-1 si≤n (proj₂ (drop-1 sn≤m Ρ)))
 Σ-Π↑-hom xs si≤n m≤m (ρ ∷ Ρ) = refl
 Σ-Π↑-hom xs si≤n (≤-s sn≤m) (_ ∷ Ρ) = Σ-Π↑-hom xs si≤n sn≤m Ρ
@@ -100,7 +100,7 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
       → (j≤n   : suc j-1 ≤ n)
       → (x : FlatPoly i)
       → (Ρ : Vec Carrier n)
-      → ⟦ x Π i≤j-1 ⟧ (proj₂ (drop-1 j≤n Ρ)) ≈ ⟦ x Π (i≤j-1 ⋈ j≤n) ⟧ Ρ
+      → ⟦ x Π i≤j-1 ⟧ (proj₂ (drop-1 j≤n Ρ)) ≈ ⟦ x Π (≤-s i≤j-1 ⋈ j≤n) ⟧ Ρ
 ⋈-hom i≤j-1 j≤n (Κ x) Ρ = refl
 ⋈-hom i≤j-1 m≤m (Σ x) (ρ ∷ Ρ) = refl
 ⋈-hom i≤j-1 (≤-s j≤n) (Σ x {xn}) (ρ ∷ Ρ) = ⋈-hom i≤j-1 j≤n (Σ x {xn}) Ρ

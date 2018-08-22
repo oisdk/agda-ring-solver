@@ -63,7 +63,7 @@ mutual
     ≈⟨ ⊠-inj-hom i≤j-1 xs ys ρ Ρ′ ⟩
       ⟦ xs Π i≤j-1 ⟧ (proj₂ (drop-1 j≤n Ρ)) * Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
     ≈⟨ ≪* ⋈-hom i≤j-1 j≤n xs Ρ ⟩
-      ⟦ xs Π (i≤j-1 ⋈ j≤n) ⟧ Ρ * Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
+      ⟦ xs Π (≤-s i≤j-1 ⋈ j≤n) ⟧ Ρ * Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
     ∎
   ⊠-match-hom (i≤n > j≤i-1) (Σ xs) ys Ρ =
     let (ρ , Ρ′) = drop-1 i≤n Ρ
@@ -75,9 +75,9 @@ mutual
     ≈⟨ ⊠-inj-hom j≤i-1 ys xs ρ Ρ′ ⟩
       ⟦ ys Π j≤i-1 ⟧ (proj₂ (drop-1 i≤n Ρ)) * Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
     ≈⟨ ≪* ⋈-hom j≤i-1 i≤n ys Ρ ⟩
-      ⟦ ys Π (j≤i-1 ⋈ i≤n) ⟧ Ρ * Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
+      ⟦ ys Π (≤-s j≤i-1 ⋈ i≤n) ⟧ Ρ * Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
     ≈⟨ *-comm _ _ ⟩
-      Σ⟦ xs ⟧ (drop-1 i≤n Ρ) * ⟦ ys Π (j≤i-1 ⋈ i≤n) ⟧ Ρ
+      Σ⟦ xs ⟧ (drop-1 i≤n Ρ) * ⟦ ys Π (≤-s j≤i-1 ⋈ i≤n) ⟧ Ρ
     ∎
   ⊠-match-hom (eq ij≤n) (Κ x) (Κ y) Ρ = *-homo x y
   ⊠-match-hom (eq ij≤n) (Σ xs) (Σ ys) Ρ =
