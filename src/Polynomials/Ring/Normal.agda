@@ -119,20 +119,18 @@ module Polynomials.Ring.Normal
 -- But I did not try it. The solution I ended up with was superior,
 -- regardless:
 --
--- data _≤′_ (m : ℕ) : ℕ → Set where
---   ≤′-refl :                         m ≤′ m
---   ≤′-step : ∀ {n} (m≤′n : m ≤′ n) → m ≤′ suc n
+infix 4 _≤_
+data _≤_ (m : ℕ) : ℕ → Set where
+  m≤m : m ≤ m
+  ≤-s : ∀ {n} → (m≤n : m ≤ n) → m ≤ suc n
+--
+-- (This is a rewritten version of _≤′_ from Data.Nat.Base).
 --
 -- While this structure stores the same information as ≤, it does so
 -- by induction on the *gap*. This became apparent when I realised you
 -- could use it to write a comparison function which was linear in the
 -- size of the gap (even though it was comparing the length of the
 -- tail):
---
--- infix 4 _≤_
--- data _≤_ (m : ℕ) : ℕ → Set where
---   m≤m : m ≤ m
---   ≤-s : ∀ {n} → (m≤n : m ≤ n) → m ≤ suc n
 
 -- data Ordering : ℕ → ℕ → Set where
 --   less    : ∀ {n m} → n ≤ m → Ordering n (suc m)
@@ -150,11 +148,9 @@ module Polynomials.Ring.Normal
 --
 -- A few things too note here:
 --
--- 1. I'm using my own definition of _≤″_, rather than the one in
---    Data.Nat.
--- 2. The ≤-compare function is one of those reassuring ones for which
+-- 1. The ≤-compare function is one of those reassuring ones for which
 --    Agda can completely fill in the type for me.
--- 3. This function looks somewhat similar to the one for comparing ℕ
+-- 2. This function looks somewhat similar to the one for comparing ℕ
 --    in Data.Nat, and as a result, the "matching" logic for degree
 --    and number of variables began too look similar.
 --
@@ -179,17 +175,40 @@ module Polynomials.Ring.Normal
 --   → (y : i ≤ n)
 --   → x ≡ y
 --
-infix 4 _≤_
-data _≤_ (m : ℕ) : ℕ → Set where
-  m≤m : m ≤ m
-  ≤-s : ∀ {n} → (m≤n : m ≤ n) → m ≤ suc n
-
+-- Trying to prove this convinced me that it might not even be possible
+-- without K. On top of that, I also noticed that I would need to
+-- prove things like:
+--
+--   ∀ {i j n}
+--   → (i≤j : i ≤ j)
+--   → (j≤n : j ≤ n)
+--   → (x : FlatPoly i)
+--   → (Ρ : Vec Carrier n)
+--   → ⟦ x Π (i≤j ⋈ j≤n) ⟧ Ρ ≈ ⟦ x Π i≤j ⟧ (drop j≤n Ρ)
+--
+-- ⋈ is transitivity, defined as:
 infixl 6 _⋈_
 _⋈_ : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
 xs ⋈ m≤m = xs
 xs ⋈ (≤-s ys) = ≤-s (xs ⋈ ys)
-
-
+--
+-- Effectively, I needed to prove that transitivity was a
+-- homomorphism.
+--
+-- I realised that I had not run into these difficulties with the
+-- comparison function I was using for the exponent gaps: why? Well
+-- that function provides a proof about its *arguments* whereas the
+-- one I wrote above only provides a proof about the i and j.
+--
+-- data Ordering : Rel ℕ 0ℓ where
+--   less    : ∀ m k → Ordering m (suc (m + k))
+--   equal   : ∀ m   → Ordering m m
+--   greater : ∀ m k → Ordering (suc (m + k)) m
+--
+-- If I tried to mimick the above as closely as possible, I would also
+-- need an analogue to +: of course this was ⋈, so I was going to get
+-- my transitivity proof as well as everything else. The result is the
+-- following:
 data Ordering {n : ℕ} : ∀ {i j}
                       → (i≤n : i ≤ n)
                       → (j≤n : j ≤ n)
