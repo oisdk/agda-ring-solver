@@ -26,15 +26,10 @@ open import Polynomials.Ring.Normal coeff Zero-C zero-c?
 open import Polynomials.Ring.Semantics coeff Zero-C zero-c? ring morphism
 open _-Raw-AlmostCommutative⟶_ morphism renaming (⟦_⟧ to ⟦_⟧ᵣ)
 
-open import Relation.Nullary
-open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.Product hiding (Σ)
-import Data.Nat.Properties as ℕ-≡
-import Relation.Binary.PropositionalEquality as ≡
 open import Function
 open import Data.List as List using (_∷_; [])
 open import Data.Vec as Vec using (Vec; _∷_; [])
-open import Data.Product.Irrelevant
 open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
 

@@ -8,7 +8,6 @@ open import Data.Vec as Vec using (Vec; []; _∷_)
 open import Data.List as List using (List; []; _∷_)
 open import Level using (lift)
 open import Data.Product
-open import Data.Product.Irrelevant
 
 module Polynomials.Ring.Semantics
   {r₁ r₂ r₃ r₄}

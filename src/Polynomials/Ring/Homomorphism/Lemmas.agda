@@ -21,16 +21,11 @@ open import Polynomials.Ring.Normal coeff Zero-C zero-c?
 open import Polynomials.Ring.Semantics coeff Zero-C zero-c? ring morphism
 open _-Raw-AlmostCommutative⟶_ morphism renaming (⟦_⟧ to ⟦_⟧ᵣ)
 module Raw = RawRing coeff
-
 open import Relation.Nullary
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.Product hiding (Σ)
-import Data.Nat.Properties as ℕ-≡
-import Relation.Binary.PropositionalEquality as ≡
-open import Function
 open import Data.List as List using (_∷_; [])
 open import Data.Vec as Vec using (Vec; _∷_; [])
-open import Data.Product.Irrelevant
 open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
 
@@ -135,9 +130,11 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
     Σ⟦ _≠0 x {x≠0} Δ zero ∷ [] ⟧ (ρ , Ρ′)
   ∎
 
+open import Relation.Binary.PropositionalEquality as ≡ using (_≡_)
+
 drop-1⇒lookup : ∀ {n}
               → (i : Fin n)
               → (Ρ : Vec Carrier n)
-              → proj₁ (drop-1 (Fin⇒≤ i) Ρ) ≡.≡ Vec.lookup i Ρ
+              → proj₁ (drop-1 (Fin⇒≤ i) Ρ) ≡ Vec.lookup i Ρ
 drop-1⇒lookup Fin.zero (ρ ∷ Ρ) = ≡.refl
 drop-1⇒lookup (Fin.suc i) (ρ ∷ Ρ) = drop-1⇒lookup i Ρ

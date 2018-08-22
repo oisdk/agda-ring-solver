@@ -34,7 +34,6 @@ import Relation.Binary.PropositionalEquality as ≡
 open import Function
 open import Data.List as List using (_∷_; [])
 open import Data.Vec as Vec using (Vec; _∷_; [])
-open import Data.Product.Irrelevant
 open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
 
@@ -44,7 +43,7 @@ mutual
         → (ys : Poly n)
         → (Ρ : Vec Carrier n)
         → ⟦ xs ⊠ ys ⟧ Ρ ≈ ⟦ xs ⟧ Ρ * ⟦ ys ⟧ Ρ
-  ⊠-hom (xs Π i≤n) (ys Π j≤n) = ⊠-match-hom (≤-compare i≤n j≤n) xs ys
+  ⊠-hom (xs Π i≤n) (ys Π j≤n) = ⊠-match-hom (i≤n ∺ j≤n) xs ys
 
   ⊠-match-hom : ∀ {i j n}
               → {i≤n : i ≤ n}
@@ -54,7 +53,7 @@ mutual
               → (ys : FlatPoly j)
               → (Ρ : Vec Carrier n)
               → ⟦ ⊠-match ord xs ys ⟧ Ρ ≈ ⟦ xs Π i≤n ⟧ Ρ * ⟦ ys Π j≤n ⟧ Ρ
-  ⊠-match-hom (less    i≤j-1 j≤n) xs (Σ ys) Ρ =
+  ⊠-match-hom (i≤j-1 < j≤n) xs (Σ ys) Ρ =
     let (ρ , Ρ′) = drop-1 j≤n Ρ
     in
     begin
@@ -66,7 +65,7 @@ mutual
     ≈⟨ ≪* ⋈-hom i≤j-1 j≤n xs Ρ ⟩
       ⟦ xs Π (i≤j-1 ⋈ j≤n) ⟧ Ρ * Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
     ∎
-  ⊠-match-hom (greater j≤i-1 i≤n) (Σ xs) ys Ρ =
+  ⊠-match-hom (i≤n > j≤i-1) (Σ xs) ys Ρ =
     let (ρ , Ρ′) = drop-1 i≤n Ρ
     in
     begin
@@ -80,8 +79,8 @@ mutual
     ≈⟨ *-comm _ _ ⟩
       Σ⟦ xs ⟧ (drop-1 i≤n Ρ) * ⟦ ys Π (j≤i-1 ⋈ i≤n) ⟧ Ρ
     ∎
-  ⊠-match-hom (equal ij≤n) (Κ x) (Κ y) Ρ = *-homo x y
-  ⊠-match-hom (equal ij≤n) (Σ xs) (Σ ys) Ρ =
+  ⊠-match-hom (eq ij≤n) (Κ x) (Κ y) Ρ = *-homo x y
+  ⊠-match-hom (eq ij≤n) (Σ xs) (Σ ys) Ρ =
     begin
       ⟦ ⊠-coeffs xs ys Π↓ ij≤n ⟧ Ρ
     ≈⟨ Π↓-hom (⊠-coeffs xs ys) ij≤n Ρ ⟩
@@ -166,10 +165,10 @@ mutual
         ys′ = Σ⟦ ys ⟧ (ρ , Ρ)
     in
     begin
-      Σ⟦ ⊠-match (≤-compare i≤k j≤k) x y ^ j ∷↓ ⊠-inj i≤k x ys ⟧ (ρ , Ρ)
-    ≈⟨ ∷↓-hom (⊠-match (≤-compare i≤k j≤k) x y) j (⊠-inj i≤k x ys) ρ Ρ ⟩
-      (⟦ ⊠-match (≤-compare i≤k j≤k) x y ⟧ Ρ + Σ⟦ ⊠-inj i≤k x ys ⟧ (ρ , Ρ) * ρ) * ρ ^ j
-    ≈⟨ ≪* (⊠-match-hom (≤-compare i≤k j≤k) x y Ρ ⟨ +-cong ⟩ (≪* ⊠-inj-hom i≤k x ys ρ Ρ ︔ *-assoc _ _ _))⟩
+      Σ⟦ ⊠-match (i≤k ∺ j≤k) x y ^ j ∷↓ ⊠-inj i≤k x ys ⟧ (ρ , Ρ)
+    ≈⟨ ∷↓-hom (⊠-match (i≤k ∺ j≤k) x y) j (⊠-inj i≤k x ys) ρ Ρ ⟩
+      (⟦ ⊠-match (i≤k ∺ j≤k) x y ⟧ Ρ + Σ⟦ ⊠-inj i≤k x ys ⟧ (ρ , Ρ) * ρ) * ρ ^ j
+    ≈⟨ ≪* (⊠-match-hom (i≤k ∺ j≤k) x y Ρ ⟨ +-cong ⟩ (≪* ⊠-inj-hom i≤k x ys ρ Ρ ︔ *-assoc _ _ _))⟩
       (x′ * y′ + x′ * (ys′ * ρ)) * ρ ^ j
     ≈⟨ ≪* sym (distribˡ x′ _ _ ) ⟩
       x′ * (y′ + ys′ * ρ) * ρ ^ j

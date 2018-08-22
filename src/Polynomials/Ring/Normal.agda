@@ -75,31 +75,31 @@ xs ⋈ m≤m = ≤-s xs
 xs ⋈ (≤-s ys) = ≤-s (xs ⋈ ys)
 
 data Ordering {n : ℕ} : ∀ {i j}
-                          → (i≤n : i ≤ n)
-                          → (j≤n : j ≤ n)
-                          → Set
-                          where
-  less    : ∀ {i j-1}
-          → (i≤j-1 : i ≤ j-1)
-          → (j≤n : suc j-1 ≤ n)
-          → Ordering (i≤j-1 ⋈ j≤n) j≤n
-  greater : ∀ {i-1 j}
-          → (j≤i-1 : j ≤ i-1)
-          → (i≤n : suc i-1 ≤ n)
-          → Ordering i≤n (j≤i-1 ⋈ i≤n)
-  equal   : ∀ {i} → (i≤n : i ≤ n) → Ordering i≤n i≤n
+                      → (i≤n : i ≤ n)
+                      → (j≤n : j ≤ n)
+                      → Set
+                      where
+  _<_ : ∀ {i j-1}
+      → (i≤j-1 : i ≤ j-1)
+      → (j≤n : suc j-1 ≤ n)
+      → Ordering (i≤j-1 ⋈ j≤n) j≤n
+  _>_ : ∀ {i-1 j}
+      → (i≤n : suc i-1 ≤ n)
+      → (j≤i-1 : j ≤ i-1)
+      → Ordering i≤n (j≤i-1 ⋈ i≤n)
+  eq : ∀ {i} → (i≤n : i ≤ n) → Ordering i≤n i≤n
 
-≤-compare : ∀ {i j n}
-               → (x : i ≤ n)
-               → (y : j ≤ n)
-               → Ordering x y
-≤-compare m≤m m≤m = equal m≤m
-≤-compare m≤m (≤-s y) = greater y m≤m
-≤-compare (≤-s x) m≤m = less x m≤m
-≤-compare (≤-s x) (≤-s y) with ≤-compare x y
-≤-compare (≤-s .(i≤j-1 ⋈ y)) (≤-s y) | less i≤j-1 .y = less i≤j-1 (≤-s y)
-≤-compare (≤-s x) (≤-s .(j≤i-1 ⋈ x)) | greater j≤i-1 .x = greater j≤i-1 (≤-s x)
-≤-compare (≤-s x) (≤-s .x) | equal .x = equal (≤-s x)
+_∺_ : ∀ {i j n}
+    → (x : i ≤ n)
+    → (y : j ≤ n)
+    → Ordering x y
+m≤m ∺ m≤m = eq m≤m
+m≤m ∺ ≤-s y = m≤m > y
+≤-s x ∺ m≤m = x < m≤m
+≤-s x ∺ ≤-s y with x ∺ y
+≤-s .(i≤j-1 ⋈ y) ∺ ≤-s y            | i≤j-1 < .y = i≤j-1 < ≤-s y
+≤-s x            ∺ ≤-s .(j≤i-1 ⋈ x) | .x > j≤i-1 = ≤-s x > j≤i-1
+≤-s x            ∺ ≤-s .x           | eq .x = eq (≤-s x)
 
 z≤n : ∀ {n} → zero ≤ n
 z≤n {zero} = m≤m
@@ -252,7 +252,7 @@ mutual
 
   infixl 6 _⊞_
   _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
-  (xs Π i≤n) ⊞ (ys Π j≤n) = ⊞-match (≤-compare i≤n j≤n) xs ys
+  (xs Π i≤n) ⊞ (ys Π j≤n) = ⊞-match (i≤n ∺ j≤n) xs ys
 
   ⊞-match : ∀ {i j n}
         → {i≤n : i ≤ n}
@@ -261,10 +261,10 @@ mutual
         → FlatPoly i
         → FlatPoly j
         → Poly n
-  ⊞-match (equal ij≤n) (Κ x)  (Κ y)     = Κ (x + y)         Π  ij≤n
-  ⊞-match (equal ij≤n) (Σ xs) (Σ ys)    = ⊞-coeffs    xs ys Π↓ ij≤n
-  ⊞-match (less    i≤j-1 j≤n) xs (Σ ys) = ⊞-inj i≤j-1 xs ys Π↓ j≤n
-  ⊞-match (greater j≤i-1 i≤n) (Σ xs) ys = ⊞-inj j≤i-1 ys xs Π↓ i≤n
+  ⊞-match (eq ij≤n) (Κ x)  (Κ y)  = Κ (x + y)         Π  ij≤n
+  ⊞-match (eq ij≤n) (Σ xs) (Σ ys) = ⊞-coeffs    xs ys Π↓ ij≤n
+  ⊞-match (i≤j-1 < j≤n) xs (Σ ys) = ⊞-inj i≤j-1 xs ys Π↓ j≤n
+  ⊞-match (i≤n > j≤i-1) (Σ xs) ys = ⊞-inj j≤i-1 ys xs Π↓ i≤n
 
   ⊞-inj : ∀ {i k}
        → (i ≤ k)
@@ -273,7 +273,7 @@ mutual
        → Coeffs k
   ⊞-inj i≤k xs [] = xs Π i≤k ^ zero ∷↓ []
   ⊞-inj i≤k xs (y Π j≤k ≠0 Δ zero ∷ ys) =
-    ⊞-match (≤-compare j≤k i≤k) y xs ^ zero ∷↓ ys
+    ⊞-match (j≤k ∺ i≤k) y xs ^ zero ∷↓ ys
   ⊞-inj i≤k xs (y Δ suc j ∷ ys) =
     xs Π i≤k ^ zero ∷↓ y Δ j ∷ ys
 
@@ -316,7 +316,7 @@ mutual
 mutual
   infixl 7 _⊠_
   _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
-  (xs Π i≤n) ⊠ (ys Π j≤n) = ⊠-match (≤-compare i≤n j≤n) xs ys
+  (xs Π i≤n) ⊠ (ys Π j≤n) = ⊠-match (i≤n ∺ j≤n) xs ys
 
   ⊠-inj : ∀ {i k}
         → i ≤ k
@@ -325,7 +325,7 @@ mutual
         → Coeffs k
   ⊠-inj _ _ [] = []
   ⊠-inj i≤k x (y Π j≤k ≠0 Δ p ∷ ys) =
-    ⊠-match (≤-compare i≤k j≤k) x y ^ p ∷↓ ⊠-inj i≤k x ys
+    ⊠-match (i≤k ∺ j≤k) x y ^ p ∷↓ ⊠-inj i≤k x ys
 
   ⊠-match : ∀ {i j n}
           → {i≤n : i ≤ n}
@@ -334,10 +334,10 @@ mutual
           → FlatPoly i
           → FlatPoly j
           → Poly n
-  ⊠-match (equal ij≤n) (Κ x)  (Κ y)     = Κ (x * y)         Π  ij≤n
-  ⊠-match (equal ij≤n) (Σ xs) (Σ ys)    = ⊠-coeffs xs ys    Π↓ ij≤n
-  ⊠-match (less    i≤j-1 j≤n) xs (Σ ys) = ⊠-inj i≤j-1 xs ys Π↓ j≤n
-  ⊠-match (greater j≤i-1 i≤n) (Σ xs) ys = ⊠-inj j≤i-1 ys xs Π↓ i≤n
+  ⊠-match (eq ij≤n) (Κ x)  (Κ y)  = Κ (x * y)         Π  ij≤n
+  ⊠-match (eq ij≤n) (Σ xs) (Σ ys) = ⊠-coeffs xs ys    Π↓ ij≤n
+  ⊠-match (i≤j-1 < j≤n) xs (Σ ys) = ⊠-inj i≤j-1 xs ys Π↓ j≤n
+  ⊠-match (i≤n > j≤i-1) (Σ xs) ys = ⊠-inj j≤i-1 ys xs Π↓ i≤n
 
   -- A simple shift-and-add algorithm.
   ⊠-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
