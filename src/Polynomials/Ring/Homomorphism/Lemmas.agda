@@ -125,40 +125,4 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
     Σ⟦ _≠0 x {x≠0} Δ zero ∷ [] ⟧ (ρ , Ρ′)
   ∎
 
-drop-1⇒lookup : ∀ {n}
-              → (i : Fin n)
-              → (Ρ : Vec Carrier n)
-              → proj₁ (drop-1 (Fin⇒≤ i) Ρ) ≡.≡ Vec.lookup i Ρ
-drop-1⇒lookup Fin.zero (ρ ∷ Ρ) = ≡.refl
-drop-1⇒lookup (Fin.suc i) (ρ ∷ Ρ) = drop-1⇒lookup i Ρ
-
-
-≤-space : ∀ {i n} → i ≤ n → ℕ
-≤-space m≤m = zero
-≤-space (≤-s x) = suc (≤-space x)
-
-x∸x≡0 : ∀ x → x ℕ.∸ x ≡.≡ 0
-x∸x≡0 zero = ≡.refl
-x∸x≡0 (suc x) = x∸x≡0 x
-open import Data.Empty
-x≮0 : ∀ x → suc x ≤ 0 → ⊥
-x≮0 x ()
-
-≤-pred-both : ∀ i n → suc i ≤ suc n → i ≤ n
-≤-pred-both i .i m≤m = m≤m
-≤-pred-both i zero (≤-s x) = ⊥-elim (x≮0 _ x)
-≤-pred-both i (suc n) (≤-s x) = ≤-s (≤-pred-both _ _ x)
-
-lemma₂ : ∀ n i → i ≤ n → suc (n ℕ.∸ i) ≡.≡ suc n ℕ.∸ i
-lemma₂ n zero prf = ≡.refl
-lemma₂ zero (suc i) prf = ⊥-elim (x≮0 _ prf)
-lemma₂ (suc n) (suc i) prf = lemma₂ n i (≤-pred-both _ _ prf)
-
-≤-space≡- : ∀ i n → (x : i ≤ n) → ≤-space x ≡.≡ n ℕ.∸ i
-≤-space≡- i n m≤m = ≡.sym (x∸x≡0 i)
-≤-space≡- i n (≤-s x) = ≡.trans (≡.cong suc (≤-space≡- _ _ x)) (lemma₂ _ _ x)
-
-vec-drop : (n : ℕ) → ∀ {m} → Vec Carrier m → Vec Carrier (m ℕ.∸ n)
-vec-drop zero xs = xs
-vec-drop (suc n) [] = []
-vec-drop (suc n) (x ∷ xs) = vec-drop n xs
+open import Polynomials.Ring.Homomorphism.Order coeff Zero-C zero-c? ring morphism Zero-C⟶Zero-R public

@@ -29,9 +29,15 @@ _^_ : Carrier → ℕ → Carrier
 x ^ zero = 1#
 x ^ suc n = x * x ^ n
 
+drop : ∀ {i n} → i ≤ n → Vec Carrier n → Vec Carrier i
+drop m≤m Ρ = Ρ
+drop (≤-s si≤n) (_ ∷ Ρ) = drop si≤n Ρ
+
+vec-uncons : ∀ {n} → Vec Carrier (suc n) → Carrier × Vec Carrier n
+vec-uncons (x ∷ xs) = x , xs
+
 drop-1 : ∀ {i n} → suc i ≤ n → Vec Carrier n → Carrier × Vec Carrier i
-drop-1 m≤m (ρ ∷ Ρ) = ρ , Ρ
-drop-1 (≤-s si≤n) (_ ∷ Ρ) = drop-1 si≤n Ρ
+drop-1 si≤n xs = vec-uncons (drop si≤n xs)
 
 mutual
   Σ⟦_⟧ : ∀ {n} → Coeffs n → (Carrier × Vec Carrier n) → Carrier
