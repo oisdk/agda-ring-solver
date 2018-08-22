@@ -44,7 +44,8 @@ mutual
         → (ys : Poly n)
         → (Ρ : Vec Carrier n)
         → ⟦ xs ⊠ ys ⟧ Ρ ≈ ⟦ xs ⟧ Ρ * ⟦ ys ⟧ Ρ
-  ⊠-hom (xs Π i≤n) (ys Π j≤n) = {!!}
+  ⊠-hom (xs Π i≤n) (ys Π j≤n) = {!!} -- ⊠-match-hom (≤-compare i≤n j≤n) xs i≤n ys j≤n
+
   -- ⊠-hom {suc n} xs ys (ρ ∷ Ρ) = ⊠-coeffs-hom xs ys ρ Ρ
 
   -- ⊠-step-hom : ∀ {n}

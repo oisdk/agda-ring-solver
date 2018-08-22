@@ -34,12 +34,6 @@ open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
 import Data.Empty.Irrelevant as Irrelevant
 
-drop-1⇒lookup : ∀ {n}
-              → (i : Fin n)
-              → (Ρ : Vec Carrier n)
-              → proj₁ (drop-1 (Fin⇒≤ i) Ρ) ≡.≡ Vec.lookup i Ρ
-drop-1⇒lookup Fin.zero (ρ ∷ Ρ) = ≡.refl
-drop-1⇒lookup (Fin.suc i) (ρ ∷ Ρ) = drop-1⇒lookup i Ρ
 
 
 ≤-space : ∀ {i n} → i ≤ n → ℕ

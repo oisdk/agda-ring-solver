@@ -98,8 +98,32 @@ mutual
             → (ρ : Carrier)
             → (Ρ : Vec Carrier k)
             → Σ⟦ ⊞-inj i≤k x ys ⟧ (ρ , Ρ) ≈ ⟦ x Π i≤k ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ)
-  ⊞-inj-hom i≤k xs [] ρ Ρ = {!!}
-  ⊞-inj-hom i≤k xs (y Π j≤k ≠0 Δ zero ∷ ys) ρ Ρ = {!!}
+  ⊞-inj-hom i≤k xs [] ρ Ρ =
+    begin
+      Σ⟦ (xs Π i≤k) ^ zero ∷↓ [] ⟧ (ρ , Ρ)
+    ≈⟨ ∷↓-hom (xs Π i≤k) zero [] ρ Ρ ⟩
+      (⟦ xs Π i≤k ⟧ Ρ + Σ⟦ [] ⟧ (ρ , Ρ) * ρ) * ρ ^ zero
+    ≈⟨ *-identityʳ _ ⟩
+      ⟦ xs Π i≤k ⟧ Ρ + Σ⟦ [] ⟧ (ρ , Ρ) * ρ
+    ≈⟨ +≫ zeroˡ ρ ⟩
+      ⟦ xs Π i≤k ⟧ Ρ + Σ⟦ [] ⟧ (ρ , Ρ)
+    ∎
+  ⊞-inj-hom i≤k xs (y Π j≤k ≠0 Δ zero ∷ ys) ρ Ρ =
+    begin
+      Σ⟦ ⊞-match (≤-compare j≤k i≤k) y xs ^ zero ∷↓ ys ⟧ (ρ , Ρ)
+    ≈⟨ ∷↓-hom (⊞-match (≤-compare j≤k i≤k) y xs) zero ys ρ Ρ ⟩
+      (⟦ ⊞-match (≤-compare j≤k i≤k) y xs ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ) * ρ ^ zero
+    ≈⟨ ≪* ≪+ ⊞-match-hom (≤-compare j≤k i≤k) y xs Ρ ⟩
+      (⟦ y Π j≤k ⟧ Ρ + ⟦ xs Π i≤k ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ) * ρ ^ zero
+    ≈⟨ ≪* ≪+ +-comm _ _ ⟩
+      (⟦ xs Π i≤k ⟧ Ρ + ⟦ y Π j≤k ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ) * ρ ^ zero
+    ≈⟨ ≪* +-assoc _ _ _ ⟩
+      (⟦ xs Π i≤k ⟧ Ρ + (⟦ y Π j≤k ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ)) * ρ ^ zero
+    ≈⟨ distribʳ (ρ ^ zero) _ _ ⟩
+      ⟦ xs Π i≤k ⟧ Ρ * ρ ^ zero + (⟦ y Π j≤k ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ) * ρ ^ zero
+    ≈⟨ ≪+ *-identityʳ _ ⟩
+      ⟦ xs Π i≤k ⟧ Ρ + (⟦ y Π j≤k ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ) * ρ ^ zero
+    ∎
   ⊞-inj-hom i≤k xs (y Δ suc j ∷ ys) ρ Ρ =
     let y′ = poly y
     in
