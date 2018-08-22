@@ -265,6 +265,12 @@ mutual
       flat  : FlatPoly i
       i≤n   : i ≤ n
 
+  -- Possible alternative:
+  -- infixl 6 _Σ_
+  -- data Poly (n : ℕ) : Set (a ⊔ ℓ) where
+  --   Κ   : Carrier → Poly n
+  --   _Σ_ : ∀ {i} → suc i ≤ n → (xs : Coeffs i) → .{xn : Norm xs} → Poly n
+
   data FlatPoly : ℕ → Set (a ⊔ ℓ) where
     Κ : Carrier → FlatPoly 0
     Σ : ∀ {n} → (xs : Coeffs n) → .{xn : Norm xs} → FlatPoly (suc n)
