@@ -18,28 +18,18 @@ module Polynomials.Ring.Homomorphism
   (Zero-C⟶Zero-R : ∀ x → Zero-C x → AlmostCommutativeRing._≈_ ring (_-Raw-AlmostCommutative⟶_.⟦_⟧ morphism x) (AlmostCommutativeRing.0# ring))
   where
 
-open AlmostCommutativeRing ring hiding (zero)
-open import Polynomials.Ring.Reasoning ring
-open import Polynomials.Ring.Normal coeff Zero-C zero-c?
-open import Polynomials.Ring.Semantics coeff Zero-C zero-c? ring morphism
-open _-Raw-AlmostCommutative⟶_ morphism renaming (⟦_⟧ to ⟦_⟧ᵣ)
-module Raw = RawRing coeff
+open import Polynomials.Ring.Homomorphism.Addition coeff Zero-C zero-c? ring morphism Zero-C⟶Zero-R
+  using (⊞-hom)
+  public
 
-open import Relation.Nullary
-open import Data.Nat as ℕ using (ℕ; suc; zero)
-open import Data.Product hiding (Σ)
-import Data.Nat.Properties as ℕ-≡
-import Relation.Binary.PropositionalEquality as ≡
-open import Function
-open import Data.List as List using (_∷_; [])
-open import Data.Vec as Vec using (Vec; _∷_; [])
-open import Data.Product.Irrelevant
-open import Level using (Lift; lower; lift)
-open import Data.Fin as Fin using (Fin)
+open import Polynomials.Ring.Homomorphism.Multiplication coeff Zero-C zero-c? ring morphism Zero-C⟶Zero-R
+  using (⊠-hom)
+  public
 
+open import Polynomials.Ring.Homomorphism.Negation coeff Zero-C zero-c? ring morphism Zero-C⟶Zero-R
+  using (⊟-hom)
+  public
 
-
-
-
-
-
+open import Polynomials.Ring.Homomorphism.Semantics coeff Zero-C zero-c? ring morphism Zero-C⟶Zero-R
+  using (κ-hom; ι-hom)
+  public

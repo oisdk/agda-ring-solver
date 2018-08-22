@@ -8,7 +8,7 @@ open import Algebra.Solver.Ring.AlmostCommutativeRing
 ----------------------------------------------------------------------
 -- Homomorphism
 ----------------------------------------------------------------------
-module Polynomials.Ring.Homomorphism.Subtraction
+module Polynomials.Ring.Homomorphism.Negation
   {r₁ r₂ r₃ r₄}
   (coeff : RawRing r₁)
   (Zero-C : Pred (RawRing.Carrier coeff) r₂)
