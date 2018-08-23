@@ -19,9 +19,13 @@ Bin : Set
 Bin = List ℕ
 
 incr′ : ℕ → Bin → Bin
+incr″ : ℕ → ℕ → Bin → Bin
+
 incr′ i [] = i ∷ []
-incr′ i (suc x ∷ xs) = i ∷ x ∷ xs
-incr′ i (zero ∷ xs) = incr′ (suc i) xs
+incr′ i (x ∷ xs) = incr″ i x xs
+
+incr″ i zero xs = incr′ (suc i) xs
+incr″ i (suc x) xs = i ∷ x ∷ xs
 
 incr : Bin → Bin
 incr = incr′ 0
@@ -34,9 +38,8 @@ _+_ : Bin → Bin → Bin
   +-zip : ∀ {x y} → Ordering x y → Bin → Bin → Bin
   +-zip-r : ℕ → Bin → Bin → Bin
   +-incr : ℕ → Bin → Bin → Bin
-  +-incr-r : ℕ → Bin → ℕ → Bin → Bin
+  +-incr-r : ℕ → ℕ → Bin → Bin → Bin
   +-incr-zip : ℕ → ∀ {i j} → Ordering i j → Bin → Bin → Bin
-  incr″ : ℕ → ℕ → Bin → Bin
 
   +-zip (less    i k) xs ys = i ∷ +-zip-r k ys xs
   +-zip (equal   k  ) xs ys = +-incr (suc k) xs ys
@@ -45,20 +48,18 @@ _+_ : Bin → Bin → Bin
   +-zip-r x xs [] = x ∷ xs
   +-zip-r x xs (y ∷ ys) = +-zip (compare x y) xs ys
 
-  incr″ i zero xs = incr′ (suc i) xs
-  incr″ i (suc x) xs = i ∷ x ∷ xs
 
   +-incr i [] ys = incr′ i ys
-  +-incr i (x ∷ xs) ys = +-incr-r i ys x xs
+  +-incr i (x ∷ xs) ys = +-incr-r i x xs ys
 
-  +-incr-r i [] x xs = incr″ i x xs
-  +-incr-r i (y ∷ ys) x xs = +-incr-zip i (compare y x) ys xs
+  +-incr-r i x xs [] = incr″ i x xs
+  +-incr-r i x xs (y ∷ ys) = +-incr-zip i (compare y x) ys xs
 
-  +-incr-zip c (less zero k) xs ys = +-incr-r (suc c) xs k ys
-  +-incr-zip c (less (suc i) k) xs ys = c ∷ i ∷ +-zip-r k ys xs
-  +-incr-zip c (greater zero k) xs ys = +-incr-r (suc c) ys k xs
+  +-incr-zip c (less zero       k) xs ys = +-incr-r (suc c) k ys xs
+  +-incr-zip c (less (suc i)    k) xs ys = c ∷ i ∷ +-zip-r k ys xs
+  +-incr-zip c (greater zero    k) xs ys = +-incr-r (suc c) k xs ys
   +-incr-zip c (greater (suc j) k) xs ys = c ∷ j ∷ +-zip-r k xs ys
-  +-incr-zip c (equal   k  ) xs ys = c ∷ +-incr k xs ys
+  +-incr-zip c (equal           k) xs ys = c ∷ +-incr k xs ys
 
 pow : ℕ → Bin → Bin
 pow i [] = []
@@ -85,7 +86,7 @@ toNat = List.foldr (λ x xs → (2 ^ x) ℕ.* suc (2 ℕ.* xs)) 0
 private
 
   testLimit : ℕ
-  testLimit = 25
+  testLimit = 45
 
   nats : List ℕ
   nats = List.downFrom testLimit
