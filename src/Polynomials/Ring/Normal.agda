@@ -22,6 +22,7 @@ module Polynomials.Ring.Normal
   (zero-c? : Decidable Zero-C)
   where
 
+open import Data.Nat.Order.Gappy public
 ----------------------------------------------------------------------
 -- Gaps
 ----------------------------------------------------------------------
@@ -119,10 +120,10 @@ module Polynomials.Ring.Normal
 -- But I did not try it. The solution I ended up with was superior,
 -- regardless:
 --
-infix 4 _≤_
-data _≤_ (m : ℕ) : ℕ → Set where
-  m≤m : m ≤ m
-  ≤-s : ∀ {n} → (m≤n : m ≤ n) → m ≤ suc n
+-- infix 4 _≤_
+-- data _≤_ (m : ℕ) : ℕ → Set where
+--   m≤m : m ≤ m
+--   ≤-s : ∀ {n} → (m≤n : m ≤ n) → m ≤ suc n
 --
 -- (This is a rewritten version of _≤′_ from Data.Nat.Base).
 --
@@ -187,10 +188,9 @@ data _≤_ (m : ℕ) : ℕ → Set where
 --   → ⟦ x Π (i≤j ⋈ j≤n) ⟧ Ρ ≈ ⟦ x Π i≤j ⟧ (drop j≤n Ρ)
 --
 -- ⋈ is transitivity, defined as:
-infixl 6 _⋈_
-_⋈_ : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
-xs ⋈ m≤m = xs
-xs ⋈ (≤-s ys) = ≤-s (xs ⋈ ys)
+-- _⋈_ : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
+-- xs ⋈ m≤m = xs
+-- xs ⋈ (≤-s ys) = ≤-s (xs ⋈ ys)
 --
 -- Effectively, I needed to prove that transitivity was a
 -- homomorphism.
@@ -209,45 +209,36 @@ xs ⋈ (≤-s ys) = ≤-s (xs ⋈ ys)
 -- need an analogue to +: of course this was ⋈, so I was going to get
 -- my transitivity proof as well as everything else. The result is the
 -- following:
-data Ordering {n : ℕ} : ∀ {i j}
-                      → (i≤n : i ≤ n)
-                      → (j≤n : j ≤ n)
-                      → Set
-                      where
-  _<_ : ∀ {i j-1}
-      → (i≤j-1 : i ≤ j-1)
-      → (j≤n : suc j-1 ≤ n)
-      → Ordering (≤-s i≤j-1 ⋈ j≤n) j≤n
-  _>_ : ∀ {i-1 j}
-      → (i≤n : suc i-1 ≤ n)
-      → (j≤i-1 : j ≤ i-1)
-      → Ordering i≤n (≤-s j≤i-1 ⋈ i≤n)
-  eq : ∀ {i} → (i≤n : i ≤ n) → Ordering i≤n i≤n
+-- data Ordering {n : ℕ} : ∀ {i j}
+--                       → (i≤n : i ≤ n)
+--                       → (j≤n : j ≤ n)
+--                       → Set
+--                       where
+--   _<_ : ∀ {i j-1}
+--       → (i≤j-1 : i ≤ j-1)
+--       → (j≤n : suc j-1 ≤ n)
+--       → Ordering (≤-s i≤j-1 ⋈ j≤n) j≤n
+--   _>_ : ∀ {i-1 j}
+--       → (i≤n : suc i-1 ≤ n)
+--       → (j≤i-1 : j ≤ i-1)
+--       → Ordering i≤n (≤-s j≤i-1 ⋈ i≤n)
+--   eq : ∀ {i} → (i≤n : i ≤ n) → Ordering i≤n i≤n
 
-_∺_ : ∀ {i j n}
-    → (x : i ≤ n)
-    → (y : j ≤ n)
-    → Ordering x y
-m≤m ∺ m≤m = eq m≤m
-m≤m ∺ ≤-s y = m≤m > y
-≤-s x ∺ m≤m = x < m≤m
-≤-s x ∺ ≤-s y with x ∺ y
-≤-s .(≤-s i≤j-1 ⋈ y) ∺ ≤-s y            | i≤j-1 < .y = i≤j-1 < ≤-s y
-≤-s x            ∺ ≤-s .(≤-s j≤i-1 ⋈ x) | .x > j≤i-1 = ≤-s x > j≤i-1
-≤-s x            ∺ ≤-s .x           | eq .x = eq (≤-s x)
+-- _∺_ : ∀ {i j n}
+--     → (x : i ≤ n)
+--     → (y : j ≤ n)
+--     → Ordering x y
+-- m≤m ∺ m≤m = eq m≤m
+-- m≤m ∺ ≤-s y = m≤m > y
+-- ≤-s x ∺ m≤m = x < m≤m
+-- ≤-s x ∺ ≤-s y with x ∺ y
+-- ≤-s .(≤-s i≤j-1 ⋈ y) ∺ ≤-s y            | i≤j-1 < .y = i≤j-1 < ≤-s y
+-- ≤-s x            ∺ ≤-s .(≤-s j≤i-1 ⋈ x) | .x > j≤i-1 = ≤-s x > j≤i-1
+-- ≤-s x            ∺ ≤-s .x               | eq .x = eq (≤-s x)
 
-z≤n : ∀ {n} → zero ≤ n
-z≤n {zero} = m≤m
-z≤n {suc n} = ≤-s z≤n
-
-space : ∀ {n} → Fin n → ℕ
-space {suc n} Fin.zero = n
-space {suc _} (Fin.suc x) = space x
-
-Fin⇒≤ : ∀ {n} (x : Fin n) → suc (space x) ≤ n
-Fin⇒≤ Fin.zero = m≤m
-Fin⇒≤ (Fin.suc x) = ≤-s (Fin⇒≤ x)
-
+-- z≤n : ∀ {n} → zero ≤ n
+-- z≤n {zero} = m≤m
+-- z≤n {suc n} = ≤-s z≤n
 open RawRing coeffs
 
 ----------------------------------------------------------------------
