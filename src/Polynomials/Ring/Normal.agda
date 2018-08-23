@@ -245,16 +245,12 @@ open RawRing coeffs
 -- Definitions
 ----------------------------------------------------------------------
 
+
 mutual
   -- A Polynomial is indexed by the number of variables it contains.
   infixl 6 _Π_
-  record Poly (n : ℕ) : Set (a ⊔ ℓ) where
-    inductive
-    constructor _Π_
-    field
-      {i} : ℕ
-      flat  : FlatPoly i
-      i≤n   : i ≤ n
+  data Poly : ℕ → Set (a ⊔ ℓ) where
+    _Π_ : (gap : ℕ) → ∀ {i} → FlatPoly i → Poly (suc (gap ℕ.+ i))
 
   -- Possible alternative:
   -- infixl 6 _Σ_
@@ -303,9 +299,9 @@ mutual
       .{poly≠0} : ¬ Zero poly
 
   Zero : ∀ {n} → Poly n → Set ℓ
-  Zero (Κ x       Π _) = Zero-C x
-  Zero (Σ []      Π _) = Lift ℓ ⊤
-  Zero (Σ (_ ∷ _) Π _) = Lift ℓ ⊥
+  Zero (_ Π Κ x      ) = Zero-C x
+  Zero (_ Π Σ []     ) = Lift ℓ ⊤
+  Zero (_ Π Σ (_ ∷ _)) = Lift ℓ ⊥
 
   Norm : ∀ {i} → Coeffs i → Set
   Norm []                  = ⊥
@@ -320,175 +316,178 @@ mutual
 -- normalising cons operator to construct the coefficient lists.
 ----------------------------------------------------------------------
 
--- Decision procedure for Zero
-zero? : ∀ {n} → (p : Poly n) → Dec (Zero p)
-zero? (Κ x       Π _) = zero-c? x
-zero? (Σ []      Π _) = yes (lift tt)
-zero? (Σ (_ ∷ _) Π _) = no lower
+_⊞_ : ∀ {n} → Poly n → Poly n → Poly n
+(gap Π x) ⊞ ys = {!!}
 
--- Exponentiate the first variable of a polynomial
-infixr 8 _⍓_
-_⍓_ : ∀ {n} → Coeffs n → ℕ → Coeffs n
-[] ⍓ i = []
-(x Δ j ∷ xs) ⍓ i = x Δ (j ℕ.+ i) ∷ xs
+-- -- Decision procedure for Zero
+-- zero? : ∀ {n} → (p : Poly n) → Dec (Zero p)
+-- zero? (Κ x       Π _) = zero-c? x
+-- zero? (Σ []      Π _) = yes (lift tt)
+-- zero? (Σ (_ ∷ _) Π _) = no lower
 
--- Normalising cons
-infixr 5 _^_∷↓_
-_^_∷↓_ : ∀ {n} → Poly n → ℕ → Coeffs n → Coeffs n
-x ^ i ∷↓ xs with zero? x
-... | yes p = xs ⍓ suc i
-... | no ¬p = _≠0 x {¬p} Δ i ∷ xs
+-- -- Exponentiate the first variable of a polynomial
+-- infixr 8 _⍓_
+-- _⍓_ : ∀ {n} → Coeffs n → ℕ → Coeffs n
+-- [] ⍓ i = []
+-- (x Δ j ∷ xs) ⍓ i = x Δ (j ℕ.+ i) ∷ xs
 
--- Inject a polynomial into a larger polynomoial with more variables
-_Π↑_ : ∀ {n m} → Poly n → (suc n ≤ m) → Poly m
-(xs Π i≤n) Π↑ n≤m = xs Π (≤-s i≤n ⋈ n≤m)
+-- -- Normalising cons
+-- infixr 5 _^_∷↓_
+-- _^_∷↓_ : ∀ {n} → Poly n → ℕ → Coeffs n → Coeffs n
+-- x ^ i ∷↓ xs with zero? x
+-- ... | yes p = xs ⍓ suc i
+-- ... | no ¬p = _≠0 x {¬p} Δ i ∷ xs
 
--- Normalising Π
-infixr 4 _Π↓_
-_Π↓_ : ∀ {i n} → Coeffs i → suc i ≤ n → Poly n
-[]                       Π↓ i≤n = Κ 0# Π z≤n
-(x ≠0 Δ zero  ∷ [])      Π↓ i≤n = x Π↑ i≤n
-(x₁   Δ zero  ∷ x₂ ∷ xs) Π↓ i≤n = Σ (x₁ Δ zero  ∷ x₂ ∷ xs) Π i≤n
-(x    Δ suc j ∷ xs)      Π↓ i≤n = Σ (x  Δ suc j ∷ xs) Π i≤n
+-- -- Inject a polynomial into a larger polynomoial with more variables
+-- _Π↑_ : ∀ {n m} → Poly n → (suc n ≤ m) → Poly m
+-- (xs Π i≤n) Π↑ n≤m = xs Π (≤-s i≤n ⋈ n≤m)
 
-----------------------------------------------------------------------
--- Arithmetic
-----------------------------------------------------------------------
+-- -- Normalising Π
+-- infixr 4 _Π↓_
+-- _Π↓_ : ∀ {i n} → Coeffs i → suc i ≤ n → Poly n
+-- []                       Π↓ i≤n = Κ 0# Π z≤n
+-- (x ≠0 Δ zero  ∷ [])      Π↓ i≤n = x Π↑ i≤n
+-- (x₁   Δ zero  ∷ x₂ ∷ xs) Π↓ i≤n = Σ (x₁ Δ zero  ∷ x₂ ∷ xs) Π i≤n
+-- (x    Δ suc j ∷ xs)      Π↓ i≤n = Σ (x  Δ suc j ∷ xs) Π i≤n
 
-----------------------------------------------------------------------
--- Addition
-----------------------------------------------------------------------
-mutual
-  -- The reason the following code is so verbose is termination
-  -- checking. For instance, in the third case for ⊞-coeffs, we call a
-  -- helper function. Instead, you could conceivably use a with-block
-  -- (on ℕ.compare p q):
-  --
-  -- ⊞-coeffs ((x , p) ∷ xs) ((y , q) ∷ ys) with (ℕ.compare p q)
-  -- ... | ℕ.less    p k = (x , p) ∷ ⊞-coeffs xs ((y , k) ∷ ys)
-  -- ... | ℕ.equal   p   = (fst~ x ⊞ fst~ y , p) ∷↓ ⊞-coeffs xs ys
-  -- ... | ℕ.greater q k = (y , q) ∷ ⊞-coeffs ((x , k) ∷ xs) ys
-  --
-  -- However, because the first and third recursive calls each rewrap
-  -- a list that was already pattern-matched on, the recursive call
-  -- does not strictly decrease the size of its argument.
-  --
-  -- Interestingly, if --without-K is turned off, we don't need the
-  -- helper function ⊞-coeffs; we could pattern match on _⊞_ directly.
-  --
-  -- _⊞_ {zero} (lift x) (lift y) = lift (x + y)
-  -- _⊞_ {suc n} [] ys = ys
-  -- _⊞_ {suc n} (x ∷ xs) [] = x ∷ xs
-  -- _⊞_ {suc n} ((x , p) ∷ xs) ((y , q) ∷ ys) =
-  --   ⊞-zip (ℕ.compare p q) x xs y ys
+-- ----------------------------------------------------------------------
+-- -- Arithmetic
+-- ----------------------------------------------------------------------
 
-  infixl 6 _⊞_
-  _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
-  (xs Π i≤n) ⊞ (ys Π j≤n) = ⊞-match (i≤n ∺ j≤n) xs ys
+-- ----------------------------------------------------------------------
+-- -- Addition
+-- ----------------------------------------------------------------------
+-- mutual
+--   -- The reason the following code is so verbose is termination
+--   -- checking. For instance, in the third case for ⊞-coeffs, we call a
+--   -- helper function. Instead, you could conceivably use a with-block
+--   -- (on ℕ.compare p q):
+--   --
+--   -- ⊞-coeffs ((x , p) ∷ xs) ((y , q) ∷ ys) with (ℕ.compare p q)
+--   -- ... | ℕ.less    p k = (x , p) ∷ ⊞-coeffs xs ((y , k) ∷ ys)
+--   -- ... | ℕ.equal   p   = (fst~ x ⊞ fst~ y , p) ∷↓ ⊞-coeffs xs ys
+--   -- ... | ℕ.greater q k = (y , q) ∷ ⊞-coeffs ((x , k) ∷ xs) ys
+--   --
+--   -- However, because the first and third recursive calls each rewrap
+--   -- a list that was already pattern-matched on, the recursive call
+--   -- does not strictly decrease the size of its argument.
+--   --
+--   -- Interestingly, if --without-K is turned off, we don't need the
+--   -- helper function ⊞-coeffs; we could pattern match on _⊞_ directly.
+--   --
+--   -- _⊞_ {zero} (lift x) (lift y) = lift (x + y)
+--   -- _⊞_ {suc n} [] ys = ys
+--   -- _⊞_ {suc n} (x ∷ xs) [] = x ∷ xs
+--   -- _⊞_ {suc n} ((x , p) ∷ xs) ((y , q) ∷ ys) =
+--   --   ⊞-zip (ℕ.compare p q) x xs y ys
 
-  ⊞-match : ∀ {i j n}
-        → {i≤n : i ≤ n}
-        → {j≤n : j ≤ n}
-        → Ordering i≤n j≤n
-        → FlatPoly i
-        → FlatPoly j
-        → Poly n
-  ⊞-match (eq i&j≤n)    (Κ x)  (Κ y)  = Κ (x + y)         Π  i&j≤n
-  ⊞-match (eq i&j≤n)    (Σ xs) (Σ ys) = ⊞-coeffs    xs ys Π↓ i&j≤n
-  ⊞-match (i≤j-1 < j≤n)  xs    (Σ ys) = ⊞-inj i≤j-1 xs ys Π↓ j≤n
-  ⊞-match (i≤n > j≤i-1) (Σ xs)  ys    = ⊞-inj j≤i-1 ys xs Π↓ i≤n
+--   infixl 6 _⊞_
+--   _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
+--   (xs Π i≤n) ⊞ (ys Π j≤n) = ⊞-match (i≤n ∺ j≤n) xs ys
 
-  ⊞-inj : ∀ {i k}
-       → (i ≤ k)
-       → FlatPoly i
-       → Coeffs k
-       → Coeffs k
-  ⊞-inj i≤k xs [] = xs Π i≤k ^ zero ∷↓ []
-  ⊞-inj i≤k xs (y Π j≤k ≠0 Δ zero ∷ ys) =
-    ⊞-match (j≤k ∺ i≤k) y xs ^ zero ∷↓ ys
-  ⊞-inj i≤k xs (y Δ suc j ∷ ys) =
-    xs Π i≤k ^ zero ∷↓ y Δ j ∷ ys
+--   ⊞-match : ∀ {i j n}
+--         → {i≤n : i ≤ n}
+--         → {j≤n : j ≤ n}
+--         → Ordering i≤n j≤n
+--         → FlatPoly i
+--         → FlatPoly j
+--         → Poly n
+--   ⊞-match (eq i&j≤n)    (Κ x)  (Κ y)  = Κ (x + y)         Π  i&j≤n
+--   ⊞-match (eq i&j≤n)    (Σ xs) (Σ ys) = ⊞-coeffs    xs ys Π↓ i&j≤n
+--   ⊞-match (i≤j-1 < j≤n)  xs    (Σ ys) = ⊞-inj i≤j-1 xs ys Π↓ j≤n
+--   ⊞-match (i≤n > j≤i-1) (Σ xs)  ys    = ⊞-inj j≤i-1 ys xs Π↓ i≤n
 
-  ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
-  ⊞-coeffs [] ys = ys
-  ⊞-coeffs (x Δ i ∷ xs) = ⊞-zip-r x i xs
+--   ⊞-inj : ∀ {i k}
+--        → (i ≤ k)
+--        → FlatPoly i
+--        → Coeffs k
+--        → Coeffs k
+--   ⊞-inj i≤k xs [] = xs Π i≤k ^ zero ∷↓ []
+--   ⊞-inj i≤k xs (y Π j≤k ≠0 Δ zero ∷ ys) =
+--     ⊞-match (j≤k ∺ i≤k) y xs ^ zero ∷↓ ys
+--   ⊞-inj i≤k xs (y Δ suc j ∷ ys) =
+--     xs Π i≤k ^ zero ∷↓ y Δ j ∷ ys
 
-  ⊞-zip : ∀ {p q n}
-        → ℕ.Ordering p q
-        → Coeff n
-        → Coeffs n
-        → Coeff n
-        → Coeffs n
-        → Coeffs n
-  ⊞-zip (ℕ.less    i k) x xs y ys = x Δ i ∷ ⊞-zip-r y k ys xs
-  ⊞-zip (ℕ.greater j k) x xs y ys = y Δ j ∷ ⊞-zip-r x k xs ys
-  ⊞-zip (ℕ.equal   i  ) (x ≠0) xs (y ≠0) ys =
-    (x ⊞ y) ^ i ∷↓ ⊞-coeffs xs ys
+--   ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
+--   ⊞-coeffs [] ys = ys
+--   ⊞-coeffs (x Δ i ∷ xs) = ⊞-zip-r x i xs
 
-  ⊞-zip-r : ∀ {n} → Coeff n → ℕ → Coeffs n → Coeffs n → Coeffs n
-  ⊞-zip-r x i xs [] = x Δ i ∷ xs
-  ⊞-zip-r x i xs (y Δ j ∷ ys) = ⊞-zip (ℕ.compare i j) x xs y ys
+--   ⊞-zip : ∀ {p q n}
+--         → ℕ.Ordering p q
+--         → Coeff n
+--         → Coeffs n
+--         → Coeff n
+--         → Coeffs n
+--         → Coeffs n
+--   ⊞-zip (ℕ.less    i k) x xs y ys = x Δ i ∷ ⊞-zip-r y k ys xs
+--   ⊞-zip (ℕ.greater j k) x xs y ys = y Δ j ∷ ⊞-zip-r x k xs ys
+--   ⊞-zip (ℕ.equal   i  ) (x ≠0) xs (y ≠0) ys =
+--     (x ⊞ y) ^ i ∷↓ ⊞-coeffs xs ys
 
-----------------------------------------------------------------------
--- Negation
-----------------------------------------------------------------------
+--   ⊞-zip-r : ∀ {n} → Coeff n → ℕ → Coeffs n → Coeffs n → Coeffs n
+--   ⊞-zip-r x i xs [] = x Δ i ∷ xs
+--   ⊞-zip-r x i xs (y Δ j ∷ ys) = ⊞-zip (ℕ.compare i j) x xs y ys
 
-mutual
-  ⊟_ : ∀ {n} → Poly n → Poly n
-  ⊟_ (Κ x  Π i≤n) = Κ (- x) Π i≤n
-  ⊟_ (Σ xs Π i≤n) = ⊟-coeffs xs Π↓ i≤n
+-- ----------------------------------------------------------------------
+-- -- Negation
+-- ----------------------------------------------------------------------
 
-  ⊟-coeffs : ∀ {n} → Coeffs n → Coeffs n
-  ⊟-coeffs (x ≠0 Δ i  ∷ xs) = ⊟ x ^ i ∷↓ ⊟-coeffs xs
-  ⊟-coeffs [] = []
+-- mutual
+--   ⊟_ : ∀ {n} → Poly n → Poly n
+--   ⊟_ (Κ x  Π i≤n) = Κ (- x) Π i≤n
+--   ⊟_ (Σ xs Π i≤n) = ⊟-coeffs xs Π↓ i≤n
 
-----------------------------------------------------------------------
--- Multiplication
-----------------------------------------------------------------------
-mutual
-  infixl 7 _⊠_
-  _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
-  (xs Π i≤n) ⊠ (ys Π j≤n) = ⊠-match (i≤n ∺ j≤n) xs ys
+--   ⊟-coeffs : ∀ {n} → Coeffs n → Coeffs n
+--   ⊟-coeffs (x ≠0 Δ i  ∷ xs) = ⊟ x ^ i ∷↓ ⊟-coeffs xs
+--   ⊟-coeffs [] = []
 
-  ⊠-inj : ∀ {i k}
-        → i ≤ k
-        → FlatPoly i
-        → Coeffs k
-        → Coeffs k
-  ⊠-inj _ _ [] = []
-  ⊠-inj i≤k x (y Π j≤k ≠0 Δ p ∷ ys) =
-    ⊠-match (i≤k ∺ j≤k) x y ^ p ∷↓ ⊠-inj i≤k x ys
+-- ----------------------------------------------------------------------
+-- -- Multiplication
+-- ----------------------------------------------------------------------
+-- mutual
+--   infixl 7 _⊠_
+--   _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
+--   (xs Π i≤n) ⊠ (ys Π j≤n) = ⊠-match (i≤n ∺ j≤n) xs ys
 
-  ⊠-match : ∀ {i j n}
-          → {i≤n : i ≤ n}
-          → {j≤n : j ≤ n}
-          → Ordering i≤n j≤n
-          → FlatPoly i
-          → FlatPoly j
-          → Poly n
-  ⊠-match (eq i&j≤n) (Κ x)  (Κ y)  = Κ (x * y)         Π  i&j≤n
-  ⊠-match (eq i&j≤n) (Σ xs) (Σ ys) = ⊠-coeffs xs ys    Π↓ i&j≤n
-  ⊠-match (i≤j-1 < j≤n) xs (Σ ys) = ⊠-inj i≤j-1 xs ys Π↓ j≤n
-  ⊠-match (i≤n > j≤i-1) (Σ xs) ys = ⊠-inj j≤i-1 ys xs Π↓ i≤n
+--   ⊠-inj : ∀ {i k}
+--         → i ≤ k
+--         → FlatPoly i
+--         → Coeffs k
+--         → Coeffs k
+--   ⊠-inj _ _ [] = []
+--   ⊠-inj i≤k x (y Π j≤k ≠0 Δ p ∷ ys) =
+--     ⊠-match (i≤k ∺ j≤k) x y ^ p ∷↓ ⊠-inj i≤k x ys
 
-  -- A simple shift-and-add algorithm.
-  ⊠-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
-  ⊠-coeffs _ [] = []
-  ⊠-coeffs xs (y ≠0 Δ j ∷ ys) = ⊠-step y ys xs ⍓ j
+--   ⊠-match : ∀ {i j n}
+--           → {i≤n : i ≤ n}
+--           → {j≤n : j ≤ n}
+--           → Ordering i≤n j≤n
+--           → FlatPoly i
+--           → FlatPoly j
+--           → Poly n
+--   ⊠-match (eq i&j≤n) (Κ x)  (Κ y)  = Κ (x * y)         Π  i&j≤n
+--   ⊠-match (eq i&j≤n) (Σ xs) (Σ ys) = ⊠-coeffs xs ys    Π↓ i&j≤n
+--   ⊠-match (i≤j-1 < j≤n) xs (Σ ys) = ⊠-inj i≤j-1 xs ys Π↓ j≤n
+--   ⊠-match (i≤n > j≤i-1) (Σ xs) ys = ⊠-inj j≤i-1 ys xs Π↓ i≤n
 
-  ⊠-step : ∀ {n} → Poly n → Coeffs n → Coeffs n → Coeffs n
-  ⊠-step y ys [] = []
-  ⊠-step y ys (x Π j≤n ≠0 Δ i ∷ xs) =
-    (x Π j≤n) ⊠ y ^ i ∷↓ ⊞-coeffs (⊠-inj j≤n x ys) (⊠-step y ys xs)
+--   -- A simple shift-and-add algorithm.
+--   ⊠-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
+--   ⊠-coeffs _ [] = []
+--   ⊠-coeffs xs (y ≠0 Δ j ∷ ys) = ⊠-step y ys xs ⍓ j
 
-----------------------------------------------------------------------
--- Constants and Variables
-----------------------------------------------------------------------
+--   ⊠-step : ∀ {n} → Poly n → Coeffs n → Coeffs n → Coeffs n
+--   ⊠-step y ys [] = []
+--   ⊠-step y ys (x Π j≤n ≠0 Δ i ∷ xs) =
+--     (x Π j≤n) ⊠ y ^ i ∷↓ ⊞-coeffs (⊠-inj j≤n x ys) (⊠-step y ys xs)
 
--- The constant polynomial
-κ : ∀ {n} → Carrier → Poly n
-κ x = Κ x Π z≤n
+-- ----------------------------------------------------------------------
+-- -- Constants and Variables
+-- ----------------------------------------------------------------------
 
--- A variable
-ι : ∀ {n} → Fin n → Poly n
-ι i = (κ 1# ^ 1 ∷↓ []) Π↓ Fin⇒≤ i
+-- -- The constant polynomial
+-- κ : ∀ {n} → Carrier → Poly n
+-- κ x = Κ x Π z≤n
+
+-- -- A variable
+-- ι : ∀ {n} → Fin n → Poly n
+-- ι i = (κ 1# ^ 1 ∷↓ []) Π↓ Fin⇒≤ i

@@ -2,8 +2,8 @@
 
 module Positional.Binary where
 
-open import Data.List as List using (List; []; _∷_)
-open import Data.Nat as ℕ using (ℕ; zero; suc)
+open import Data.List as List using (List; []; _∷_; foldr)
+open import Data.Nat as ℕ using (ℕ; zero; suc; compare; Ordering; less; equal; greater)
 open import Data.Product
 open import Function
 open import Relation.Binary.PropositionalEquality
@@ -18,14 +18,6 @@ open import Relation.Binary.PropositionalEquality
 Bin : Set
 Bin = List ℕ
 
-infixr 8 _^_
-_^_ : ℕ → ℕ → ℕ
-x ^ zero = 1
-x ^ suc y = x ℕ.* (x ^ y)
-
-toNat : Bin → ℕ
-toNat = List.foldr (λ x xs → (2 ^ x) ℕ.* suc (2 ℕ.* xs)) 0
-
 incr′ : ℕ → Bin → Bin
 incr′ i [] = i ∷ []
 incr′ i (suc x ∷ xs) = i ∷ x ∷ xs
@@ -34,33 +26,61 @@ incr′ i (zero ∷ xs) = incr′ (suc i) xs
 incr : Bin → Bin
 incr = incr′ 0
 
-fromNat : ℕ → Bin
-fromNat zero = []
-fromNat (suc n) = incr (fromNat n)
+infixl 6 _+_
+_+_ : Bin → Bin → Bin
+[] + ys = ys
+(x ∷ xs) + ys = +-zip-r x xs ys
+  where
+  +-zip : ∀ {x y} → Ordering x y → Bin → Bin → Bin
+  +-zip-r : ℕ → Bin → Bin → Bin
+  +-incr : ℕ → Bin → Bin → Bin
+  +-incr-r : ℕ → Bin → ℕ → Bin → Bin
+  +-incr-zip : ℕ → ∀ {i j} → Ordering i j → Bin → Bin → Bin
+  incr″ : ℕ → ℕ → Bin → Bin
+
+  +-zip (less    i k) xs ys = i ∷ +-zip-r k ys xs
+  +-zip (equal   k  ) xs ys = +-incr (suc k) xs ys
+  +-zip (greater j k) xs ys = j ∷ +-zip-r k xs ys
+
+  +-zip-r x xs [] = x ∷ xs
+  +-zip-r x xs (y ∷ ys) = +-zip (compare x y) xs ys
+
+  incr″ i zero xs = incr′ (suc i) xs
+  incr″ i (suc x) xs = i ∷ x ∷ xs
+
+  +-incr i [] ys = incr′ i ys
+  +-incr i (x ∷ xs) ys = +-incr-r i ys x xs
+
+  +-incr-r i [] x xs = incr″ i x xs
+  +-incr-r i (y ∷ ys) x xs = +-incr-zip i (compare y x) ys xs
+
+  +-incr-zip c (less zero k) xs ys = +-incr-r (suc c) xs k ys
+  +-incr-zip c (less (suc i) k) xs ys = c ∷ i ∷ +-zip-r k ys xs
+  +-incr-zip c (greater zero k) xs ys = +-incr-r (suc c) ys k xs
+  +-incr-zip c (greater (suc j) k) xs ys = c ∷ j ∷ +-zip-r k xs ys
+  +-incr-zip c (equal   k  ) xs ys = c ∷ +-incr k xs ys
 
 pow : ℕ → Bin → Bin
 pow i [] = []
 pow i (x ∷ xs) = (x ℕ.+ i) ∷ xs
 
-infixl 6 _+_
-_+_ : Bin → Bin → Bin
-[] + ys = ys
-(x ∷ xs) + ys = +-ne-r x xs ys
-  where
-  +-ne : ∀ {x y} → ℕ.Ordering x y → Bin → Bin → Bin
-  +-ne-r : ℕ → Bin → Bin → Bin
-
-  +-ne (ℕ.less    i k) xs ys = i ∷ +-ne-r k ys xs
-  +-ne (ℕ.equal   k  ) xs ys = incr′ (suc k) (xs + ys)
-  +-ne (ℕ.greater j k) xs ys = j ∷ +-ne-r k xs ys
-
-  +-ne-r x xs [] = x ∷ xs
-  +-ne-r x xs (y ∷ ys) = +-ne (ℕ.compare x y) xs ys
-
 infixl 7 _*_
 _*_ : Bin → Bin → Bin
-xs * [] = []
-xs * (y ∷ ys) = pow y (List.foldr (λ z zs → z ∷ ys + zs) [] xs)
+_*_ [] _ = []
+_*_ (x ∷ xs) = pow x ∘ foldr (λ y ys → y ∷ xs + ys) []
+
+fromNat : ℕ → Bin
+fromNat zero = []
+fromNat (suc n) = incr (fromNat n)
+
+infixr 8 _^_
+_^_ : ℕ → ℕ → ℕ
+x ^ zero = 1
+x ^ suc y = x ℕ.* (x ^ y)
+
+toNat : Bin → ℕ
+toNat = List.foldr (λ x xs → (2 ^ x) ℕ.* suc (2 ℕ.* xs)) 0
+
 
 private
 
