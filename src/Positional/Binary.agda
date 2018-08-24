@@ -40,6 +40,7 @@ _+_ : Bin → Bin → Bin
   +-incr : ℕ → Bin → Bin → Bin
   +-incr-r : ℕ → ℕ → Bin → Bin → Bin
   +-incr-zip : ℕ → ∀ {i j} → Ordering i j → Bin → Bin → Bin
+  +-incr-c : ℕ → ℕ → ℕ → Bin → Bin → Bin
 
   +-zip (less    i k) xs ys = i ∷ +-zip-r k ys xs
   +-zip (equal   k  ) xs ys = +-incr (suc k) xs ys
@@ -49,17 +50,18 @@ _+_ : Bin → Bin → Bin
   +-zip-r x xs (y ∷ ys) = +-zip (compare x y) xs ys
 
 
-  +-incr i [] ys = incr′ i ys
-  +-incr i (x ∷ xs) ys = +-incr-r i x xs ys
+  +-incr i [] = incr′ i
+  +-incr i (x ∷ xs) = +-incr-r i x xs
 
   +-incr-r i x xs [] = incr″ i x xs
   +-incr-r i x xs (y ∷ ys) = +-incr-zip i (compare y x) ys xs
 
-  +-incr-zip c (less zero       k) xs ys = +-incr-r (suc c) k ys xs
-  +-incr-zip c (less (suc i)    k) xs ys = c ∷ i ∷ +-zip-r k ys xs
-  +-incr-zip c (greater zero    k) xs ys = +-incr-r (suc c) k xs ys
-  +-incr-zip c (greater (suc j) k) xs ys = c ∷ j ∷ +-zip-r k xs ys
-  +-incr-zip c (equal           k) xs ys = c ∷ +-incr k xs ys
+  +-incr-c c zero k xs ys = +-incr-r (suc c) k xs ys
+  +-incr-c c (suc i) k xs ys = c ∷ i ∷ +-zip-r k xs ys
+
+  +-incr-zip c (less    i k) xs ys = +-incr-c c i k ys xs
+  +-incr-zip c (greater j k) xs ys = +-incr-c c j k xs ys
+  +-incr-zip c (equal     k) xs ys = c ∷ +-incr k xs ys
 
 pow : ℕ → Bin → Bin
 pow i [] = []
