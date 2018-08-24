@@ -35,33 +35,32 @@ _+_ : Bin → Bin → Bin
 [] + ys = ys
 (x ∷ xs) + ys = +-zip-r x xs ys
   where
-  +-zip : ∀ {x y} → Ordering x y → Bin → Bin → Bin
-  +-zip-r : ℕ → Bin → Bin → Bin
-  +-incr : ℕ → Bin → Bin → Bin
-  +-incr-r : ℕ → ℕ → Bin → Bin → Bin
-  +-incr-zip : ℕ → ∀ {i j} → Ordering i j → Bin → Bin → Bin
-  +-incr-c : ℕ → ℕ → ℕ → Bin → Bin → Bin
+  +-zip   :     ∀ {x y} → Ordering x y → Bin → Bin → Bin
+  ∔-zip   : ℕ → ∀ {i j} → Ordering i j → Bin → Bin → Bin
+  +-zip-r :     ℕ → Bin → Bin → Bin
+  ∔-zip-r : ℕ → ℕ → Bin → Bin → Bin
+  ∔-cin   : ℕ → Bin → Bin → Bin
+  ∔-zip-c : ℕ → ℕ → ℕ → Bin → Bin → Bin
 
   +-zip (less    i k) xs ys = i ∷ +-zip-r k ys xs
-  +-zip (equal   k  ) xs ys = +-incr (suc k) xs ys
+  +-zip (equal   k  ) xs ys = ∔-cin (suc k) xs ys
   +-zip (greater j k) xs ys = j ∷ +-zip-r k xs ys
 
   +-zip-r x xs [] = x ∷ xs
   +-zip-r x xs (y ∷ ys) = +-zip (compare x y) xs ys
 
+  ∔-cin i [] = incr′ i
+  ∔-cin i (x ∷ xs) = ∔-zip-r i x xs
 
-  +-incr i [] = incr′ i
-  +-incr i (x ∷ xs) = +-incr-r i x xs
+  ∔-zip-r i x xs [] = incr″ i x xs
+  ∔-zip-r i x xs (y ∷ ys) = ∔-zip i (compare y x) ys xs
 
-  +-incr-r i x xs [] = incr″ i x xs
-  +-incr-r i x xs (y ∷ ys) = +-incr-zip i (compare y x) ys xs
+  ∔-zip-c c zero k xs ys = ∔-zip-r (suc c) k xs ys
+  ∔-zip-c c (suc i) k xs ys = c ∷ i ∷ +-zip-r k xs ys
 
-  +-incr-c c zero k xs ys = +-incr-r (suc c) k xs ys
-  +-incr-c c (suc i) k xs ys = c ∷ i ∷ +-zip-r k xs ys
-
-  +-incr-zip c (less    i k) xs ys = +-incr-c c i k ys xs
-  +-incr-zip c (greater j k) xs ys = +-incr-c c j k xs ys
-  +-incr-zip c (equal     k) xs ys = c ∷ +-incr k xs ys
+  ∔-zip c (less    i k) xs ys = ∔-zip-c c i k ys xs
+  ∔-zip c (greater j k) xs ys = ∔-zip-c c j k xs ys
+  ∔-zip c (equal     k) xs ys = c ∷ ∔-cin k xs ys
 
 pow : ℕ → Bin → Bin
 pow i [] = []
@@ -84,11 +83,10 @@ x ^ suc y = x ℕ.* (x ^ y)
 toNat : Bin → ℕ
 toNat = List.foldr (λ x xs → (2 ^ x) ℕ.* suc (2 ℕ.* xs)) 0
 
-
 private
 
   testLimit : ℕ
-  testLimit = 45
+  testLimit = 25
 
   nats : List ℕ
   nats = List.downFrom testLimit
