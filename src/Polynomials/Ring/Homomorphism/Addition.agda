@@ -244,4 +244,4 @@ mutual
              → (Ρ : Carrier × Vec Carrier n)
              → Σ⟦ ⊞-zip-r x i xs ys ⟧ (Ρ) ≈ Σ⟦ x Δ i ∷ xs ⟧ ( Ρ) + Σ⟦ ys ⟧ ( Ρ)
   ⊞-zip-r-hom i x xs [] (ρ , Ρ) = sym (+-identityʳ _)
-  ⊞-zip-r-hom i x xs ((y Δ j) ∷ ys) = ⊞-zip-hom (ℕ.compare i j) x xs y ys
+  ⊞-zip-r-hom i x xs ((y Δ j) ∷ ys) = ⊞-zip-hom (compare i j) x xs y ys

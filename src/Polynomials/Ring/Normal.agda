@@ -13,6 +13,7 @@ open import Data.Vec as Vec using (_∷_; []; Vec)
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Function
 open import Data.Fin as Fin using (Fin)
+open import Data.Nat.Order.Compare using (compare)
 
 -- Multivariate polynomials.
 module Polynomials.Ring.Normal
@@ -427,7 +428,7 @@ mutual
 
   ⊞-zip-r : ∀ {n} → Coeff n → ℕ → Coeffs n → Coeffs n → Coeffs n
   ⊞-zip-r x i xs [] = x Δ i ∷ xs
-  ⊞-zip-r x i xs (y Δ j ∷ ys) = ⊞-zip (ℕ.compare i j) x xs y ys
+  ⊞-zip-r x i xs (y Δ j ∷ ys) = ⊞-zip (compare i j) x xs y ys
 
 ----------------------------------------------------------------------
 -- Negation
@@ -468,8 +469,8 @@ mutual
           → Poly n
   ⊠-match (eq i&j≤n) (Κ x)  (Κ y)  = Κ (x * y)         Π  i&j≤n
   ⊠-match (eq i&j≤n) (Σ xs) (Σ ys) = ⊠-coeffs xs ys    Π↓ i&j≤n
-  ⊠-match (i≤j-1 < j≤n) xs (Σ ys) = ⊠-inj i≤j-1 xs ys Π↓ j≤n
-  ⊠-match (i≤n > j≤i-1) (Σ xs) ys = ⊠-inj j≤i-1 ys xs Π↓ i≤n
+  ⊠-match (i≤j-1 < j≤n) xs (Σ ys)  = ⊠-inj i≤j-1 xs ys Π↓ j≤n
+  ⊠-match (i≤n > j≤i-1) (Σ xs) ys  = ⊠-inj j≤i-1 ys xs Π↓ i≤n
 
   -- A simple shift-and-add algorithm.
   ⊠-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n

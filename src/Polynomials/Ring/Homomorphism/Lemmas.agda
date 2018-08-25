@@ -28,6 +28,7 @@ open import Data.List as List using (_∷_; [])
 open import Data.Vec as Vec using (Vec; _∷_; [])
 open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
+open import Data.Nat.Order.Compare using (compare) public
 
 pow-add : ∀ x i j → x ^ i * x ^ j ≈ x ^ (i ℕ.+ j)
 pow-add x zero j = *-identityˡ (x ^ j)
@@ -76,6 +77,17 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
   ≈⟨ ≪* (sym (+-identityˡ _) ︔ ≪+ sym (zero-hom x p _)) ⟩
     (⟦ x ⟧ Ρ + Σ⟦ xs ⟧ (ρ , Ρ) * ρ) * ρ ^ i
   ∎
+
+∷↓-cong : ∀ {n}
+        → (x : Poly n)
+        → (i : ℕ)
+        → (xs : Coeffs n)
+        → (ys : Coeffs n)
+        → (ρ : Carrier)
+        → (Ρ : Vec Carrier n)
+        → Σ⟦ xs ⟧(ρ , Ρ) ≈ Σ⟦ ys ⟧(ρ , Ρ)
+        → Σ⟦ x ^ i ∷↓ xs ⟧(ρ , Ρ) ≈ Σ⟦ x ^ i ∷↓ ys ⟧(ρ , Ρ)
+∷↓-cong x i xs ys ρ Ρ prf = ∷↓-hom x i xs ρ Ρ ︔ ≪* +≫ ≪* prf ︔ sym (∷↓-hom x i ys ρ Ρ)
 
 Σ-Π↑-hom : ∀ {i n m}
          → (xs : Coeffs i)
