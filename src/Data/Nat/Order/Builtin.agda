@@ -4,7 +4,7 @@ open import Data.Nat as ℕ using (ℕ; suc; zero; Ordering; less; equal; greate
 open import Agda.Builtin.Nat using (_-_; _<_; _==_; _+_)
 open import Data.Bool
 open import Relation.Binary.PropositionalEquality
-import Relation.Binary.PropositionalEquality.TrustMe as TrustMe
+open import Relation.Binary.PropositionalEquality.TrustMe
 
 less-hom : ∀ n m → ((n < m) ≡ true) → m ≡ suc (n + (m - n - 1))
 less-hom zero zero ()
@@ -26,7 +26,7 @@ gt-hom (suc n) (suc m) n<m n≡m = cong suc (gt-hom n m n<m n≡m)
 
 compare : (n m : ℕ) → Ordering n m
 compare n m with n < m  | inspect (_<_ n) m
-compare n m | true | [ n<m ] rewrite TrustMe.erase (less-hom n m n<m) = less n (m - n - 1)
-compare n m | false | [ n≮m ] with n == m | inspect (_==_ n) m
-compare n m | false | [ n≮m ] | true  | [ n≡m ] rewrite TrustMe.erase (eq-hom n m n≡m) = equal m
-compare n m | false | [ n≮m ] | false | [ n≢m ] rewrite TrustMe.erase (gt-hom n m n≮m n≢m) = greater m (n - m - 1)
+... | true  | [ n<m ] rewrite erase (less-hom n m n<m) = less n (m - n - 1)
+... | false | [ n≮m ] with n == m | inspect (_==_ n) m
+... | true  | [ n≡m ] rewrite erase (eq-hom n m n≡m) = equal m
+... | false | [ n≢m ] rewrite erase (gt-hom n m n≮m n≢m) = greater m (n - m - 1)
