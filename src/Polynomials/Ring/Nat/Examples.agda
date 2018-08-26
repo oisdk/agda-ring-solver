@@ -1,6 +1,6 @@
 {-# OPTIONS --without-K #-}
 
-module Polynomials.Ring.Examples where
+module Polynomials.Ring.Nat.Examples where
 
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.Nat.Properties
