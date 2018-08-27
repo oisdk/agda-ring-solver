@@ -9,7 +9,11 @@ infixr 5 _≡⟨_⟩_
 data _≡⋯≡_ : A → A → Set a where
   [refl] : ∀ {x} →  x ≡⋯≡ x
   _≡⟨_⟩_ : ∀ {x} y {z} → String → y ≡⋯≡ z → x ≡⋯≡ z
-  cong₁ : ∀ {x y z} {f : A → A} → String → x ≡⋯≡ y → f y ≡⋯≡ z → f x ≡⋯≡ z
+  cong₁ : ∀ {x y z} {f : A → A}
+        → String
+        → x ≡⋯≡ y
+        → f y ≡⋯≡ z
+        → f x ≡⋯≡ z
   cong₂ : ∀ {x₁ x₂ y₁ y₂ z} {f : A → A → A}
         → String
         → x₁ ≡⋯≡ x₂

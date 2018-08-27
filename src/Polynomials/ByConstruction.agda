@@ -68,7 +68,7 @@ module Context where
 
 module Lemmas where
   open AlmostCommutativeRing coeffs
-  open import Relation.Binary.EqReasoning setoid
+  open import Polynomials.Ring.Reasoning coeffs
 
   +-distrib : ∀ x xs y ys ρ → (x + ρ * xs) + (y + ρ * ys) ≈ x + y + ρ * (xs + ys)
   +-distrib x xs y ys ρ =
@@ -84,10 +84,21 @@ module Lemmas where
       x + y + ρ * (xs + ys)
     ∎
 
+  ⋊-distrib : ∀ x y ys ρ → x * (y + ρ * ys) ≈ x * y + ρ * (x * ys)
+  ⋊-distrib x y ys ρ =
+    begin
+      x * (y + ρ * ys)
+    ≈⟨ distribˡ x y _ ⟩
+      x * y + x * (ρ * ys)
+    ≈⟨ +≫ (sym (*-assoc x ρ ys) ︔ (≪* *-comm x ρ) ︔ *-assoc _ _ _) ⟩
+      x * y + ρ * (x * ys)
+    ∎
+
 open Lemmas
 open Context
 open AlmostCommutativeRing exprRing
 module Coeff = AlmostCommutativeRing coeffs
+open import Polynomials.Ring.Reasoning exprRing
 
 infixr 0 ⟦⟧⇐_ ⟦_∷_⟨_⟩⟧⇐_
 data Poly (expr : Carrier) : Set (a ⊔ ℓ) where
@@ -100,3 +111,13 @@ _⊞_ : ∀ {x y} → Poly x → Poly y → Poly (x + y)
 (⟦ x ∷ xs ⟨ xs′ ⟩⟧⇐ xp) ⊞ (⟦⟧⇐ yp) = ⟦ x ∷ xs ⟨ xs′ ⟩⟧⇐ xp ⟨ +-cong ⟩ yp ⟨ trans ⟩ +-identityʳ _
 (⟦ x ∷ xs ⟨ xs′ ⟩⟧⇐ xp) ⊞ (⟦ y ∷ ys ⟨ ys′ ⟩⟧⇐ yp) = ⟦ x Coeff.+ y ∷ xs + ys ⟨ xs′ ⊞ ys′ ⟩⟧⇐
   xp ⟨ +-cong ⟩ yp ⟨ trans ⟩  λ ρ → +-distrib _ _ _ _ ρ
+
+_⋊_ : ∀ x {ys} → Poly ys → Poly (λ ρ → x Coeff.* ys ρ)
+x ⋊ (⟦⟧⇐ yp) = ⟦⟧⇐ λ _ →  Coeff.refl ⟨ Coeff.*-cong ⟩ yp _ ⟨ Coeff.trans ⟩ Coeff.zeroʳ _
+x ⋊ (⟦ y ∷ ys ⟨ ys′ ⟩⟧⇐ yp) = ⟦ x Coeff.* y ∷ (λ ρ → x Coeff.* ys ρ) ⟨ x ⋊ ys′ ⟩⟧⇐
+  λ _ → Coeff.refl ⟨ Coeff.*-cong ⟩ yp _ ⟨ Coeff.trans ⟩ ⋊-distrib x y _ _
+
+
+_⊠_ : ∀ {x y} → Poly x → Poly y → Poly (x * y)
+xs ⊠ (⟦⟧⇐ yp) = ⟦⟧⇐ refl ⟨ *-cong ⟩ yp ⟨ trans ⟩ zeroʳ _
+xs ⊠ (⟦ y ∷ ys ⟨ ys′ ⟩⟧⇐ yp) = {!!}
