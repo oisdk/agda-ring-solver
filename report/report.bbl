@@ -1,0 +1,65 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 2.9 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nty/global//global/global}
+    \entry{gibbons_horners_2011}{online}{}
+      \name{author}{1}{}{%
+        {{hash=d7effacc4950f11aea627dc1bac84255}{%
+           family={Gibbons},
+           familyi={G\bibinitperiod},
+           given={Jeremy},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{d7effacc4950f11aea627dc1bac84255}
+      \strng{fullhash}{d7effacc4950f11aea627dc1bac84255}
+      \strng{bibnamehash}{d7effacc4950f11aea627dc1bac84255}
+      \strng{authorbibnamehash}{d7effacc4950f11aea627dc1bac84255}
+      \strng{authornamehash}{d7effacc4950f11aea627dc1bac84255}
+      \strng{authorfullhash}{d7effacc4950f11aea627dc1bac84255}
+      \field{sortinit}{G}
+      \field{sortinithash}{5e8d2bf9d38de41b1528bd307546008f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{This post is about my all-time favourite calculation, of a linear-time algorithm for the maximum segment sum problem, based on Horner’s Rule. The problem was popularized in Jon Bentley’…}
+      \field{day}{5}
+      \field{journaltitle}{Patterns in Functional Programming}
+      \field{langid}{english}
+      \field{month}{5}
+      \field{title}{Horner’s {{Rule}}}
+      \field{urlday}{19}
+      \field{urlmonth}{8}
+      \field{urlyear}{2018}
+      \field{year}{2011}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{file}
+      \verb /Users/doisinkidney/Zotero/storage/WRD6S87U/horners-rule.html
+      \endverb
+      \verb{urlraw}
+      \verb https://patternsinfp.wordpress.com/2011/05/05/horners-rule/
+      \endverb
+      \verb{url}
+      \verb https://patternsinfp.wordpress.com/2011/05/05/horners-rule/
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+
