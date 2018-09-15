@@ -14,7 +14,7 @@ module Polynomials.Ring.Reflection
 open import Reflection
 open AlmostCommutativeRing ring hiding (zero)
 open import Data.Maybe
-open import Polynomials.Ring.FlatExpr public
+open import Polynomials.Ring.FlatExpr
 
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 import Data.Fin as Fin

@@ -11,4 +11,4 @@ open AlmostCommutativeRing NatRing
 open import Polynomials.Ring.Reflection NatRing ℕ._≟_
 
 lem : _
-lem = solve 3 (makeGoal (((x y z : ℕ) → z + (x + y) ≈ x + 0 + 0 + z + 0 + y))) refl
+lem = solve 3 (makeGoal ((x y z : ℕ) → z + (x + y) ≈ x + 0 + 0 + z + 0 + y)) refl
