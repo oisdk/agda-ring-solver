@@ -24,6 +24,8 @@ open import Data.Maybe
 open import Category.Monad
 open import Function
 import Level
+open import Data.Product
+open import Polynomials.Ring.Expr rawRing (_≈ 0#) (λ x → x ≈? 0#) ring (-raw-almostCommutative⟶ ring) (λ x z → z) using (solve) public
 
 module TCMonad where
   infixl 1 _>>=_ _>>_ _>=>_
@@ -95,7 +97,7 @@ constExpr : ℕ → Term → Term
 constExpr i x = con (quote Κ) (i exprCon visible-arg x ∷ [])
 
 toExpr : (i : ℕ) → Term → Term
-toExpr i (def f (_ ∷ _ ∷ _ ∷ visible-arg x ∷ visible-arg y ∷ _)) with f ≟-Name quote AlmostCommutativeRing._+_
+toExpr i (def f (_ ∷ _ ∷ _ ∷ visible-arg x ∷ visible-arg y ∷  _)) with f ≟-Name quote AlmostCommutativeRing._+_
 toExpr i (def f (_ ∷ _ ∷ _ ∷ visible-arg x ∷ visible-arg y ∷ _)) | yes p = plusExpr i (toExpr i x) (toExpr i y)
 toExpr i (def f (_ ∷ _ ∷ _ ∷ visible-arg x ∷ visible-arg y ∷ _)) | no ¬p with f ≟-Name quote AlmostCommutativeRing._*_
 toExpr i (def f (_ ∷ _ ∷ _ ∷ visible-arg x ∷ visible-arg y ∷ _)) | no ¬p | yes p = multExpr i (toExpr i x) (toExpr i y)
@@ -111,3 +113,15 @@ toExpr i t = constExpr i t
 macro
   qExpr : Term → Term → TC ⊤
   qExpr expr hole = unify hole (toExpr 0 expr)
+
+toEquiv : Term → Term
+toEquiv = go 0
+  where
+  go : ℕ → Term → Term
+  go i (def f (_ ∷ _ ∷ _ ∷ visible-arg lhs ∷ visible-arg rhs ∷ _)) = con (quote _,_) (hidden-arg unknown ∷ hidden-arg unknown ∷ hidden-arg unknown ∷ hidden-arg unknown ∷ visible-arg (toExpr i lhs) ∷ visible-arg (toExpr i rhs) ∷ [])
+  go i (pi a (abs s x)) = lam visible (abs s (go (suc i) x))
+  go i _ = unknown
+
+macro
+  qEquiv : Term → Term → TC ⊤
+  qEquiv expr hole = unify hole (toEquiv expr)
