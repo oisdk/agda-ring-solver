@@ -32,13 +32,4 @@ ex5 : Expr ℕ ℕ.zero
 ex5 = qExpr (1# + num * 3)
 
 lem5 : ∀ x y z → z + (x + y) ≈ x + 0 + 0 + z + 0 + y
-lem5 = solve 3 (qEquiv (((z y x : ℕ) → z + (x + y) ≈ x + 0 + 0 + z + 0 + y))) refl
-
--- lem6 : (a b c d e f g h i : ℕ)
---      → a * (b + (c * (d + (e * (f + (g * (h + i)))))))
---      ≡ a * (b + (c * (d + (e * (f + (g * (h))))))) + a * (c * 1 * e) * g * i
--- lem6 = solve 9
---   (λ a b c d e f g h i 
---   a ⊗ (b ⊕ (c ⊗ (d ⊕ (e ⊗ (f ⊕ (g ⊗ (h ⊕ i))))))) ⊜
---   a ⊗ (b ⊕ (c ⊗ (d ⊕ (e ⊗ (f ⊕ (g ⊗ h))))))
---   ⊕ a ⊗ (c ⊗ Κ 1 ⊗ e) ⊗ g ⊗ i) refl
+lem5 = solve 3 (qEquiv (((x y z : ℕ) → z + (x + y) ≈ x + 0 + 0 + z + 0 + y))) refl

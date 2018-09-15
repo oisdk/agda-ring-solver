@@ -96,6 +96,18 @@ varExpr i x = con (quote Ι) (i exprCon visible-arg (finTerm x) ∷ [])
 constExpr : ℕ → Term → Term
 constExpr i x = con (quote Κ) (i exprCon visible-arg x ∷ [])
 
+revFin : ∀ {x y} → suc x ℕ.≤ y → Fin.Fin y
+revFin {x} {y} prf = Fin.fromℕ≤ (NP.≤″⇒≤ prf₂)
+  where
+  import Data.Nat.Properties as NP
+  import Relation.Binary.PropositionalEquality as ≡
+  prf₁ : suc x ℕ.≤″ y
+  prf₁ = NP.≤⇒≤″ prf
+  prf₂ : suc (ℕ._≤″_.k prf₁) ℕ.≤″ y
+  prf₂ = ℕ.less-than-or-equal (≡.trans (≡.cong suc (NP.+-comm _ x)) (ℕ._≤″_.proof prf₁))
+
+
+
 toExpr : (i : ℕ) → Term → Term
 toExpr i (def f (_ ∷ _ ∷ _ ∷ visible-arg x ∷ visible-arg y ∷  _)) with f ≟-Name quote AlmostCommutativeRing._+_
 toExpr i (def f (_ ∷ _ ∷ _ ∷ visible-arg x ∷ visible-arg y ∷ _)) | yes p = plusExpr i (toExpr i x) (toExpr i y)
@@ -106,7 +118,7 @@ toExpr i (def f (_ ∷ _ ∷ _ ∷ visible-arg x ∷ _)) with f ≟-Name quote A
 toExpr i (def f (_ ∷ _ ∷ _ ∷ visible-arg x ∷ _)) | yes p = negExpr i (toExpr i x)
 toExpr i t@(def f (_ ∷ _ ∷ _ ∷ visible-arg x ∷ _)) | no ¬p = negExpr i t
 toExpr i (var x args) with suc x ℕ.≤? i
-toExpr i (var x args) | yes p = varExpr i (Fin.fromℕ≤ p)
+toExpr i (var x args) | yes p = varExpr i (revFin p)
 toExpr i t@(var x args) | no ¬p = constExpr i t
 toExpr i t = constExpr i t
 
