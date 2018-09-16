@@ -64,12 +64,20 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
 open import Data.Nat using (ℕ)
 open import Data.Product
 
-solve″ : ∀ {ℓ₁ ℓ₂}
+solve : ∀ {ℓ₁ ℓ₂}
       → (ring : AlmostCommutativeRing ℓ₁ ℓ₂)
       → (n : ℕ)
       → (f : N-ary n (Expr (AlmostCommutativeRing.Carrier ring) n) (Expr (AlmostCommutativeRing.Carrier ring) n × Expr (AlmostCommutativeRing.Carrier ring) n))
       → Eqʰ n (AlmostCommutativeRing._≈_ ring) (curryⁿ (Ops.⟦_⇓⟧ ring  (proj₁ (Ops.close ring n f)))) (curryⁿ (Ops.⟦_⇓⟧ ring (proj₂ (Ops.close ring n f))))
       → Eq  n (AlmostCommutativeRing._≈_ ring) (curryⁿ (Ops.⟦_⟧ ring (proj₁ (Ops.close ring n f)))) (curryⁿ (Ops.⟦_⟧ ring (proj₂ (Ops.close ring n f))))
-solve″ ring = solve′
+solve ring = solve′
   where
   open Ops ring renaming (solve to solve′)
+
+_⊜_ : ∀ {ℓ₁ ℓ₂}
+    → (ring : AlmostCommutativeRing ℓ₁ ℓ₂)
+    → (n : ℕ)
+    → Expr (AlmostCommutativeRing.Carrier ring) n
+    → Expr (AlmostCommutativeRing.Carrier ring) n
+    → Expr (AlmostCommutativeRing.Carrier ring) n × Expr (AlmostCommutativeRing.Carrier ring) n
+_⊜_ _ _ = _,_

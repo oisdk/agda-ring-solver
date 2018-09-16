@@ -25,10 +25,10 @@ open import Function
 -- exampleExpr = qExpr (1 + (2 + 3))
 
 lem :  Term
-lem = quoteTerm (solve″ NatRing 3 (λ x y z → z ⊕ (x ⊕ y) , x ⊕ Κ 0 ⊕ Κ 0 ⊕ z ⊕ Κ 0 ⊕ y) refl)
+lem = quoteTerm (solve NatRing 3 (λ x y z → z ⊕ (x ⊕ y) , x ⊕ Κ 0 ⊕ Κ 0 ⊕ z ⊕ Κ 0 ⊕ y) refl)
 
 mmmm : _
-mmmm = solutionFor NatRing (∀ (x y) → x + y * 1 + 3 ≈ 2 + 1 + x + y)
+mmmm = solutionFor NatRing (∀ x y → x + y * 1 + 3 ≈ 2 + 1 + x + y)
 
-mmm : (x : ℕ) → 1 + x ≈ x + 1
-mmm = quoteGoal e in unquote (unify (toSoln (quote NatRing) e))
+mmm : _
+mmm = (∀ x → 1 + x ≈ x + 1) ∋ trySolve NatRing

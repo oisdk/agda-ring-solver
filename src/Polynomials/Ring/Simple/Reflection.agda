@@ -61,31 +61,8 @@ module Internal where
   _exprCon_ : ℕ → List (Arg Term) → List (Arg Term)
   i exprCon xs = hidden-arg unknown ∷ hidden-arg unknown ∷ hidden-arg (natTerm i) ∷ xs
 
-
-  plusExpr : ℕ → Term → Term → Term
-  plusExpr i x y = con (quote _⊕_) (i exprCon visible-arg x ∷ visible-arg y ∷ [])
-
-  multExpr : ℕ → Term → Term → Term
-  multExpr i x y = con (quote _⊗_) (i exprCon visible-arg x ∷ visible-arg y ∷ [])
-
-  negExpr : ℕ → Term → Term
-  negExpr i x = con (quote ⊝_) (i exprCon visible-arg x ∷ [])
-
-  varExpr : (i : ℕ) → Fin.Fin i → Term
-  varExpr i x = con (quote Ι) (i exprCon visible-arg (finTerm x) ∷ [])
-
   constExpr : ℕ → Term → Term
   constExpr i x = con (quote Κ) (i exprCon visible-arg x ∷ [])
-
-  revFin : ∀ {x y} → suc x ℕ.≤ y → Fin.Fin y
-  revFin {x} {y} prf = Fin.fromℕ≤ (NP.≤″⇒≤ prf₂)
-    where
-    import Data.Nat.Properties as NP
-    import Relation.Binary.PropositionalEquality as ≡
-    prf₁ : suc x ℕ.≤″ y
-    prf₁ = NP.≤⇒≤″ prf
-    prf₂ : suc (ℕ._≤″_.k prf₁) ℕ.≤″ y
-    prf₂ = ℕ.less-than-or-equal (≡.trans (≡.cong suc (NP.+-comm _ x)) (ℕ._≤″_.proof prf₁))
 
 open Internal
 
@@ -127,12 +104,12 @@ vlams zero xs = xs
 vlams (suc i) xs = lam visible (abs "" (vlams i xs))
 
 mkSolver : Name → ℕ → Term → Term → Term
-mkSolver rng i lhs rhs = def (quote solve″)
+mkSolver rng i lhs rhs = def (quote solve)
   ( hidden-arg unknown
   ∷ hidden-arg unknown
   ∷ visible-arg (def rng [])
   ∷ visible-arg (natTerm i)
-  ∷ visible-arg (vlams i (con (quote _,_) (hidden-arg unknown ∷ hidden-arg unknown ∷ hidden-arg unknown ∷ hidden-arg unknown ∷ visible-arg (toExpr i lhs) ∷ visible-arg (toExpr i rhs) ∷ [])))
+  ∷ visible-arg (vlams i (def (quote _⊜_) (hidden-arg unknown ∷ hidden-arg unknown ∷ visible-arg (def rng []) ∷ (visible-arg (natTerm i)) ∷ visible-arg (toExpr i lhs) ∷ visible-arg (toExpr i rhs) ∷ [])))
   ∷ visible-arg (hlams i (def (quote AlmostCommutativeRing.refl) (hidden-arg unknown ∷ hidden-arg unknown ∷ visible-arg (def rng []) ∷ hidden-arg unknown ∷ [])))
   ∷ [])
 
