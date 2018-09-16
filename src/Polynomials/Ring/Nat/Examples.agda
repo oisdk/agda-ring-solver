@@ -4,11 +4,29 @@ module Polynomials.Ring.Nat.Examples where
 
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.Nat.Properties
-open import Algebra.Solver.Ring.AlmostCommutativeRing
-NatRing : AlmostCommutativeRing _ _
-NatRing = fromCommutativeSemiring *-+-commutativeSemiring
-open AlmostCommutativeRing NatRing
-open import Polynomials.Ring.Reflection NatRing ℕ._≟_
+import Algebra.Solver.Ring.AlmostCommutativeRing as Complex
+open import Polynomials.Ring.Simple.AlmostCommutativeRing
+open import Data.Product
 
-lem : _
-lem = solve 3 (makeGoal ((x y z : ℕ) → z + (x + y) ≈ x + 0 + 0 + z + 0 + y)) refl
+NatRing : AlmostCommutativeRing _ _
+NatRing = fromCommutativeSemiring *-+-commutativeSemiring ℕ._≟_
+
+open AlmostCommutativeRing NatRing
+open import Polynomials.Ring.Simple.Solver
+open import Polynomials.Ring.Simple.Reflection
+
+
+open import Reflection
+open import Function
+
+-- exampleExpr : Expr ℕ ℕ.zero
+-- exampleExpr = qExpr (1 + (2 + 3))
+
+lem :  Term
+lem = quoteTerm (solve″ NatRing 3 (λ x y z → z ⊕ (x ⊕ y) , x ⊕ Κ 0 ⊕ Κ 0 ⊕ z ⊕ Κ 0 ⊕ y) refl)
+
+mmmm : Term
+mmmm = toSoln (quote NatRing) (quoteTerm ((x : ℕ) → x + 1 ≈ 1 + x))
+
+mmm : 1 + 2 ≈ 2 + 1
+mmm = trySolve NatRing

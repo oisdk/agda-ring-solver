@@ -56,7 +56,7 @@ module Internal where
       x ← xs
       return (f x)
 
-  open TCMonad
+  open TCMonad public
 
   pattern hidden-arg x = arg (arg-info hidden relevant) x
   pattern visible-arg x = arg (arg-info visible relevant) x
