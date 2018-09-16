@@ -94,33 +94,36 @@ module Internal where
 
   open import Polynomials.Ring.Simple.Solver renaming (solve to solve′)
 
-  hlams : ℕ → Term → Term
-  hlams zero xs = xs
-  hlams (suc i) xs = lam hidden (abs "" (hlams i xs))
+  open import Data.String
 
-  vlams : ℕ → Term → Term
-  vlams zero xs = xs
-  vlams (suc i) xs = lam visible (abs "" (vlams i xs))
+  hlams : List String → Term → Term
+  hlams [] xs = xs
+  hlams (v ∷ vs) xs = lam hidden (abs v (hlams vs xs))
 
-  mkSolver : Name → ℕ → Term → Term → Term
-  mkSolver rng i lhs rhs = def (quote solve′)
+  vlams : List String → Term → Term
+  vlams [] xs = xs
+  vlams (v ∷ vs) xs = lam visible (abs v (vlams vs xs))
+
+  mkSolver : List String → Name → ℕ → Term → Term → Term
+  mkSolver nms rng i lhs rhs = def (quote solve′)
     ( hidden-arg unknown
     ∷ hidden-arg unknown
     ∷ visible-arg (def rng [])
     ∷ visible-arg (natTerm i)
-    ∷ visible-arg (vlams i (def (quote _⊜_) (hidden-arg unknown ∷ hidden-arg unknown ∷ visible-arg (def rng []) ∷ (visible-arg (natTerm i)) ∷ visible-arg (toExpr i lhs) ∷ visible-arg (toExpr i rhs) ∷ [])))
-    ∷ visible-arg (hlams i (def (quote AlmostCommutativeRing.refl) (hidden-arg unknown ∷ hidden-arg unknown ∷ visible-arg (def rng []) ∷ hidden-arg unknown ∷ [])))
+    ∷ visible-arg (vlams nms (def (quote _⊜_) (hidden-arg unknown ∷ hidden-arg unknown ∷ visible-arg (def rng []) ∷ (visible-arg (natTerm i)) ∷ visible-arg (toExpr i lhs) ∷ visible-arg (toExpr i rhs) ∷ [])))
+    ∷ visible-arg (hlams nms (def (quote AlmostCommutativeRing.refl) (hidden-arg unknown ∷ hidden-arg unknown ∷ visible-arg (def rng []) ∷ hidden-arg unknown ∷ [])))
     ∷ [])
 
+
   toSoln : Name → Term → Term
-  toSoln rng = go 0
+  toSoln rng = go 0 id
     where
-    go : ℕ → Term → Term
-    go i (def f (visible-arg lhs ∷ visible-arg rhs ∷ [])) = (mkSolver rng i lhs rhs)
-    go i (def f (_ ∷ _ ∷ visible-arg lhs ∷ visible-arg rhs ∷ [])) = (mkSolver rng i lhs rhs)
-    go i (def f (_ ∷ _ ∷ _ ∷ visible-arg lhs ∷ visible-arg rhs ∷ [])) = (mkSolver rng i lhs rhs)
-    go i (pi a (abs s x)) = go (suc i) x
-    go i t = t
+    go : ℕ → (List String → List String) → Term → Term
+    go i k (def f (visible-arg lhs ∷ visible-arg rhs ∷ [])) = mkSolver (k []) rng i lhs rhs
+    go i k (def f (_ ∷ _ ∷ visible-arg lhs ∷ visible-arg rhs ∷ [])) = mkSolver (k []) rng i lhs rhs
+    go i k (def f (_ ∷ _ ∷ _ ∷ visible-arg lhs ∷ visible-arg rhs ∷ [])) = mkSolver (k []) rng i lhs rhs
+    go i k (pi a (abs s x)) = go (suc i) (k ∘ (s ∷_)) x
+    go i k t = unknown
 
 open Internal
 open import Agda.Builtin.Reflection
