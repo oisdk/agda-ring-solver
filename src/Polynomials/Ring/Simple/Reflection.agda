@@ -89,19 +89,28 @@ module Internal where
 
 open Internal
 
-toExpr : (i : ℕ) → Term → Term
-toExpr i t@(def f (_ ∷ _ ∷ _ ∷ visible-arg x ∷ visible-arg y ∷  _)) with f ≟-Name quote AlmostCommutativeRing._+_
-toExpr i t@(def f (_ ∷ _ ∷ _ ∷ visible-arg x ∷ visible-arg y ∷ _)) | yes p = plusExpr i (toExpr i x) (toExpr i y)
-toExpr i t@(def f (_ ∷ _ ∷ _ ∷ visible-arg x ∷ visible-arg y ∷ _)) | no ¬p with f ≟-Name quote AlmostCommutativeRing._*_
-toExpr i t@(def f (_ ∷ _ ∷ _ ∷ visible-arg x ∷ visible-arg y ∷ _)) | no ¬p | yes p = multExpr i (toExpr i x) (toExpr i y)
-toExpr i t@(def f (_ ∷ _ ∷ _ ∷ visible-arg x ∷ visible-arg y ∷ _)) | no ¬p | no ¬p₁ = constExpr i t
-toExpr i t@(def f (_ ∷ _ ∷ _ ∷ visible-arg x ∷ _)) with f ≟-Name quote AlmostCommutativeRing.-_
-toExpr i t@(def f (_ ∷ _ ∷ _ ∷ visible-arg x ∷ _)) | yes p = negExpr i (toExpr i x)
-toExpr i t@(def f (_ ∷ _ ∷ _ ∷ visible-arg x ∷ _)) | no ¬p = negExpr i t
-toExpr i (var x args) with suc x ℕ.≤? i
-toExpr i v@(var x args) | yes p = varExpr i (Fin.fromℕ≤ p)
-toExpr i t@(var x args) | no ¬p = constExpr i t
-toExpr i t = constExpr i t
+mutual
+  getBinOp : ℕ → Name → List (Arg Term) → Term
+  getBinOp i nm (visible-arg x ∷ visible-arg y ∷ []) = con nm (i exprCon visible-arg (toExpr i x) ∷ visible-arg (toExpr i y) ∷ [])
+  getBinOp i nm (x ∷ xs) = getBinOp i nm xs
+  getBinOp _ _ _ = unknown
+
+  getUnOp : ℕ → Name → List (Arg Term) → Term
+  getUnOp i nm (visible-arg x ∷ []) = con nm (i exprCon visible-arg (toExpr i x) ∷ [])
+  getUnOp _ _ _ = unknown
+
+  toExpr : (i : ℕ) → Term → Term
+  toExpr i (def f xs) with f ≟-Name quote AlmostCommutativeRing._+_
+  ... | yes p = getBinOp i (quote _⊕_) xs
+  ... | no _ with f ≟-Name quote AlmostCommutativeRing._*_
+  ... | yes p = getBinOp i (quote _⊗_) xs
+  ... | no _ with f ≟-Name quote AlmostCommutativeRing.-_
+  ... | yes p = getUnOp i (quote ⊝_) xs
+  ... | no _ = unknown
+  toExpr i (var x args) with suc x ℕ.≤? i
+  toExpr i v@(var x args) | yes p = v
+  toExpr i t@(var x args) | no ¬p = constExpr i t
+  toExpr i t = constExpr i t
 
 macro
   qExpr : Term → Term → TC ⊤
@@ -138,18 +147,13 @@ toSoln rng = go 0
   go i (def f (_ ∷ _ ∷ _ ∷ visible-arg lhs ∷ visible-arg rhs ∷ [])) = (mkSolver rng i lhs rhs)
   go i (pi a (abs s x)) = go (suc i) x
   go i t = t
-  -- go i (var x args)      = typeError (strErr "var" ∷ [])
-  -- go i (con c args)      = typeError (strErr "con" ∷ [])
-  -- go i (def f args)      = typeError (strErr "def" ∷ nameErr f ∷  strErr (S.show (length args)) ∷ [])
-  -- go i (lam v t)         = typeError (strErr "lam" ∷ [])
-  -- go i (pat-lam cs args) = typeError (strErr "plam" ∷ [])
-  -- go i (sort s)          = typeError (strErr "sort" ∷ [])
-  -- go i (lit l)           = typeError (strErr "lit" ∷ [])
-  -- go i (meta x x₁)       = typeError (strErr "meta" ∷ [])
-  -- go i unknown           = typeError (strErr "unknoown" ∷ [])
 
 macro
   trySolve : Name → Term → TC ⊤
   trySolve rng hole = do
     goal ← inferType hole
     unify hole (toSoln rng goal)
+
+macro
+  solutionFor : Name → Term → Term → TC ⊤
+  solutionFor rng expr hole = unify hole (toSoln rng expr)

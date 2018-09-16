@@ -1,4 +1,6 @@
 {-# OPTIONS --without-K #-}
+{-# OPTIONS --show-implicit #-}
+{-# OPTIONS --verbose=5 #-}
 
 module Polynomials.Ring.Nat.Examples where
 
@@ -25,8 +27,8 @@ open import Function
 lem :  Term
 lem = quoteTerm (solve″ NatRing 3 (λ x y z → z ⊕ (x ⊕ y) , x ⊕ Κ 0 ⊕ Κ 0 ⊕ z ⊕ Κ 0 ⊕ y) refl)
 
-mmmm : Term
-mmmm = toSoln (quote NatRing) (quoteTerm ((x : ℕ) → x + 1 ≈ 1 + x))
+mmmm : _
+mmmm = solutionFor NatRing (∀ (x y) → x + y * 1 + 3 ≈ 2 + 1 + x + y)
 
-mmm : 1 + 2 ≈ 2 + 1
-mmm = trySolve NatRing
+mmm : (x : ℕ) → 1 + x ≈ x + 1
+mmm = quoteGoal e in unquote (unify (toSoln (quote NatRing) e))
