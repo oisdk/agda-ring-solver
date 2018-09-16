@@ -126,6 +126,7 @@ toSoln rng = go 0
   go i t = t
 
 open import Function
+open import Agda.Builtin.Reflection
 
 -- _∋_ : ∀ {a} (A : Set a) → A → A
 -- A ∋ x = x
@@ -133,14 +134,9 @@ open import Function
 macro
   trySolve : Name → Term → TC ⊤
   trySolve rng hole = do
-    goal ← inferType hole
-    unify (def (quote _∋_) (visible-arg goal ∷ visible-arg (toSoln rng goal) ∷ [])) hole
+    goal ← inferType hole >>= reduce
+    unify (toSoln rng goal) hole
 
-
-trySolve′ : Name → Term → TC ⊤
-trySolve′ rng hole = do
-  goal ← inferType hole
-  unify (def (quote _∋_) (visible-arg goal ∷ visible-arg (toSoln rng goal) ∷ [])) hole
 
 macro
   solutionFor : Name → Term → Term → TC ⊤
