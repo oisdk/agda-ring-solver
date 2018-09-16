@@ -64,80 +64,68 @@ module Internal where
   constExpr : ℕ → Term → Term
   constExpr i x = con (quote Κ) (i exprCon visible-arg x ∷ [])
 
+
+  mutual
+    getBinOp : ℕ → Name → List (Arg Term) → Term
+    getBinOp i nm (visible-arg x ∷ visible-arg y ∷ []) = con nm (i exprCon visible-arg (toExpr i x) ∷ visible-arg (toExpr i y) ∷ [])
+    getBinOp i nm (x ∷ xs) = getBinOp i nm xs
+    getBinOp _ _ _ = unknown
+
+    getUnOp : ℕ → Name → List (Arg Term) → Term
+    getUnOp i nm (visible-arg x ∷ []) = con nm (i exprCon visible-arg (toExpr i x) ∷ [])
+    getUnOp _ _ _ = unknown
+
+    toExpr : (i : ℕ) → Term → Term
+    toExpr i (def f xs) with f ≟-Name quote AlmostCommutativeRing._+_
+    ... | yes p = getBinOp i (quote _⊕_) xs
+    ... | no _ with f ≟-Name quote AlmostCommutativeRing._*_
+    ... | yes p = getBinOp i (quote _⊗_) xs
+    ... | no _ with f ≟-Name quote AlmostCommutativeRing.-_
+    ... | yes p = getUnOp i (quote ⊝_) xs
+    ... | no _ = unknown
+    toExpr i (var x args) with suc x ℕ.≤? i
+    toExpr i v@(var x args) | yes p = v
+    toExpr i t@(var x args) | no ¬p = constExpr i t
+    toExpr i t = constExpr i t
+
+  macro
+    qExpr : Term → Term → TC ⊤
+    qExpr expr hole = unify hole (toExpr 0 expr)
+
+  open import Polynomials.Ring.Simple.Solver renaming (solve to solve′)
+
+  hlams : ℕ → Term → Term
+  hlams zero xs = xs
+  hlams (suc i) xs = lam hidden (abs "" (hlams i xs))
+
+  vlams : ℕ → Term → Term
+  vlams zero xs = xs
+  vlams (suc i) xs = lam visible (abs "" (vlams i xs))
+
+  mkSolver : Name → ℕ → Term → Term → Term
+  mkSolver rng i lhs rhs = def (quote solve′)
+    ( hidden-arg unknown
+    ∷ hidden-arg unknown
+    ∷ visible-arg (def rng [])
+    ∷ visible-arg (natTerm i)
+    ∷ visible-arg (vlams i (def (quote _⊜_) (hidden-arg unknown ∷ hidden-arg unknown ∷ visible-arg (def rng []) ∷ (visible-arg (natTerm i)) ∷ visible-arg (toExpr i lhs) ∷ visible-arg (toExpr i rhs) ∷ [])))
+    ∷ visible-arg (hlams i (def (quote AlmostCommutativeRing.refl) (hidden-arg unknown ∷ hidden-arg unknown ∷ visible-arg (def rng []) ∷ hidden-arg unknown ∷ [])))
+    ∷ [])
+
+  toSoln : Name → Term → Term
+  toSoln rng = go 0
+    where
+    go : ℕ → Term → Term
+    go i (def f (visible-arg lhs ∷ visible-arg rhs ∷ [])) = (mkSolver rng i lhs rhs)
+    go i (def f (_ ∷ _ ∷ visible-arg lhs ∷ visible-arg rhs ∷ [])) = (mkSolver rng i lhs rhs)
+    go i (def f (_ ∷ _ ∷ _ ∷ visible-arg lhs ∷ visible-arg rhs ∷ [])) = (mkSolver rng i lhs rhs)
+    go i (pi a (abs s x)) = go (suc i) x
+    go i t = t
+
 open Internal
-
-mutual
-  getBinOp : ℕ → Name → List (Arg Term) → Term
-  getBinOp i nm (visible-arg x ∷ visible-arg y ∷ []) = con nm (i exprCon visible-arg (toExpr i x) ∷ visible-arg (toExpr i y) ∷ [])
-  getBinOp i nm (x ∷ xs) = getBinOp i nm xs
-  getBinOp _ _ _ = unknown
-
-  getUnOp : ℕ → Name → List (Arg Term) → Term
-  getUnOp i nm (visible-arg x ∷ []) = con nm (i exprCon visible-arg (toExpr i x) ∷ [])
-  getUnOp _ _ _ = unknown
-
-  toExpr : (i : ℕ) → Term → Term
-  toExpr i (def f xs) with f ≟-Name quote AlmostCommutativeRing._+_
-  ... | yes p = getBinOp i (quote _⊕_) xs
-  ... | no _ with f ≟-Name quote AlmostCommutativeRing._*_
-  ... | yes p = getBinOp i (quote _⊗_) xs
-  ... | no _ with f ≟-Name quote AlmostCommutativeRing.-_
-  ... | yes p = getUnOp i (quote ⊝_) xs
-  ... | no _ = unknown
-  toExpr i (var x args) with suc x ℕ.≤? i
-  toExpr i v@(var x args) | yes p = v
-  toExpr i t@(var x args) | no ¬p = constExpr i t
-  toExpr i t = constExpr i t
-
-macro
-  qExpr : Term → Term → TC ⊤
-  qExpr expr hole = unify hole (toExpr 0 expr)
-
-open import Polynomials.Ring.Simple.Solver
-
-hlams : ℕ → Term → Term
-hlams zero xs = xs
-hlams (suc i) xs = lam hidden (abs "" (hlams i xs))
-
-vlams : ℕ → Term → Term
-vlams zero xs = xs
-vlams (suc i) xs = lam visible (abs "" (vlams i xs))
-
-mkSolver : Name → ℕ → Term → Term → Term
-mkSolver rng i lhs rhs = def (quote solve)
-  ( hidden-arg unknown
-  ∷ hidden-arg unknown
-  ∷ visible-arg (def rng [])
-  ∷ visible-arg (natTerm i)
-  ∷ visible-arg (vlams i (def (quote _⊜_) (hidden-arg unknown ∷ hidden-arg unknown ∷ visible-arg (def rng []) ∷ (visible-arg (natTerm i)) ∷ visible-arg (toExpr i lhs) ∷ visible-arg (toExpr i rhs) ∷ [])))
-  ∷ visible-arg (hlams i (def (quote AlmostCommutativeRing.refl) (hidden-arg unknown ∷ hidden-arg unknown ∷ visible-arg (def rng []) ∷ hidden-arg unknown ∷ [])))
-  ∷ [])
-
-import Data.Nat.Show as S
-
-toSoln : Name → Term → Term
-toSoln rng = go 0
-  where
-  go : ℕ → Term → Term
-  go i (def f (visible-arg lhs ∷ visible-arg rhs ∷ [])) = (mkSolver rng i lhs rhs)
-  go i (def f (_ ∷ _ ∷ visible-arg lhs ∷ visible-arg rhs ∷ [])) = (mkSolver rng i lhs rhs)
-  go i (def f (_ ∷ _ ∷ _ ∷ visible-arg lhs ∷ visible-arg rhs ∷ [])) = (mkSolver rng i lhs rhs)
-  go i (pi a (abs s x)) = go (suc i) x
-  go i t = t
-
-open import Function
 open import Agda.Builtin.Reflection
-
--- _∋_ : ∀ {a} (A : Set a) → A → A
--- A ∋ x = x
-
 macro
-  trySolve : Name → Term → TC ⊤
-  trySolve rng hole = do
+  solve : Name → Term → TC ⊤
+  solve rng hole = do
     goal ← inferType hole >>= reduce
     unify (toSoln rng goal) hole
-
-
-macro
-  solutionFor : Name → Term → Term → TC ⊤
-  solutionFor rng expr hole = unify hole (toSoln rng expr)
