@@ -76,13 +76,13 @@ module Internal where
     getUnOp _ _ _ = unknown
 
     toExpr : (i : ℕ) → Term → Term
-    toExpr i (def f xs) with f ≟-Name quote AlmostCommutativeRing._+_
+    toExpr i t@(def f xs) with f ≟-Name quote AlmostCommutativeRing._+_
     ... | yes p = getBinOp i (quote _⊕_) xs
     ... | no _ with f ≟-Name quote AlmostCommutativeRing._*_
     ... | yes p = getBinOp i (quote _⊗_) xs
     ... | no _ with f ≟-Name quote AlmostCommutativeRing.-_
     ... | yes p = getUnOp i (quote ⊝_) xs
-    ... | no _ = unknown
+    ... | no _ = constExpr i t
     toExpr i (var x args) with suc x ℕ.≤? i
     toExpr i v@(var x args) | yes p = v
     toExpr i t@(var x args) | no ¬p = constExpr i t
