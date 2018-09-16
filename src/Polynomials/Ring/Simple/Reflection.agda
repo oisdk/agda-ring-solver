@@ -2,7 +2,7 @@ module Polynomials.Ring.Simple.Reflection where
 
 open import Reflection
 open import Data.Maybe
-open import Polynomials.Ring.Simple.Expr
+open import Polynomials.Ring.Expr
 open import Polynomials.Ring.Simple.AlmostCommutativeRing
 open import Relation.Nullary
 open import Data.Nat as ℕ using (ℕ; suc; zero)

@@ -1,6 +1,6 @@
 module Polynomials.Ring.Simple.Solver where
 
-open import Polynomials.Ring.Simple.Expr public
+open import Polynomials.Ring.Expr public
 open import Polynomials.Ring.Simple.AlmostCommutativeRing public
 open import Data.Vec
 open import Algebra.Solver.Ring.AlmostCommutativeRing using (-raw-almostCommutative⟶)
