@@ -125,11 +125,22 @@ toSoln rng = go 0
   go i (pi a (abs s x)) = go (suc i) x
   go i t = t
 
+open import Function
+
+-- _∋_ : ∀ {a} (A : Set a) → A → A
+-- A ∋ x = x
+
 macro
   trySolve : Name → Term → TC ⊤
   trySolve rng hole = do
     goal ← inferType hole
-    unify hole (toSoln rng goal)
+    unify (def (quote _∋_) (visible-arg goal ∷ visible-arg (toSoln rng goal) ∷ [])) hole
+
+
+trySolve′ : Name → Term → TC ⊤
+trySolve′ rng hole = do
+  goal ← inferType hole
+  unify (def (quote _∋_) (visible-arg goal ∷ visible-arg (toSoln rng goal) ∷ [])) hole
 
 macro
   solutionFor : Name → Term → Term → TC ⊤
