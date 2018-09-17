@@ -10,71 +10,61 @@ import Data.Fin as Fin
 open import Data.List hiding (fromMaybe)
 open import Data.Unit
 open import Data.Maybe
-open import Category.Monad
 open import Function
 import Level
 open import Data.Product
+open import Function
 
 module Internal where
-  module TCMonad where
-    infixl 1 _>>=_ _>>_ _>=>_
-    _>>=_ : ∀ {a b} {A : Set a} {B : Set b} → TC A → (A → TC B) → TC B
-    _>>=_ = bindTC
 
-    _>>_ : ∀ {a b} {A : Set a} {B : Set b} → TC A → TC B → TC B
-    xs >> ys = do
-      x ← xs
-      ys
-
-    _>=>_ : ∀ {a b c} {A : Set a} {B : Set b} {C : Set c} → (A → TC B) → (B → TC C) → A → TC C
-    _>=>_ fs gs x = fs x >>= gs
-
-    return : ∀ {a} {A : Set a} → A → TC A
-    return = returnTC
-
-    infixl 4 _<$>_ _<*>_
-    _<$>_ : ∀ {a b} {A : Set a} {B : Set b} → (A → B) → TC A → TC B
-    f <$> xs = do
-      x ← xs
-      return (f x)
-
-    _<*>_ : ∀ {a b} → {A : Set a} {B : Set b} → TC (A → B) → TC A → TC B
-    fs <*> xs = do
-      f ← fs
-      x ← xs
-      return (f x)
-
-  open TCMonad public
-
-  pattern hidden-arg x = arg (arg-info hidden relevant) x
-  pattern visible-arg x = arg (arg-info visible relevant) x
+  -- Some patterns to decrease verbosity
+  infixr 5 ⟨_⟩∷_ ⟅_⟆∷_
+  pattern ⟨_⟩∷_ x xs = arg (arg-info visible relevant) x ∷ xs
+  pattern ⟅_⟆∷_ x xs = arg (arg-info hidden relevant) x ∷ xs
 
   natTerm : ℕ → Term
-  natTerm zero = con (quote zero) []
-  natTerm (suc i) = con (quote suc) (visible-arg (natTerm i) ∷ [])
+  natTerm zero = quote zero ⟨ con ⟩ []
+  natTerm (suc i) = quote suc ⟨ con ⟩ ⟨ natTerm i ⟩∷ []
 
-  finTerm : ∀ {i} → Fin.Fin i → Term
-  finTerm {suc i} Fin.zero = con (quote Fin.zero) (hidden-arg (natTerm i) ∷ [])
-  finTerm {suc i} (Fin.suc x) = con (quote Fin.suc) (hidden-arg (natTerm i) ∷ visible-arg (finTerm x) ∷ [])
+  -- This function applies the hidden arguments that the constructors
+  -- for Expr need. The first is the universe level, the second is the
+  -- type it contains, and the third is the number of variables it's
+  -- indexed by. All three of these could likely be inferred, but to
+  -- make things easier we supply the third because we know it.
+  infixr 5 ⟅_⋯⟆∷_
+  ⟅_⋯⟆∷_ : ℕ → List (Arg Term) → List (Arg Term)
+  ⟅ i ⋯⟆∷ xs = ⟅ unknown ⟆∷ ⟅ unknown ⟆∷ ⟅ natTerm i ⟆∷ xs
 
-  infixr 5 _exprCon_
-  _exprCon_ : ℕ → List (Arg Term) → List (Arg Term)
-  i exprCon xs = hidden-arg unknown ∷ hidden-arg unknown ∷ hidden-arg (natTerm i) ∷ xs
-
+  -- A constant expression.
   constExpr : ℕ → Term → Term
-  constExpr i x = con (quote Κ) (i exprCon visible-arg x ∷ [])
-
+  constExpr i x = quote Κ ⟨ con ⟩ ⟅ i ⋯⟆∷ ⟨ x ⟩∷ []
 
   mutual
+    -- Application of a ring operator often doesn't have a type as
+    -- simple as "Carrier → Carrier → Carrier": there may be hidden
+    -- arguments, etc. Here, we do our best to handle those cases,
+    -- by just taking the last two explicit arguments.
     getBinOp : ℕ → Name → List (Arg Term) → Term
-    getBinOp i nm (visible-arg x ∷ visible-arg y ∷ []) = con nm (i exprCon visible-arg (toExpr i x) ∷ visible-arg (toExpr i y) ∷ [])
+    getBinOp i nm (⟨ x ⟩∷ ⟨ y ⟩∷ []) = nm ⟨ con ⟩ ⟅ i ⋯⟆∷ ⟨ toExpr i x ⟩∷ ⟨ toExpr i y ⟩∷ []
     getBinOp i nm (x ∷ xs) = getBinOp i nm xs
     getBinOp _ _ _ = unknown
 
     getUnOp : ℕ → Name → List (Arg Term) → Term
-    getUnOp i nm (visible-arg x ∷ []) = con nm (i exprCon visible-arg (toExpr i x) ∷ [])
+    getUnOp i nm (⟨ x ⟩∷ []) = nm ⟨ con ⟩ ⟅ i ⋯⟆∷ ⟨ toExpr i x ⟩∷ []
+    getUnOp i nm (x ∷ xs) = getUnOp i nm xs
     getUnOp _ _ _ = unknown
 
+    -- When trying to figure out the shape of an expression, one of
+    -- the difficult tasks is recognizing where constants in the
+    -- underlying ring are used. If we were only dealing with ℕ, we
+    -- might look for its constructors: however, we want to deal with
+    -- arbitrary types which implement AlmostCommutativeRing. If the
+    -- Term type contained type information we might be able to
+    -- recognize it there, but it doesn't.
+    --
+    -- We're in luck, though, because all other cases in the following
+    -- function *are* recognizable. As a result, the "catch-all" case
+    -- will just assume that it has a constant expression.
     toExpr : (i : ℕ) → Term → Term
     toExpr i t@(def f xs) with f ≟-Name quote AlmostCommutativeRing._+_
     ... | yes p = getBinOp i (quote _⊕_) xs
@@ -83,45 +73,57 @@ module Internal where
     ... | no _ with f ≟-Name quote AlmostCommutativeRing.-_
     ... | yes p = getUnOp i (quote ⊝_) xs
     ... | no _ = constExpr i t
-    toExpr i (var x args) with suc x ℕ.≤? i
-    toExpr i v@(var x args) | yes p = v
-    toExpr i t@(var x args) | no ¬p = constExpr i t
+    toExpr i v@(var x args) with suc x ℕ.≤? i
+    ... | yes p = v
+    ... | no ¬p = constExpr i v
+    {-# CATCHALL #-}
     toExpr i t = constExpr i t
-
-  macro
-    qExpr : Term → Term → TC ⊤
-    qExpr expr hole = unify hole (toExpr 0 expr)
 
   open import Polynomials.Ring.Simple.Solver renaming (solve to solve′)
 
   open import Data.String
 
   hlams : List String → Term → Term
-  hlams [] xs = xs
-  hlams (v ∷ vs) xs = lam hidden (abs v (hlams vs xs))
+  hlams vs xs = foldr (λ v vs → lam hidden (abs v vs)) xs vs
 
   vlams : List String → Term → Term
-  vlams [] xs = xs
-  vlams (v ∷ vs) xs = lam visible (abs v (vlams vs xs))
+  vlams vs xs = foldr (λ v vs → lam visible (abs v vs)) xs vs
 
   mkSolver : List String → Name → ℕ → Term → Term → Term
-  mkSolver nms rng i lhs rhs = def (quote solve′)
-    ( hidden-arg unknown
-    ∷ hidden-arg unknown
-    ∷ visible-arg (def rng [])
-    ∷ visible-arg (natTerm i)
-    ∷ visible-arg (vlams nms (def (quote _⊜_) (hidden-arg unknown ∷ hidden-arg unknown ∷ visible-arg (def rng []) ∷ (visible-arg (natTerm i)) ∷ visible-arg (toExpr i lhs) ∷ visible-arg (toExpr i rhs) ∷ [])))
-    ∷ visible-arg (hlams nms (def (quote AlmostCommutativeRing.refl) (hidden-arg unknown ∷ hidden-arg unknown ∷ visible-arg (def rng []) ∷ hidden-arg unknown ∷ [])))
-    ∷ [])
+  mkSolver nms rng i lhs rhs =
+    quote solve′ ⟨ def ⟩
+      ⟅ unknown ⟆∷
+      ⟅ unknown ⟆∷
+      ⟨ def rng [] ⟩∷
+      ⟨ natTerm i ⟩∷
+      ⟨ vlams nms $
+          quote _⊜_ ⟨ def ⟩
+            ⟅ unknown ⟆∷
+            ⟅ unknown ⟆∷
+            ⟨ def rng [] ⟩∷
+            ⟨ natTerm i ⟩∷
+            ⟨ toExpr i lhs ⟩∷
+            ⟨ toExpr i rhs ⟩∷
+            []
+      ⟩∷
+      ⟨ hlams nms $
+          quote AlmostCommutativeRing.refl ⟨ def ⟩
+            ⟅ unknown ⟆∷
+            ⟅ unknown ⟆∷
+            ⟨ def rng [] ⟩∷
+            ⟅ unknown ⟆∷
+            []
+      ⟩∷
+      []
 
 
   toSoln : Name → Term → Term
   toSoln rng = go 0 id
     where
     go : ℕ → (List String → List String) → Term → Term
-    go i k (def f (visible-arg lhs ∷ visible-arg rhs ∷ [])) = mkSolver (k []) rng i lhs rhs
-    go i k (def f (_ ∷ _ ∷ visible-arg lhs ∷ visible-arg rhs ∷ [])) = mkSolver (k []) rng i lhs rhs
-    go i k (def f (_ ∷ _ ∷ _ ∷ visible-arg lhs ∷ visible-arg rhs ∷ [])) = mkSolver (k []) rng i lhs rhs
+    go i k (def f (⟨ lhs ⟩∷ ⟨ rhs ⟩∷ [])) = mkSolver (k []) rng i lhs rhs
+    go i k (def f (_ ∷ _ ∷ ⟨ lhs ⟩∷ ⟨ rhs ⟩∷ [])) = mkSolver (k []) rng i lhs rhs
+    go i k (def f (_ ∷ _ ∷ _ ∷ ⟨ lhs ⟩∷ ⟨ rhs ⟩∷ [])) = mkSolver (k []) rng i lhs rhs
     go i k (pi a (abs s x)) = go (suc i) (k ∘ (s ∷_)) x
     go i k t = unknown
 
@@ -129,6 +131,5 @@ open Internal
 open import Agda.Builtin.Reflection
 macro
   solve : Name → Term → TC ⊤
-  solve rng hole = do
-    goal ← inferType hole >>= reduce
-    unify (toSoln rng goal) hole
+  solve rng hole =
+    inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ unify hole ∘ toSoln rng
