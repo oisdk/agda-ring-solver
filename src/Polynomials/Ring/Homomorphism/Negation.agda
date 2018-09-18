@@ -37,20 +37,41 @@ open import Data.Vec as Vec using (Vec; _∷_; [])
 open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
 
+open import Induction.WellFounded
+open import Induction.Nat
+
 mutual
+
   ⊟-hom : ∀ {n}
         → (xs : Poly n)
         → (Ρ : Vec Carrier n)
         → ⟦ ⊟ xs ⟧ Ρ ≈ - ⟦ xs ⟧ Ρ
   ⊟-hom (Κ x  Π i≤n) Ρ = -‿homo x
-  ⊟-hom (Σ xs Π i≤n) Ρ =
+  ⊟-hom {n} (_Π_ {suc i} (Σ xs) i≤n) Ρ =
     begin
       ⟦ List.foldr (⊟-cons (⊟-step _ _)) [] xs Π↓ i≤n ⟧ Ρ
     ≈⟨ Π↓-hom (List.foldr (⊟-cons (⊟-step _ _)) [] xs) i≤n Ρ ⟩
       Σ⟦ List.foldr (⊟-cons (⊟-step _ _)) [] xs ⟧ (drop-1 i≤n Ρ)
-    ≈⟨ (foldr-prop  (λ ys zs → ∀ vs → Σ⟦ zs ⟧ vs ≈ - Σ⟦ ys ⟧ vs) {f = ⊟-cons (⊟-step _ _)} {b = []} {!!} (λ _ → neg-zero) xs) (drop-1 i≤n Ρ) ⟩
+    ≈⟨ foldr-prop  (λ ys zs → Σ⟦ ys ⟧ ≋ -_ ∘ Σ⟦ zs ⟧) {f = ⊟-cons (⊟-step _ _)} {b = []} neg-step (λ _ → neg-zero) xs (drop-1 i≤n Ρ) ⟩
       - Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
     ∎
+    where
+    neg-step : (y : CoeffExp i) {ys zs : List.List (CoeffExp i)} → (Σ⟦ ys ⟧ ≋ -_ ∘ Σ⟦ zs ⟧) → Σ⟦ ⊟-cons (⊟-step i (Some.wfRecBuilder (λ z → Poly z → Poly z) ⊟-step i (<′-wellFounded′ _ i i≤n))) y ys ⟧ ≋ -_ ∘ Σ⟦ y ∷ zs ⟧
+    neg-step x′ {ys} {zs} ys≋zs Ρ′ =
+      let x ≠0 Δ i = x′
+          (ρ , Ρ″) = Ρ′
+      in
+      begin
+        Σ⟦ ⊟ x ^ i ∷↓ ys ⟧ Ρ′
+      ≈⟨ ∷↓-hom (⊟ x) i _ ρ Ρ″ ⟩
+        (⟦ ⊟ x ⟧ Ρ″ + Σ⟦ ys ⟧ (ρ , Ρ″) * ρ) * ρ ^ i
+      ≈⟨ ≪* (⊟-hom x Ρ″ ⟨ +-cong ⟩ (≪* ys≋zs Ρ′)) ⟩
+        (- ⟦ x ⟧ Ρ″ + - Σ⟦ zs ⟧ Ρ′ * ρ) * ρ ^ i
+      ≈⟨ ≪* ((+≫ -‿*-distribˡ _ _) ⟨ trans ⟩ -‿+-comm _ _ ) ⟩
+        - (⟦ x ⟧ Ρ″ + Σ⟦ zs ⟧ Ρ′ * ρ) * ρ ^ i
+      ≈⟨  -‿*-distribˡ  _ _  ⟩
+        - ((⟦ x ⟧ Ρ″ + Σ⟦ zs ⟧ Ρ′ * ρ) * ρ ^ i)
+      ∎
 
   neg-zero : 0# ≈ - 0#
   neg-zero =
@@ -64,21 +85,6 @@ mutual
       - 0#
     ∎
 
-  neg-step : ∀ y → 
-  -- ⊟-coeffs-hom  (x′ Δ i ∷ xs) Ρ =
-  --   let x ≠0 = x′
-  --       (ρ , Ρ′) = Ρ
-  --   in
-  --   begin
-  --     Σ⟦ ⊟ x ^ i ∷↓ ⊟-coeffs xs ⟧ Ρ
-  --   ≈⟨ ∷↓-hom (⊟ x) i (⊟-coeffs xs) ρ Ρ′ ⟩
-  --     (⟦ ⊟ x ⟧ Ρ′ + Σ⟦ ⊟-coeffs xs ⟧ (ρ , Ρ′) * ρ) * ρ ^ i
-  --   ≈⟨ ≪* (⊟-hom x Ρ′ ⟨ +-cong ⟩ (≪* ⊟-coeffs-hom xs Ρ)) ⟩
-  --     (- ⟦ x ⟧ Ρ′ + - Σ⟦ xs ⟧ Ρ * ρ) * ρ ^ i
-  --   ≈⟨ ≪* +≫ -‿*-distribˡ _ ρ ⟩
-  --     (- ⟦ x ⟧ Ρ′ + - (Σ⟦ xs ⟧ Ρ * ρ)) * ρ ^ i
-  --   ≈⟨ ≪* -‿+-comm _ _ ⟩
-  --     - (⟦ x ⟧ Ρ′ + Σ⟦ xs ⟧ Ρ * ρ) * ρ ^ i
-  --   ≈⟨ -‿*-distribˡ _ _ ⟩
-  --     - Σ⟦ x′ Δ i ∷ xs ⟧ Ρ
-  --   ∎
+
+-- where
+-- neg-step = λ x′ {ys} {zs} ys≋zs  Ρ →

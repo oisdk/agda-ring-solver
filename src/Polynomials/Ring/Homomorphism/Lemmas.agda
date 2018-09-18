@@ -151,12 +151,18 @@ drop-1⇒lookup : ∀ {n}
 drop-1⇒lookup Fin.zero (ρ ∷ Ρ) = ≡.refl
 drop-1⇒lookup (Fin.suc i) (ρ ∷ Ρ) = drop-1⇒lookup i Ρ
 
-foldr-prop : ∀ {a b p} {A : Set a} {B : Set b} (P : List.List A → B → Set p)
+open import Level using (_⊔_)
+
+infix 4 _≋_
+_≋_ : ∀ {a} {A : Set a} (f g : A → Carrier) → Set (r₄ ⊔ a)
+f ≋ g = ∀ x → f x ≈ g x
+
+foldr-prop : ∀ {a b p} {A : Set a} {B : Set b} (_~_ : B → List.List A → Set p)
            → {f : A → B → B}
            → {b : B}
-           → (∀ y {ys zs} → P ys zs → P (y ∷ ys) (f y zs))
-           → P [] b
+           → (∀ y {ys zs} → ys ~ zs → f y ys ~ (y ∷ zs))
+           → b ~ []
            → ∀ xs
-           → P xs (List.foldr f b xs)
+           → List.foldr f b xs ~ xs
 foldr-prop _ f b [] = b
 foldr-prop P f b (x ∷ xs) = f x (foldr-prop P f b xs)
