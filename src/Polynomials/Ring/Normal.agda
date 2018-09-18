@@ -437,6 +437,8 @@ mutual
 
 open import Induction.Nat
 
+-- recurse on acc directly
+-- https://github.com/agda/agda/issues/3190#issuecomment-416900716
 mutual
   ⊟_ : ∀ {n} → Poly n → Poly n
   ⊟_ = <′-rec _ ⊟-step _
