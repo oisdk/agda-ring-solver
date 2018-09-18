@@ -8,7 +8,7 @@ open import Relation.Unary
 open import Level using (_⊔_; Lift; lift; lower)
 open import Data.Empty
 open import Data.Unit using (⊤; tt)
-open import Data.List as List using (_∷_; []; List)
+open import Data.List as List using (_∷_; []; List; foldr)
 open import Data.Vec as Vec using (_∷_; []; Vec)
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Function
@@ -439,20 +439,22 @@ open import Induction.Nat
 open import Induction
 open import Induction.WellFounded
 
-
-
 -- recurse on acc directly
 -- https://github.com/agda/agda/issues/3190#issuecomment-416900716
+-- acc : (rs : WfRec _<_ (Acc _<_) x) → Acc _<_ x
+
 mutual
-  ⊟_ : ∀ {n} → Poly n → Poly n
-  ⊟ xs = ⊟-step xs (<′-wellFounded _)
+  ⊟-step : ∀ {n} → Acc ℕ._<′_ n → Poly n → Poly n
+  ⊟-step _        (Κ x  Π i≤n) = Κ (- x) Π i≤n
+  ⊟-step (acc wf) (Σ xs Π i≤n) =
+    foldr (⊟-cons (wf _ i≤n)) [] xs Π↓ i≤n
 
-  ⊟-step : ∀ {n} → Poly n → Acc ℕ._<′_ n → Poly n
-  ⊟-step (Κ x  Π i≤n) _  = Κ (- x) Π i≤n
-  ⊟-step (Σ xs Π i≤n) (acc wf) = List.foldr (⊟-coeff (wf _ i≤n))  [] xs Π↓ i≤n
+  ⊟-cons : ∀ {n} → Acc ℕ._<′_ n → CoeffExp n → Coeffs n → Coeffs n
+  ⊟-cons ac (x ≠0 Δ i) xs = ⊟-step ac x ^ i ∷↓ xs
 
-  ⊟-coeff : ∀ {n} → Acc ℕ._<′_ n → CoeffExp n → Coeffs n → Coeffs n
-  ⊟-coeff ac (x ≠0 Δ i) xs = ⊟-step x ac ^ i ∷↓ xs
+⊟_ : ∀ {n} → Poly n → Poly n
+⊟_ = ⊟-step (<′-wellFounded _)
+
 
 
 ----------------------------------------------------------------------
