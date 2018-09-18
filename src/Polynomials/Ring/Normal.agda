@@ -436,19 +436,20 @@ mutual
 
 
 open import Induction.Nat
+open import Induction
+open import Induction.WellFounded
+
+
 
 -- recurse on acc directly
 -- https://github.com/agda/agda/issues/3190#issuecomment-416900716
 mutual
   ⊟_ : ∀ {n} → Poly n → Poly n
-  ⊟_ = <′-rec _ ⊟-step _
+  ⊟ xs = ⊟-step xs (<′-wellFounded _)
 
-  ⊟-step : ∀ n → (∀ m → suc m ≤ n → Poly m → Poly m) → Poly n → Poly n
-  ⊟-step _ _ (Κ x  Π i≤n) = Κ (- x) Π i≤n
-  ⊟-step _ r (Σ xs Π i≤n) = List.foldr (⊟-cons (r _ i≤n)) [] xs Π↓ i≤n
-
-  ⊟-cons : ∀ {m} → (Poly m → Poly m) → CoeffExp m → Coeffs m → Coeffs m
-  ⊟-cons r (x ≠0 Δ i) xs = r x ^ i ∷↓ xs
+  ⊟-step : ∀ {n} → Poly n → Acc ℕ._<′_ n → Poly n
+  ⊟-step (Κ x  Π i≤n) _  = Κ (- x) Π i≤n
+  ⊟-step (Σ xs Π i≤n) (acc wf) = List.foldr (λ { (x ≠0 Δ i) xs → ⊟-step x (wf _ i≤n) ^ i ∷↓ xs})  [] xs Π↓ i≤n
 
 
 ----------------------------------------------------------------------
