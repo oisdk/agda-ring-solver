@@ -69,7 +69,7 @@ mutual
         (⟦ ⊟-step (wf _ i≤n) x ⟧ Ρ″ + Σ⟦ ys ⟧ (ρ , Ρ″) * ρ) * ρ ^ i
       ≈⟨ ≪* (⊟-step-hom (wf _ i≤n) x Ρ″ ⟨ +-cong ⟩ (≪* ys≋zs Ρ′)) ⟩
         (- ⟦ x ⟧ Ρ″ + - Σ⟦ zs ⟧ Ρ′ * ρ) * ρ ^ i
-      ≈⟨ ≪* ((+≫ -‿*-distribˡ _ _) ⟨ trans ⟩ -‿+-comm _ _ ) ⟩
+      ≈⟨ ≪* ((+≫ -‿*-distribˡ _ _)  ⟨ trans ⟩ -‿+-comm _ _ ) ⟩
         - (⟦ x ⟧ Ρ″ + Σ⟦ zs ⟧ Ρ′ * ρ) * ρ ^ i
       ≈⟨  -‿*-distribˡ  _ _  ⟩
         - ((⟦ x ⟧ Ρ″ + Σ⟦ zs ⟧ Ρ′ * ρ) * ρ ^ i)
