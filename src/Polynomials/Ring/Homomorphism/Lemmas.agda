@@ -150,3 +150,13 @@ drop-1⇒lookup : ∀ {n}
               → proj₁ (drop-1 (Fin⇒≤ i) Ρ) ≡ Vec.lookup i Ρ
 drop-1⇒lookup Fin.zero (ρ ∷ Ρ) = ≡.refl
 drop-1⇒lookup (Fin.suc i) (ρ ∷ Ρ) = drop-1⇒lookup i Ρ
+
+foldr-prop : ∀ {a b p} {A : Set a} {B : Set b} (P : List.List A → B → Set p)
+           → {f : A → B → B}
+           → {b : B}
+           → (∀ y {ys zs} → P ys zs → P (y ∷ ys) (f y zs))
+           → P [] b
+           → ∀ xs
+           → P xs (List.foldr f b xs)
+foldr-prop _ f b [] = b
+foldr-prop P f b (x ∷ xs) = f x (foldr-prop P f b xs)

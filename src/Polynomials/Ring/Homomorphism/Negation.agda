@@ -45,21 +45,16 @@ mutual
   ⊟-hom (Κ x  Π i≤n) Ρ = -‿homo x
   ⊟-hom (Σ xs Π i≤n) Ρ =
     begin
-      ⟦ ⊟-coeffs xs Π↓ i≤n ⟧ Ρ
-    ≈⟨ Π↓-hom (⊟-coeffs xs) i≤n Ρ ⟩
-      Σ⟦ ⊟-coeffs xs ⟧ (drop-1 i≤n Ρ)
-    ≈⟨ ⊟-coeffs-hom xs (drop-1 i≤n Ρ) ⟩
+      ⟦ List.foldr (⊟-cons (⊟-step _ _)) [] xs Π↓ i≤n ⟧ Ρ
+    ≈⟨ Π↓-hom (List.foldr (⊟-cons (⊟-step _ _)) [] xs) i≤n Ρ ⟩
+      Σ⟦ List.foldr (⊟-cons (⊟-step _ _)) [] xs ⟧ (drop-1 i≤n Ρ)
+    ≈⟨ (foldr-prop  (λ ys zs → ∀ vs → Σ⟦ zs ⟧ vs ≈ - Σ⟦ ys ⟧ vs) {f = ⊟-cons (⊟-step _ _)} {b = []} {!!} (λ _ → neg-zero) xs) (drop-1 i≤n Ρ) ⟩
       - Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
     ∎
 
-  ⊟-coeffs-hom : ∀ {n}
-               → (xs : Coeffs n)
-               → (Ρ : Carrier × Vec Carrier n)
-               → Σ⟦ ⊟-coeffs xs ⟧ Ρ ≈ - Σ⟦ xs ⟧ Ρ
-  ⊟-coeffs-hom [] Ρ =
+  neg-zero : 0# ≈ - 0#
+  neg-zero =
     begin
-      Σ⟦ ⊟-coeffs [] ⟧ Ρ
-    ≡⟨⟩
       0#
     ≈⟨ sym (zeroʳ _) ⟩
       - 0# * 0#
@@ -67,23 +62,23 @@ mutual
       - (0# * 0#)
     ≈⟨ -‿cong (zeroˡ 0#) ⟩
       - 0#
-    ≡⟨⟩
-      - Σ⟦ [] ⟧ Ρ
     ∎
-  ⊟-coeffs-hom  (x′ Δ i ∷ xs) Ρ =
-    let x ≠0 = x′
-        (ρ , Ρ′) = Ρ
-    in
-    begin
-      Σ⟦ ⊟ x ^ i ∷↓ ⊟-coeffs xs ⟧ Ρ
-    ≈⟨ ∷↓-hom (⊟ x) i (⊟-coeffs xs) ρ Ρ′ ⟩
-      (⟦ ⊟ x ⟧ Ρ′ + Σ⟦ ⊟-coeffs xs ⟧ (ρ , Ρ′) * ρ) * ρ ^ i
-    ≈⟨ ≪* (⊟-hom x Ρ′ ⟨ +-cong ⟩ (≪* ⊟-coeffs-hom xs Ρ)) ⟩
-      (- ⟦ x ⟧ Ρ′ + - Σ⟦ xs ⟧ Ρ * ρ) * ρ ^ i
-    ≈⟨ ≪* +≫ -‿*-distribˡ _ ρ ⟩
-      (- ⟦ x ⟧ Ρ′ + - (Σ⟦ xs ⟧ Ρ * ρ)) * ρ ^ i
-    ≈⟨ ≪* -‿+-comm _ _ ⟩
-      - (⟦ x ⟧ Ρ′ + Σ⟦ xs ⟧ Ρ * ρ) * ρ ^ i
-    ≈⟨ -‿*-distribˡ _ _ ⟩
-      - Σ⟦ x′ Δ i ∷ xs ⟧ Ρ
-    ∎
+
+  neg-step : ∀ y → 
+  -- ⊟-coeffs-hom  (x′ Δ i ∷ xs) Ρ =
+  --   let x ≠0 = x′
+  --       (ρ , Ρ′) = Ρ
+  --   in
+  --   begin
+  --     Σ⟦ ⊟ x ^ i ∷↓ ⊟-coeffs xs ⟧ Ρ
+  --   ≈⟨ ∷↓-hom (⊟ x) i (⊟-coeffs xs) ρ Ρ′ ⟩
+  --     (⟦ ⊟ x ⟧ Ρ′ + Σ⟦ ⊟-coeffs xs ⟧ (ρ , Ρ′) * ρ) * ρ ^ i
+  --   ≈⟨ ≪* (⊟-hom x Ρ′ ⟨ +-cong ⟩ (≪* ⊟-coeffs-hom xs Ρ)) ⟩
+  --     (- ⟦ x ⟧ Ρ′ + - Σ⟦ xs ⟧ Ρ * ρ) * ρ ^ i
+  --   ≈⟨ ≪* +≫ -‿*-distribˡ _ ρ ⟩
+  --     (- ⟦ x ⟧ Ρ′ + - (Σ⟦ xs ⟧ Ρ * ρ)) * ρ ^ i
+  --   ≈⟨ ≪* -‿+-comm _ _ ⟩
+  --     - (⟦ x ⟧ Ρ′ + Σ⟦ xs ⟧ Ρ * ρ) * ρ ^ i
+  --   ≈⟨ -‿*-distribˡ _ _ ⟩
+  --     - Σ⟦ x′ Δ i ∷ xs ⟧ Ρ
+  --   ∎

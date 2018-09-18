@@ -440,10 +440,13 @@ open import Induction.Nat
 mutual
   ⊟_ : ∀ {n} → Poly n → Poly n
   ⊟_ = <′-rec _ ⊟-step _
-    where
-    ⊟-step : ∀ n → (∀ m → suc m ≤ n → Poly m → Poly m) → Poly n → Poly n
-    ⊟-step _ _ (Κ x  Π i≤n) = Κ (- x) Π i≤n
-    ⊟-step _ r (Σ xs Π i≤n) = List.foldr (λ { (x ≠0 Δ i) xs → r _ i≤n x ^ i ∷↓ xs }) [] xs Π↓ i≤n
+
+  ⊟-step : ∀ n → (∀ m → suc m ≤ n → Poly m → Poly m) → Poly n → Poly n
+  ⊟-step _ _ (Κ x  Π i≤n) = Κ (- x) Π i≤n
+  ⊟-step _ r (Σ xs Π i≤n) = List.foldr (⊟-cons (r _ i≤n)) [] xs Π↓ i≤n
+
+  ⊟-cons : ∀ {m} → (Poly m → Poly m) → CoeffExp m → Coeffs m → Coeffs m
+  ⊟-cons r (x ≠0 Δ i) xs = r x ^ i ∷↓ xs
 
 
 ----------------------------------------------------------------------
