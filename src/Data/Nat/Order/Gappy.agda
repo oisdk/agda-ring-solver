@@ -3,11 +3,7 @@
 module Data.Nat.Order.Gappy where
 
 open import Data.Nat as ℕ using (ℕ; suc; zero)
-
-infix 4 _≤_
-data _≤_ (m : ℕ) : ℕ → Set where
-  m≤m : m ≤ m
-  ≤-s : ∀ {n} → (m≤n : m ≤ n) → m ≤ suc n
+open import Data.Nat using () renaming (_≤′_ to _≤_; ≤′-refl to m≤m; ≤′-step to ≤-s) public
 
 infixl 6 _⋈_
 _⋈_ : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z

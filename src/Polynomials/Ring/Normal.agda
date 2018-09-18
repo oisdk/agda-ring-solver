@@ -434,14 +434,17 @@ mutual
 -- Negation
 ----------------------------------------------------------------------
 
+
+open import Induction.Nat
+
 mutual
   ⊟_ : ∀ {n} → Poly n → Poly n
-  ⊟_ (Κ x  Π i≤n) = Κ (- x) Π i≤n
-  ⊟_ (Σ xs Π i≤n) = ⊟-coeffs xs Π↓ i≤n
+  ⊟_ = <′-rec _ ⊟-step _
+    where
+    ⊟-step : ∀ n → (∀ m → suc m ≤ n → Poly m → Poly m) → Poly n → Poly n
+    ⊟-step _ _ (Κ x  Π i≤n) = Κ (- x) Π i≤n
+    ⊟-step _ r (Σ xs Π i≤n) = List.foldr (λ { (x ≠0 Δ i) xs → r _ i≤n x ^ i ∷↓ xs }) [] xs Π↓ i≤n
 
-  ⊟-coeffs : ∀ {n} → Coeffs n → Coeffs n
-  ⊟-coeffs (x ≠0 Δ i  ∷ xs) = ⊟ x ^ i ∷↓ ⊟-coeffs xs
-  ⊟-coeffs [] = []
 
 ----------------------------------------------------------------------
 -- Multiplication
