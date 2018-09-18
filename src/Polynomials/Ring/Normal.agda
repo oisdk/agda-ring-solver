@@ -449,7 +449,10 @@ mutual
 
   ⊟-step : ∀ {n} → Poly n → Acc ℕ._<′_ n → Poly n
   ⊟-step (Κ x  Π i≤n) _  = Κ (- x) Π i≤n
-  ⊟-step (Σ xs Π i≤n) (acc wf) = List.foldr (λ { (x ≠0 Δ i) xs → ⊟-step x (wf _ i≤n) ^ i ∷↓ xs})  [] xs Π↓ i≤n
+  ⊟-step (Σ xs Π i≤n) (acc wf) = List.foldr (⊟-coeff (wf _ i≤n))  [] xs Π↓ i≤n
+
+  ⊟-coeff : ∀ {n} → Acc ℕ._<′_ n → CoeffExp n → Coeffs n → Coeffs n
+  ⊟-coeff ac (x ≠0 Δ i) xs = ⊟-step x ac ^ i ∷↓ xs
 
 
 ----------------------------------------------------------------------
