@@ -16,6 +16,7 @@ module Polynomials.Ring.Homomorphism.Lemmas
   where
 
 open import Data.List as List using (_∷_; []; foldr)
+open import Function
 
 module _ {ℓ₁ ℓ₂} (setoid : Setoid ℓ₁ ℓ₂) where
   open Setoid setoid
@@ -35,6 +36,60 @@ module _ {ℓ₁ ℓ₂} (setoid : Setoid ℓ₁ ℓ₂) where
     ≈⟨ cong x _ _ (foldr-fusion h e cong fuse xs) ⟩
       g x (foldr g (h e) xs)
     ∎
+
+module AOPA where
+  open import Level
+  open import Data.Product
+  open import Data.List
+
+  _←_ : ∀ {i j k} → Set i → Set j → Set (suc k ⊔ (j ⊔ i))
+  _←_ {i} {j} {k} B A = B → A → Set k
+
+  _←_⊣_ :  ∀ {i j} → Set i → Set j → (k : Level) → Set (suc k ⊔ (j ⊔ i))
+  B  ← A ⊣ k = _←_ {k = k} B A
+
+  ℙ : ∀ {ℓ} → Set ℓ → Set (suc ℓ)
+  ℙ {ℓ} A = A → Set ℓ
+
+  ∈ : ∀ {i} {A : Set i} → (A ← ℙ A)
+  ∈ a s = s a
+
+  _₁∘_ : ∀ {i j k l} {A : Set i} {B : Set j} {C : Set k} → (C ← B ⊣ l) → (A → B) → (C ← A)
+  (R ₁∘ S) c a = R c (S a)
+
+  foldr₁ : {A : Set} → {PB : Set1} → ((A × PB) → PB) → PB → List A → PB
+  foldr₁ f e []      = e
+  foldr₁ f e (a ∷ x) = f (a , foldr₁ f e x)
+
+  Λ :  ∀ {i j} {A : Set i} {B : Set j} → (B ← A) → A → ℙ B
+  Λ R a = λ b → R b a
+
+  infixr 8 _·_
+  infixr 9 _○_ _₁∘_
+
+  _·_ : {A B : Set} → (B ← A) → ℙ A → ℙ B
+  (R · s)  b = ∃ (λ a → (s a × R b a))
+
+  _○_ : ∀ {i j k l m} {A : Set i}{B : Set j}{C : Set k} → (C ← B ⊣ l) → (B ← A ⊣ m) → (C ← A ⊣ (j ⊔ l ⊔ m))
+  (R ○ S) c a = ∃ (λ b → S b a × R c b)
+
+  open import Relation.Binary.PropositionalEquality
+
+  fun : ∀ {i j} {A : Set i} {B : Set j} → (A → B) → (B ← A)
+  fun f b a = f a ≡ b
+
+  idR : ∀ {i} {A : Set i} → A ← A
+  idR = fun id
+
+  infixr 2 _⨉_
+
+  _⨉_ : ∀ {i j k l m n} {A : Set i} {B : Set j} {C : Set k} {D : Set l}
+        → (B ← A ⊣ m) → (D ← C ⊣ n) → ((B × D) ← (A × C))
+  (R ⨉ S) (b , d) (a , c) = (R b a × S d c)
+
+
+  foldR : {A B : Set} → (B ← (A × B)) → ℙ B → (B ← List A)
+  foldR R S = ∈ ₁∘ foldr₁ (Λ (R ○ (idR ⨉ ∈))) S
 
 open AlmostCommutativeRing ring hiding (zero)
 open import Polynomials.Ring.Reasoning ring
