@@ -49,7 +49,7 @@ open Intensional setoid
     ⟦ foldr (⊟-cons (wf _ i≤n)) [] xs Π↓ i≤n ⟧ Ρ
   ≈⟨ Π↓-hom (foldr (⊟-cons _) [] xs) i≤n Ρ ⟩
     Σ⟦ foldr (⊟-cons _) [] xs ⟧ (drop-1 i≤n Ρ)
-  ≈⟨ foldr-prop  (λ ys zs → Σ⟦ ys ⟧ ≋ -_ ∘ Σ⟦ zs ⟧) neg-step neg-zero xs (drop-1 i≤n Ρ) ⟩
+  ≈⟨ foldR  (λ ys zs → Σ⟦ ys ⟧ ≋ -_ ∘ Σ⟦ zs ⟧) neg-step neg-zero xs (drop-1 i≤n Ρ) ⟩
     - Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
   ∎
   where

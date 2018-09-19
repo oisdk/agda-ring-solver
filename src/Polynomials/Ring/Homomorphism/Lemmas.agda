@@ -24,11 +24,14 @@ module Raw = RawRing coeff
 open import Relation.Nullary
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.Product hiding (Σ)
-open import Data.List as List using (_∷_; [])
+open import Data.List as List using (_∷_; []; foldr)
 open import Data.Vec as Vec using (Vec; _∷_; [])
 open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
 open import Data.Nat.Order.Compare using (compare) public
+open import Level using (_⊔_)
+open import Relation.Binary.Lifted
+open Intensional setoid
 
 pow-add : ∀ x i j → x ^ i * x ^ j ≈ x ^ (i ℕ.+ j)
 pow-add x zero j = *-identityˡ (x ^ j)
@@ -151,16 +154,12 @@ drop-1⇒lookup : ∀ {n}
 drop-1⇒lookup Fin.zero (ρ ∷ Ρ) = ≡.refl
 drop-1⇒lookup (Fin.suc i) (ρ ∷ Ρ) = drop-1⇒lookup i Ρ
 
-open import Level using (_⊔_)
-open import Relation.Binary.Lifted
-open Intensional setoid
-
-foldr-prop : ∀ {a b p} {A : Set a} {B : Set b} (_~_ : B → List.List A → Set p)
+foldR : ∀ {a b p} {A : Set a} {B : Set b} (_~_ : B → List.List A → Set p)
            → {f : A → B → B}
            → {b : B}
            → (∀ y {ys zs} → ys ~ zs → f y ys ~ (y ∷ zs))
            → b ~ []
            → ∀ xs
-           → List.foldr f b xs ~ xs
-foldr-prop _ f b [] = b
-foldr-prop P f b (x ∷ xs) = f x (foldr-prop P f b xs)
+           → foldr f b xs ~ xs
+foldR _ f b [] = b
+foldR P f b (x ∷ xs) = f x (foldR P f b xs)

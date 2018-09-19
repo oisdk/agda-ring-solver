@@ -100,7 +100,7 @@ mutual
              → (Ρ : Vec Carrier n)
              → Σ⟦ foldr (⊠-cons a y ys) [] xs ⟧ (ρ , Ρ)
              ≈ Σ⟦ xs ⟧ (ρ , Ρ) * (⟦ y ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ)
-  ⊠-cons-hom {k} a y ys xs ρ Ρ = foldr-prop (λ ys′ zs′ → ∀ ρ Ρ → Σ⟦ ys′ ⟧(ρ , Ρ) ≈ Σ⟦ zs′ ⟧ (ρ , Ρ) * (⟦ y ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ)) cons-step (λ _ _ → sym (zeroˡ _)) xs ρ Ρ
+  ⊠-cons-hom {k} a y ys xs ρ Ρ = foldR (λ ys′ zs′ → ∀ ρ Ρ → Σ⟦ ys′ ⟧(ρ , Ρ) ≈ Σ⟦ zs′ ⟧ (ρ , Ρ) * (⟦ y ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ)) cons-step (λ _ _ → sym (zeroˡ _)) xs ρ Ρ
     where
     cons-step : (x : CoeffExp k)
               → {ys′ zs′ : Coeffs k}
@@ -169,7 +169,7 @@ mutual
             → (ρ : Carrier)
             → (Ρ : Vec Carrier k)
             → Σ⟦ foldr (⊠-inj a i≤k x) [] ys ⟧ (ρ , Ρ) ≈ ⟦ x Π i≤k ⟧ Ρ * Σ⟦ ys ⟧ (ρ , Ρ)
-  ⊠-inj-hom {i} {k} a i≤k x xs = foldr-prop (λ ys zs → ∀ ρ Ρ → Σ⟦ ys ⟧ (ρ , Ρ) ≈ ⟦ x Π i≤k ⟧ Ρ * Σ⟦ zs ⟧ (ρ , Ρ) ) inj-step (λ _ _ → sym (zeroʳ _)) xs
+  ⊠-inj-hom {i} {k} a i≤k x xs = foldR (λ ys zs → ∀ ρ Ρ → Σ⟦ ys ⟧ (ρ , Ρ) ≈ ⟦ x Π i≤k ⟧ Ρ * Σ⟦ zs ⟧ (ρ , Ρ) ) inj-step (λ _ _ → sym (zeroʳ _)) xs
     where
     inj-step : (y : CoeffExp k)
              → {ys zs : List (CoeffExp k)}
