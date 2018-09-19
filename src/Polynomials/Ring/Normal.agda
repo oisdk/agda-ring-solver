@@ -445,7 +445,6 @@ open import Induction.WellFounded
 
 -- recurse on acc directly
 -- https://github.com/agda/agda/issues/3190#issuecomment-416900716
--- acc : (rs : WfRec _<_ (Acc _<_) x) → Acc _<_ x
 
 mutual
   ⊟-step : ∀ {n} → ⌊ n ⌋ → Poly n → Poly n
@@ -506,7 +505,7 @@ mutual
 
 infixl 7 _⊠_
 _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
-_⊠_ = ⊠-step (<′-wellFounded _)
+_⊠_ = ⊠-step ⌊↓⌋
 
 ----------------------------------------------------------------------
 -- Constants and Variables
