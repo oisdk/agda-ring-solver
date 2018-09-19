@@ -15,6 +15,27 @@ module Polynomials.Ring.Homomorphism.Lemmas
   (Zero-C⟶Zero-R : ∀ x → Zero-C x → AlmostCommutativeRing._≈_ ring (_-Raw-AlmostCommutative⟶_.⟦_⟧ morphism x) (AlmostCommutativeRing.0# ring))
   where
 
+open import Data.List as List using (_∷_; []; foldr)
+
+module _ {ℓ₁ ℓ₂} (setoid : Setoid ℓ₁ ℓ₂) where
+  open Setoid setoid
+  open import Relation.Binary.EqReasoning setoid
+
+  foldr-fusion : ∀ {a b} {A : Set a} {B : Set b}
+               → (h : B → Carrier) {f : A → B → B} {g : A → Carrier → Carrier} (e : B)
+               → (∀ x y z → y ≈ z → g x y ≈ g x z)
+               → (∀ x y → h (f x y) ≈ g x (h y))
+               → ∀ xs → h (foldr f e xs) ≈ foldr g (h e) xs
+  foldr-fusion h {f} {g} e _ fuse [] = refl
+  foldr-fusion h {f} {g} e cong fuse (x ∷ xs) =
+    begin
+      h (f x (foldr f e xs))
+    ≈⟨ fuse x _ ⟩
+      g x (h (foldr f e xs))
+    ≈⟨ cong x _ _ (foldr-fusion h e cong fuse xs) ⟩
+      g x (foldr g (h e) xs)
+    ∎
+
 open AlmostCommutativeRing ring hiding (zero)
 open import Polynomials.Ring.Reasoning ring
 open import Polynomials.Ring.Normal coeff Zero-C zero-c?
@@ -24,14 +45,12 @@ module Raw = RawRing coeff
 open import Relation.Nullary
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.Product hiding (Σ)
-open import Data.List as List using (_∷_; []; foldr)
 open import Data.Vec as Vec using (Vec; _∷_; [])
 open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
 open import Data.Nat.Order.Compare using (compare) public
 open import Level using (_⊔_)
 open import Relation.Binary.Lifted
-open Intensional setoid
 
 pow-add : ∀ x i j → x ^ i * x ^ j ≈ x ^ (i ℕ.+ j)
 pow-add x zero j = *-identityˡ (x ^ j)
@@ -163,3 +182,4 @@ foldR : ∀ {a b p} {A : Set a} {B : Set b} (_~_ : B → List.List A → Set p)
            → foldr f b xs ~ xs
 foldR _ f b [] = b
 foldR P f b (x ∷ xs) = f x (foldR P f b xs)
+
