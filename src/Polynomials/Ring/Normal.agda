@@ -225,17 +225,17 @@ open import Data.Nat.Order.Gappy public
 --       → Ordering i≤n (≤-s j≤i-1 ⋈ i≤n)
 --   eq : ∀ {i} → (i≤n : i ≤ n) → Ordering i≤n i≤n
 
--- _∺_ : ∀ {i j n}
+-- _cmp_ : ∀ {i j n}
 --     → (x : i ≤ n)
 --     → (y : j ≤ n)
 --     → Ordering x y
--- m≤m ∺ m≤m = eq m≤m
--- m≤m ∺ ≤-s y = m≤m > y
--- ≤-s x ∺ m≤m = x < m≤m
--- ≤-s x ∺ ≤-s y with x ∺ y
--- ≤-s .(≤-s i≤j-1 ⋈ y) ∺ ≤-s y            | i≤j-1 < .y = i≤j-1 < ≤-s y
--- ≤-s x            ∺ ≤-s .(≤-s j≤i-1 ⋈ x) | .x > j≤i-1 = ≤-s x > j≤i-1
--- ≤-s x            ∺ ≤-s .x               | eq .x = eq (≤-s x)
+-- m≤m cmp m≤m = eq m≤m
+-- m≤m cmp ≤-s y = m≤m > y
+-- ≤-s x cmp m≤m = x < m≤m
+-- ≤-s x cmp ≤-s y with x cmp y
+-- ≤-s .(≤-s i≤j-1 ⋈ y) cmp ≤-s y            | i≤j-1 < .y = i≤j-1 < ≤-s y
+-- ≤-s x            cmp ≤-s .(≤-s j≤i-1 ⋈ x) | .x > j≤i-1 = ≤-s x > j≤i-1
+-- ≤-s x            cmp ≤-s .x               | eq .x = eq (≤-s x)
 
 -- z≤n : ∀ {n} → zero ≤ n
 -- z≤n {zero} = m≤m
@@ -385,7 +385,7 @@ mutual
 
   infixl 6 _⊞_
   _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
-  (xs Π i≤n) ⊞ (ys Π j≤n) = ⊞-match (i≤n ∺ j≤n) xs ys
+  (xs Π i≤n) ⊞ (ys Π j≤n) = ⊞-match (i≤n cmp j≤n) xs ys
 
   ⊞-match : ∀ {i j n}
         → {i≤n : i ≤ n}
@@ -406,7 +406,7 @@ mutual
        → Coeffs k
   ⊞-inj i≤k xs [] = xs Π i≤k ^ zero ∷↓ []
   ⊞-inj i≤k xs (y Π j≤k ≠0 Δ zero ∷ ys) =
-    ⊞-match (j≤k ∺ i≤k) y xs ^ zero ∷↓ ys
+    ⊞-match (j≤k cmp i≤k) y xs ^ zero ∷↓ ys
   ⊞-inj i≤k xs (y Δ suc j ∷ ys) =
     xs Π i≤k ^ zero ∷↓ y Δ j ∷ ys
 
@@ -463,7 +463,7 @@ mutual
 ----------------------------------------------------------------------
 mutual
   ⊠-step : ∀ {n} → ⌊ n ⌋ → Poly n → Poly n → Poly n
-  ⊠-step a (xs Π i≤n) (ys Π j≤n) = ⊠-match a (i≤n ∺ j≤n) xs ys
+  ⊠-step a (xs Π i≤n) (ys Π j≤n) = ⊠-match a (i≤n cmp j≤n) xs ys
 
   ⊠-inj : ∀ {i k}
         → ⌊ k ⌋
@@ -473,7 +473,7 @@ mutual
         → Coeffs k
         → Coeffs k
   ⊠-inj a i≤k x (y Π j≤k ≠0 Δ p) ys =
-    ⊠-match a (i≤k ∺ j≤k) x y ^ p ∷↓ ys
+    ⊠-match a (i≤k cmp j≤k) x y ^ p ∷↓ ys
 
   ⊠-match : ∀ {i j n}
           → ⌊ n ⌋

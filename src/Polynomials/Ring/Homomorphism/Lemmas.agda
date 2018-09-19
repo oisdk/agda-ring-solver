@@ -152,10 +152,8 @@ drop-1⇒lookup Fin.zero (ρ ∷ Ρ) = ≡.refl
 drop-1⇒lookup (Fin.suc i) (ρ ∷ Ρ) = drop-1⇒lookup i Ρ
 
 open import Level using (_⊔_)
-
-infix 4 _≋_
-_≋_ : ∀ {a} {A : Set a} (f g : A → Carrier) → Set (r₄ ⊔ a)
-f ≋ g = ∀ x → f x ≈ g x
+open import Relation.Binary.Lifted
+open Intensional setoid
 
 foldr-prop : ∀ {a b p} {A : Set a} {B : Set b} (_~_ : B → List.List A → Set p)
            → {f : A → B → B}

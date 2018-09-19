@@ -44,16 +44,16 @@ mutual
         → (ys : Poly n)
         → (Ρ : Vec Carrier n)
         → ⟦ xs ⊞ ys ⟧ Ρ ≈ ⟦ xs ⟧ Ρ + ⟦ ys ⟧ Ρ
-  ⊞-hom (xs Π i≤n) (ys Π j≤n) = ⊞-match-hom (i≤n ∺ j≤n) xs ys
+  ⊞-hom (xs Π i≤n) (ys Π j≤n) = ⊞-match-hom (i≤n cmp j≤n) xs ys
 
   ⊞-match-hom : ∀ {i j n}
               → {i≤n : i ≤ n}
               → {j≤n : j ≤ n}
-              → (cmp : Ordering i≤n j≤n)
+              → (i-cmp-j : Ordering i≤n j≤n)
               → (xs : FlatPoly i)
               → (ys : FlatPoly j)
               → (Ρ : Vec Carrier n)
-              → ⟦ ⊞-match cmp xs ys ⟧ Ρ ≈ ⟦ xs Π i≤n ⟧ Ρ + ⟦ ys Π j≤n ⟧ Ρ
+              → ⟦ ⊞-match i-cmp-j xs ys ⟧ Ρ ≈ ⟦ xs Π i≤n ⟧ Ρ + ⟦ ys Π j≤n ⟧ Ρ
   ⊞-match-hom (eq ij≤n) (Κ x) (Κ y) Ρ = +-homo x y
   ⊞-match-hom (eq ij≤n) (Σ xs) (Σ ys) Ρ =
     begin
@@ -109,10 +109,10 @@ mutual
     ∎
   ⊞-inj-hom i≤k xs (y Π j≤k ≠0 Δ zero ∷ ys) ρ Ρ =
     begin
-      Σ⟦ ⊞-match (j≤k ∺ i≤k) y xs ^ zero ∷↓ ys ⟧ (ρ , Ρ)
-    ≈⟨ ∷↓-hom (⊞-match (j≤k ∺ i≤k) y xs) zero ys ρ Ρ ⟩
-      (⟦ ⊞-match (j≤k ∺ i≤k) y xs ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ) * ρ ^ zero
-    ≈⟨ ≪* ≪+ ⊞-match-hom (j≤k ∺ i≤k) y xs Ρ ⟩
+      Σ⟦ ⊞-match (j≤k cmp i≤k) y xs ^ zero ∷↓ ys ⟧ (ρ , Ρ)
+    ≈⟨ ∷↓-hom (⊞-match (j≤k cmp i≤k) y xs) zero ys ρ Ρ ⟩
+      (⟦ ⊞-match (j≤k cmp i≤k) y xs ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ) * ρ ^ zero
+    ≈⟨ ≪* ≪+ ⊞-match-hom (j≤k cmp i≤k) y xs Ρ ⟩
       (⟦ y Π j≤k ⟧ Ρ + ⟦ xs Π i≤k ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ) * ρ ^ zero
     ≈⟨ ≪* ≪+ +-comm _ _ ⟩
       (⟦ xs Π i≤k ⟧ Ρ + ⟦ y Π j≤k ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ) * ρ ^ zero

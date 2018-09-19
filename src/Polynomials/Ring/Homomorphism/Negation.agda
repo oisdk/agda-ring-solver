@@ -32,51 +32,43 @@ open import Data.Product hiding (Σ)
 import Data.Nat.Properties as ℕ-≡
 import Relation.Binary.PropositionalEquality as ≡
 open import Function
-open import Data.List as List using (_∷_; [])
+open import Data.List as List using (_∷_; []; foldr)
 open import Data.Vec as Vec using (Vec; _∷_; [])
 open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
 
 open import Induction.WellFounded
 open import Induction.Nat
+open import Relation.Binary.Lifted
+open Intensional setoid
 
-mutual
-
-  ⊟-hom : ∀ {n}
-        → (xs : Poly n)
-        → (Ρ : Vec Carrier n)
-        → ⟦ ⊟ xs ⟧ Ρ ≈ - ⟦ xs ⟧ Ρ
-  ⊟-hom = ⊟-step-hom (<′-wellFounded _)
-
-  ⊟-step-hom : ∀ {n} (a : Acc ℕ._<′_ n) → (xs : Poly n) → ⟦ ⊟-step a xs ⟧ ≋ -_ ∘ ⟦ xs ⟧
-  ⊟-step-hom a (Κ x  Π i≤n) Ρ = -‿homo x
-  ⊟-step-hom (acc wf) (Σ xs Π i≤n) Ρ =
+⊟-step-hom : ∀ {n} (a : Acc ℕ._<′_ n) → (xs : Poly n) → ⟦ ⊟-step a xs ⟧ ≋ -_ ∘ ⟦ xs ⟧
+⊟-step-hom a (Κ x  Π i≤n) Ρ = -‿homo x
+⊟-step-hom (acc wf) (Σ xs Π i≤n) Ρ =
+  begin
+    ⟦ foldr (⊟-cons (wf _ i≤n)) [] xs Π↓ i≤n ⟧ Ρ
+  ≈⟨ Π↓-hom (foldr (⊟-cons _) [] xs) i≤n Ρ ⟩
+    Σ⟦ foldr (⊟-cons _) [] xs ⟧ (drop-1 i≤n Ρ)
+  ≈⟨ foldr-prop  (λ ys zs → Σ⟦ ys ⟧ ≋ -_ ∘ Σ⟦ zs ⟧) neg-step neg-zero xs (drop-1 i≤n Ρ) ⟩
+    - Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
+  ∎
+  where
+  neg-step = λ x′ {ys} {zs} ys≋zs Ρ′ →
+    let x ≠0 Δ i = x′
+        (ρ , Ρ″) = Ρ′
+    in
     begin
-      ⟦ List.foldr (⊟-cons (wf _ i≤n)) [] xs Π↓ i≤n ⟧ Ρ
-    ≈⟨ Π↓-hom (List.foldr (⊟-cons _) [] xs) i≤n Ρ ⟩
-      Σ⟦ List.foldr (⊟-cons _) [] xs ⟧ (drop-1 i≤n Ρ)
-    ≈⟨ foldr-prop  (λ ys zs → Σ⟦ ys ⟧ ≋ -_ ∘ Σ⟦ zs ⟧) neg-step (λ _ → neg-zero) xs (drop-1 i≤n Ρ) ⟩
-      - Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
+      Σ⟦ ⊟-step (wf _ i≤n) x ^ i ∷↓ ys ⟧ Ρ′
+    ≈⟨ ∷↓-hom (⊟-step (wf _ i≤n) x) i _ ρ Ρ″ ⟩
+      (⟦ ⊟-step (wf _ i≤n) x ⟧ Ρ″ + Σ⟦ ys ⟧ (ρ , Ρ″) * ρ) * ρ ^ i
+    ≈⟨ ≪* (⊟-step-hom (wf _ i≤n) x Ρ″ ⟨ +-cong ⟩ (≪* ys≋zs Ρ′)) ⟩
+      (- ⟦ x ⟧ Ρ″ + - Σ⟦ zs ⟧ Ρ′ * ρ) * ρ ^ i
+    ≈⟨ ≪* ((+≫ -‿*-distribˡ _ _)  ⟨ trans ⟩ -‿+-comm _ _ ) ⟩
+      - (⟦ x ⟧ Ρ″ + Σ⟦ zs ⟧ Ρ′ * ρ) * ρ ^ i
+    ≈⟨  -‿*-distribˡ  _ _  ⟩
+      - ((⟦ x ⟧ Ρ″ + Σ⟦ zs ⟧ Ρ′ * ρ) * ρ ^ i)
     ∎
-    where
-    neg-step = λ x′ {ys} {zs} ys≋zs Ρ′ →
-      let x ≠0 Δ i = x′
-          (ρ , Ρ″) = Ρ′
-      in
-      begin
-        Σ⟦ ⊟-step (wf _ i≤n) x ^ i ∷↓ ys ⟧ Ρ′
-      ≈⟨ ∷↓-hom (⊟-step (wf _ i≤n) x) i _ ρ Ρ″ ⟩
-        (⟦ ⊟-step (wf _ i≤n) x ⟧ Ρ″ + Σ⟦ ys ⟧ (ρ , Ρ″) * ρ) * ρ ^ i
-      ≈⟨ ≪* (⊟-step-hom (wf _ i≤n) x Ρ″ ⟨ +-cong ⟩ (≪* ys≋zs Ρ′)) ⟩
-        (- ⟦ x ⟧ Ρ″ + - Σ⟦ zs ⟧ Ρ′ * ρ) * ρ ^ i
-      ≈⟨ ≪* ((+≫ -‿*-distribˡ _ _)  ⟨ trans ⟩ -‿+-comm _ _ ) ⟩
-        - (⟦ x ⟧ Ρ″ + Σ⟦ zs ⟧ Ρ′ * ρ) * ρ ^ i
-      ≈⟨  -‿*-distribˡ  _ _  ⟩
-        - ((⟦ x ⟧ Ρ″ + Σ⟦ zs ⟧ Ρ′ * ρ) * ρ ^ i)
-      ∎
-
-  neg-zero : 0# ≈ - 0#
-  neg-zero =
+  neg-zero = λ _ →
     begin
       0#
     ≈⟨ sym (zeroʳ _) ⟩
@@ -86,3 +78,9 @@ mutual
     ≈⟨ -‿cong (zeroˡ 0#) ⟩
       - 0#
     ∎
+
+⊟-hom : ∀ {n}
+      → (xs : Poly n)
+      → (Ρ : Vec Carrier n)
+      → ⟦ ⊟ xs ⟧ Ρ ≈ - ⟦ xs ⟧ Ρ
+⊟-hom = ⊟-step-hom ⌊↓⌋
