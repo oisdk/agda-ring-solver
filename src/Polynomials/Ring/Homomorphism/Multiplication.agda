@@ -32,7 +32,7 @@ open import Data.Product hiding (Σ)
 import Data.Nat.Properties as ℕ-≡
 import Relation.Binary.PropositionalEquality as ≡
 open import Function
-open import Data.List as List using (_∷_; []; foldr)
+open import Data.List as List using (List; _∷_; []; foldr)
 open import Data.Vec as Vec using (Vec; _∷_; [])
 open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
@@ -164,23 +164,29 @@ mutual
             → (ρ : Carrier)
             → (Ρ : Vec Carrier k)
             → Σ⟦ List.foldr (⊠-inj a i≤k x) [] ys ⟧ (ρ , Ρ) ≈ ⟦ x Π i≤k ⟧ Ρ * Σ⟦ ys ⟧ (ρ , Ρ)
-  ⊠-inj-hom _ i≤k x [] ρ Ρ = sym (zeroʳ _)
-  ⊠-inj-hom a i≤k x (y Π j≤k ≠0 Δ j ∷ ys) ρ Ρ =
-    let x′  = ⟦ x Π i≤k ⟧ Ρ
-        y′  = ⟦ y Π j≤k ⟧ Ρ
-        ys′ = Σ⟦ ys ⟧ (ρ , Ρ)
-    in
-    begin
-      Σ⟦ ⊠-match a (i≤k cmp j≤k) x y ^ j ∷↓ List.foldr (⊠-inj a i≤k x) [] ys ⟧ (ρ , Ρ)
-    ≈⟨ ∷↓-hom (⊠-match a (i≤k cmp j≤k) x y) j _ ρ Ρ ⟩
-      (⟦ ⊠-match a (i≤k cmp j≤k) x y ⟧ Ρ + Σ⟦ List.foldr (⊠-inj a i≤k x) [] ys ⟧ (ρ , Ρ) * ρ) * ρ ^ j
-    ≈⟨ ≪* (⊠-match-hom a (i≤k cmp j≤k) x y Ρ ⟨ +-cong ⟩ (≪* ⊠-inj-hom a i≤k x ys ρ Ρ ︔ *-assoc _ _ _))⟩
-      (x′ * y′ + x′ * (ys′ * ρ)) * ρ ^ j
-    ≈⟨ ≪* sym (distribˡ x′ _ _ ) ⟩
-      x′ * (y′ + ys′ * ρ) * ρ ^ j
-    ≈⟨ *-assoc _ _ _ ⟩
-      x′ * ((y′ + ys′ * ρ) * ρ ^ j)
-    ∎
+  ⊠-inj-hom {i} {k} a i≤k x xs = foldr-prop (λ ys zs → ∀ ρ Ρ → Σ⟦ ys ⟧ (ρ , Ρ) ≈ ⟦ x Π i≤k ⟧ Ρ * Σ⟦ zs ⟧ (ρ , Ρ) ) inj-step (λ _ _ → sym (zeroʳ _)) xs
+    where
+    inj-step : (y : CoeffExp k)
+             → {ys zs : List (CoeffExp k)}
+             → (∀ ρ Ρ → Σ⟦ ys ⟧ (ρ , Ρ) ≈ ⟦ x Π i≤k ⟧ Ρ * Σ⟦ zs ⟧(ρ , Ρ))
+             → ∀ ρ Ρ
+             → Σ⟦ ⊠-inj a i≤k x y ys ⟧ (ρ , Ρ) ≈ ⟦ x Π i≤k ⟧ Ρ * Σ⟦ y ∷ zs ⟧ (ρ , Ρ)
+    inj-step (y Π j≤k ≠0 Δ j) {ys} {zs} ys≋zs ρ Ρ =
+      let x′  = ⟦ x Π i≤k ⟧ Ρ
+          y′  = ⟦ y Π j≤k ⟧ Ρ
+          zs′ = Σ⟦ zs ⟧ (ρ , Ρ)
+      in
+      begin
+        Σ⟦ ⊠-match a (i≤k cmp j≤k) x y ^ j ∷↓ ys ⟧ (ρ , Ρ)
+      ≈⟨ ∷↓-hom (⊠-match a (i≤k cmp j≤k) x y) j _ ρ Ρ ⟩
+        (⟦ ⊠-match a (i≤k cmp j≤k) x y ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ) * ρ ^ j
+      ≈⟨ ≪* (⊠-match-hom a (i≤k cmp j≤k) x _ Ρ ⟨ +-cong ⟩ (≪* ys≋zs ρ Ρ ︔ *-assoc _ _ _))⟩
+        (x′ * y′ + x′ * (zs′ * ρ)) * ρ ^ j
+      ≈⟨ ≪* sym (distribˡ x′ _ _ ) ⟩
+        x′ * (y′ + zs′ * ρ) * ρ ^ j
+      ≈⟨ *-assoc _ _ _ ⟩
+        x′ * ((y′ + zs′ * ρ) * ρ ^ j)
+      ∎
 
 ⊠-hom : ∀ {n}
       → (xs : Poly n)
