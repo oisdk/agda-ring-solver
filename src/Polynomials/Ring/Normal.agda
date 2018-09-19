@@ -456,7 +456,7 @@ mutual
   ⊟-cons ac (x ≠0 Δ i) xs = ⊟-step ac x ^ i ∷↓ xs
 
 ⊟_ : ∀ {n} → Poly n → Poly n
-⊟_ = ⊟-step (<′-wellFounded _)
+⊟_ = ⊟-step ⌊↓⌋
 
 ----------------------------------------------------------------------
 -- Multiplication
