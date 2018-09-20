@@ -53,3 +53,12 @@ space f = suc (go f)
 Fin⇒≤ : ∀ {n} (x : Fin n) → space x ≤ n
 Fin⇒≤ Fin.zero = m≤m
 Fin⇒≤ (Fin.suc x) = ≤-s (Fin⇒≤ x)
+
+open import Induction.Nat
+open import Induction.WellFounded
+
+⌊_⌋ : ℕ → Set
+⌊_⌋ = Acc ℕ._<′_
+
+⌊↓⌋ : ∀ {n} → ⌊ n ⌋
+⌊↓⌋ {n} = <′-wellFounded n
