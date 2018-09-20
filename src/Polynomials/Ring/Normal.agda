@@ -23,7 +23,6 @@ module Polynomials.Ring.Normal
   (zero-c? : Decidable Zero-C)
   where
 
-open import Induction.WellFounded using (acc) public
 open import Data.Nat.Order.Gappy public
 ----------------------------------------------------------------------
 -- Gaps
@@ -435,6 +434,14 @@ mutual
 -- Negation
 ----------------------------------------------------------------------
 
+open import Induction.Nat
+open import Induction.WellFounded
+
+⌊_⌋ : ℕ → Set
+⌊_⌋ = Acc ℕ._<′_
+
+⌊↓⌋ : ∀ {n} → ⌊ n ⌋
+⌊↓⌋ {n} = <′-wellFounded n
 
 -- recurse on acc directly
 -- https://github.com/agda/agda/issues/3190#issuecomment-416900716

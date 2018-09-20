@@ -30,20 +30,3 @@ module Intensional {ℓ₁ ℓ₂} (setoid : Setoid ℓ₁ ℓ₂) where
       ; trans = _⟅ Point.trans ⟆_
       }
     }
-
-module Reader where
-  pure : ∀ {a b} {A : Set a} {B : Set b} → A → B → A
-  pure = const
-
-  _<*>_ : ∀ {a b c}
-            {A : Set a} {B : A → Set b} {C : (x : A) → B x → Set c} →
-            ((x : A) (y : B x) → C x y) →
-            (g : (x : A) → B x) →
-            ((x : A) → C x (g x))
-  f <*> g = λ x → f x (g x)
-
-  ρ : ∀ {a} {A : Set a} → A → A
-  ρ x = x
-
-  κ : ∀ {a b} {A : Set a} {B : Set b} → A → B → A
-  κ = const

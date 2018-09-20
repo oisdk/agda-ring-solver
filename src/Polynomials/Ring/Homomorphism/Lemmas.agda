@@ -15,7 +15,7 @@ module Polynomials.Ring.Homomorphism.Lemmas
   (Zero-C⟶Zero-R : ∀ x → Zero-C x → AlmostCommutativeRing._≈_ ring (_-Raw-AlmostCommutative⟶_.⟦_⟧ morphism x) (AlmostCommutativeRing.0# ring))
   where
 
-open import Data.List as List using (List; _∷_; []; foldr)
+open import Data.List as List using (_∷_; []; foldr)
 open import Function
 
 module _ {ℓ₁ ℓ₂} (setoid : Setoid ℓ₁ ℓ₂) where
@@ -122,62 +122,57 @@ pow-add x (suc i) j =
     x ^ suc (i ℕ.+ j)
   ∎
 
-pow-hom : ∀ {n}
-        → (a : ⌊ n ⌋)
-        → ∀ i
+pow-hom : ∀ {n} i
         → (xs : Coeffs n)
         → (ρ : Carrier)
         → (Ρ : Vec Carrier n)
-        → ⌊ a ⌋Σ⟦ xs ⟧ (ρ , Ρ) * ρ ^ i ≈ ⌊ a ⌋Σ⟦ xs ⍓ i ⟧ (ρ , Ρ)
-pow-hom a i [] ρ Ρ = zeroˡ (ρ ^ i)
-pow-hom a i (x Δ j ∷ xs) ρ Ρ = *-assoc _ (ρ ^ j) (ρ ^ i) ︔ *≫ pow-add ρ j i
+        → Σ⟦ xs ⟧ (ρ , Ρ) * ρ ^ i ≈ Σ⟦ xs ⍓ i ⟧ (ρ , Ρ)
+pow-hom i [] ρ Ρ = zeroˡ (ρ ^ i)
+pow-hom i (x Δ j ∷ xs) ρ Ρ = *-assoc _ (ρ ^ j) (ρ ^ i) ︔ *≫ pow-add ρ j i
 
-zero-hom : ∀ {n} (a : ⌊ n ⌋) → (p : Poly n) → Zero p → (Ρ : Vec Carrier n) → ⌊ a ⌋⟦ p ⟧ Ρ ≈ 0#
-zero-hom _ (Κ x  Π i≤n) p≡0 Ρ = Zero-C⟶Zero-R x p≡0
-zero-hom _ (Σ (_ ∷ _) Π i≤n) (lift ())
-zero-hom _ (Σ [] {()} Π i≤n) p≡0 Ρ
+zero-hom : ∀ {n} (p : Poly n) → Zero p → (Ρ : Vec Carrier n) → ⟦ p ⟧ Ρ ≈ 0#
+zero-hom (Κ x  Π i≤n) p≡0 Ρ = Zero-C⟶Zero-R x p≡0
+zero-hom (Σ (_ ∷ _) Π i≤n) (lift ())
+zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
 
 ∷↓-hom : ∀ {n}
-       → (a : ⌊ n ⌋)
        → (x : Poly n)
        → (i : ℕ)
        → (xs : Coeffs n)
        → (ρ : Carrier)
        → (Ρ : Vec Carrier n)
-       → ⌊ a ⌋Σ⟦ x ^ i ∷↓ xs ⟧ (ρ , Ρ) ≈ ⌊ a ⌋⟦ x δ i ∷ ⌊ a ⌋Σ⟦ xs ⟧ ⟧ (ρ , Ρ)
-∷↓-hom a x i xs ρ Ρ with zero? x
-∷↓-hom a x i xs ρ Ρ | no ¬p = refl
-∷↓-hom a x i xs ρ Ρ | yes p =
+       → Σ⟦ x ^ i ∷↓ xs ⟧ (ρ , Ρ) ≈ (⟦ x ⟧ Ρ + Σ⟦ xs ⟧ (ρ , Ρ) * ρ) * ρ ^ i
+∷↓-hom x i xs ρ Ρ with zero? x
+∷↓-hom x i xs ρ Ρ | no ¬p = refl
+∷↓-hom x i xs ρ Ρ | yes p =
   begin
-    ⌊ a ⌋Σ⟦ xs ⍓ suc i ⟧ (ρ , Ρ)
-  ≈⟨ sym (pow-hom a (suc i) xs ρ Ρ) ⟩
-    ⌊ a ⌋Σ⟦ xs ⟧ (ρ , Ρ) * ρ ^ suc i
+    Σ⟦ xs ⍓ suc i ⟧ (ρ , Ρ)
+  ≈⟨ sym (pow-hom _ xs ρ Ρ) ⟩
+    Σ⟦ xs ⟧ (ρ , Ρ) * ρ ^ (suc i)
   ≈⟨ sym (*-assoc _ ρ _) ⟩
-    ⌊ a ⌋Σ⟦ xs ⟧ (ρ , Ρ) * ρ * ρ ^ i
-  ≈⟨ ≪* sym ((≪+ zero-hom a x p Ρ) ⟨ trans ⟩ +-identityˡ _) ⟩
-    (⌊ a ⌋⟦ x ⟧ Ρ + ⌊ a ⌋Σ⟦ xs ⟧ (ρ , Ρ) * ρ) * ρ ^ i
+    Σ⟦ xs ⟧ (ρ , Ρ) * ρ * ρ ^ i
+  ≈⟨ ≪* (sym (+-identityˡ _) ︔ ≪+ sym (zero-hom x p _)) ⟩
+    (⟦ x ⟧ Ρ + Σ⟦ xs ⟧ (ρ , Ρ) * ρ) * ρ ^ i
   ∎
 
 ∷↓-cong : ∀ {n}
-        → (a : ⌊ n ⌋)
         → (x : Poly n)
         → (i : ℕ)
         → (xs : Coeffs n)
         → (ys : Coeffs n)
         → (ρ : Carrier)
         → (Ρ : Vec Carrier n)
-        → ⌊ a ⌋Σ⟦ xs ⟧(ρ , Ρ) ≈ ⌊ a ⌋Σ⟦ ys ⟧(ρ , Ρ)
-        → ⌊ a ⌋Σ⟦ x ^ i ∷↓ xs ⟧(ρ , Ρ) ≈ ⌊ a ⌋Σ⟦ x ^ i ∷↓ ys ⟧(ρ , Ρ)
-∷↓-cong a x i xs ys ρ Ρ prf = ∷↓-hom x i xs ρ Ρ ︔ ≪* +≫ ≪* prf ︔ sym (∷↓-hom x i ys ρ Ρ)
+        → Σ⟦ xs ⟧(ρ , Ρ) ≈ Σ⟦ ys ⟧(ρ , Ρ)
+        → Σ⟦ x ^ i ∷↓ xs ⟧(ρ , Ρ) ≈ Σ⟦ x ^ i ∷↓ ys ⟧(ρ , Ρ)
+∷↓-cong x i xs ys ρ Ρ prf = ∷↓-hom x i xs ρ Ρ ︔ ≪* +≫ ≪* prf ︔ sym (∷↓-hom x i ys ρ Ρ)
 
 Σ-Π↑-hom : ∀ {i n m}
-         → (a : ⌊ i ⌋)
          → (xs : Coeffs i)
          → (si≤n : suc i ≤ n)
          → (sn≤m : suc n ≤ m)
          → (Ρ : Vec Carrier m)
-         → ⌊ a ⌋Σ⟦ xs ⟧ (drop-1 (≤-s si≤n ⋈ sn≤m) Ρ)
-         ≈ ⌊ a ⌋Σ⟦ xs ⟧ (drop-1 si≤n (proj₂ (drop-1 sn≤m Ρ)))
+         → Σ⟦ xs ⟧ (drop-1 (≤-s si≤n ⋈ sn≤m) Ρ)
+         ≈ Σ⟦ xs ⟧ (drop-1 si≤n (proj₂ (drop-1 sn≤m Ρ)))
 Σ-Π↑-hom xs si≤n m≤m (ρ ∷ Ρ) = refl
 Σ-Π↑-hom xs si≤n (≤-s sn≤m) (_ ∷ Ρ) = Σ-Π↑-hom xs si≤n sn≤m Ρ
 
@@ -203,7 +198,7 @@ zero-hom _ (Σ [] {()} Π i≤n) p≡0 Ρ
        → (xs : Coeffs n)
        → (sn≤m : suc n ≤ m)
        → (Ρ : Vec Carrier m)
-       → ⟦ xs Π↓ sn≤m ⟧ Ρ ≈ ⌊ a ⌋Σ⟦ xs ⟧ (drop-1 sn≤m Ρ)
+       → ⟦ xs Π↓ sn≤m ⟧ Ρ ≈ Σ⟦ xs ⟧ (drop-1 sn≤m Ρ)
 Π↓-hom []                       sn≤m Ρ = 0-homo
 Π↓-hom (x₁   Δ zero  ∷ x₂ ∷ xs) sn≤m Ρ = refl
 Π↓-hom (x    Δ suc j ∷ xs)      sn≤m Ρ = refl
@@ -221,7 +216,7 @@ zero-hom _ (Σ [] {()} Π i≤n) p≡0 Ρ
   ≈⟨ ≪* +≫ sym (zeroˡ ρ) ⟩
     (⟦ x ⟧ Ρ′ + 0# * ρ) * 1#
   ≡⟨⟩
-    ⌊ a ⌋Σ⟦ _≠0 x {x≠0} Δ zero ∷ [] ⟧ (ρ , Ρ′)
+    Σ⟦ _≠0 x {x≠0} Δ zero ∷ [] ⟧ (ρ , Ρ′)
   ∎
 
 open import Relation.Binary.PropositionalEquality as ≡ using (_≡_)
@@ -233,13 +228,13 @@ drop-1⇒lookup : ∀ {n}
 drop-1⇒lookup Fin.zero (ρ ∷ Ρ) = ≡.refl
 drop-1⇒lookup (Fin.suc i) (ρ ∷ Ρ) = drop-1⇒lookup i Ρ
 
-foldR : ∀ {a b p} {A : Set a} {B : Set b} (_R_ : B → List A → Set p)
+foldR : ∀ {a b p} {A : Set a} {B : Set b} (_~_ : B → List.List A → Set p)
            → {f : A → B → B}
            → {b : B}
-           → (∀ y {ys zs} → ys R zs → f y ys R (y ∷ zs))
-           → b R []
+           → (∀ y {ys zs} → ys ~ zs → f y ys ~ (y ∷ zs))
+           → b ~ []
            → ∀ xs
-           → foldr f b xs R xs
+           → foldr f b xs ~ xs
 foldR _ f b [] = b
 foldR P f b (x ∷ xs) = f x (foldR P f b xs)
 

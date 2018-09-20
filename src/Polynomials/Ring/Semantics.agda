@@ -5,7 +5,7 @@ open import Algebra.Solver.Ring.AlmostCommutativeRing
 open import Relation.Unary
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.Vec as Vec using (Vec; []; _∷_)
-open import Data.List as List using (List; []; _∷_; foldr)
+open import Data.List as List using (List; []; _∷_)
 open import Level using (lift)
 open import Data.Product
 
@@ -39,16 +39,11 @@ drop-1 : ∀ {i n} → suc i ≤ n → Vec Carrier n → Carrier × Vec Carrier 
 drop-1 si≤n xs = vec-uncons (drop si≤n xs)
 
 mutual
-  ⌊_⌋⟦_δ_∷_⟧ : ∀ {n} → ⌊ n ⌋ → Poly n → ℕ → (Carrier × Vec Carrier n → Carrier) → Carrier × Vec Carrier n → Carrier
-  ⌊ a ⌋⟦ x δ i ∷ xs ⟧ (ρ , Ρ) = (⌊ a ⌋⟦ x ⟧ Ρ + xs (ρ , Ρ) * ρ) * ρ ^ i
+  Σ⟦_⟧ : ∀ {n} → Coeffs n → (Carrier × Vec Carrier n) → Carrier
+  Σ⟦ x ≠0 Δ i ∷ xs ⟧ (ρ , Ρ) = (⟦ x ⟧ Ρ + Σ⟦ xs ⟧ (ρ , Ρ) * ρ) * ρ ^ i
+  Σ⟦ [] ⟧ _ = 0#
 
-  ⌊_⌋Σ⟦_⟧ : ∀ {n} → ⌊ n ⌋ → Coeffs n → (Carrier × Vec Carrier n) → Carrier
-  ⌊ a ⌋Σ⟦ xs ⟧ = foldr (λ { (x ≠0 Δ i) xs → ⌊ a ⌋⟦ x δ i ∷ xs ⟧ }) (λ _ → 0#) xs
+  ⟦_⟧ : ∀ {n} → Poly n → Vec Carrier n → Carrier
+  ⟦ Κ x  Π i≤n ⟧ _ = ⟦ x ⟧ᵣ
+  ⟦ Σ xs Π i≤n ⟧ Ρ = Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
 
-  ⌊_⌋⟦_⟧ : ∀ {n} → ⌊ n ⌋ → Poly n → Vec Carrier n → Carrier
-  ⌊ _ ⌋⟦ Κ x  Π i≤n ⟧ _ = ⟦ x ⟧ᵣ
-  ⌊ acc wf ⌋⟦ Σ xs Π i≤n ⟧ Ρ = ⌊ wf _ i≤n ⌋Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
-
-
-⟦_⟧ : ∀ {n} → Poly n → Vec Carrier n → Carrier
-⟦_⟧ = ⌊ ⌊↓⌋ ⌋⟦_⟧

@@ -9,17 +9,24 @@ module Polynomials.ByConstruction
 
 open import Level
 open import Function
-open import Relation.Binary.Lifted
-
 
 module Context where
   open AlmostCommutativeRing coeffs
   open import Relation.Binary
-  open Intensional setoid hiding (_≋_)
-  open Intensional setoid public using (_≋_)
 
   Fn : Set a
   Fn = Carrier → Carrier
+
+  infix 4 _≋_
+  _≋_ : Fn → Fn → Set (a ⊔ ℓ)
+  x ≋ y = ∀ ρ → x ρ ≈ y ρ
+
+  ≋-equiv : IsEquivalence _≋_
+  ≋-equiv = record
+    { refl = λ ρ → refl
+    ; sym  = λ x≈y ρ → sym (x≈y ρ)
+    ; trans = λ x≈y y≈z ρ → trans (x≈y ρ) (y≈z ρ)
+    }
 
   exprRing : AlmostCommutativeRing a (a ⊔ ℓ)
   exprRing = record
@@ -43,7 +50,7 @@ module Context where
           ; isSemigroup = record
             { assoc = λ x y z ρ → +-assoc (x ρ) (y ρ) (z ρ)
             ; ∙-cong = λ x₁≈x₂ y₁≈y₂ ρ → +-cong (x₁≈x₂ ρ) (y₁≈y₂ ρ)
-            ; isEquivalence = Setoid.isEquivalence ≋-setoid
+            ; isEquivalence = ≋-equiv
             }
           }
         ; *-isCommutativeMonoid = record
@@ -52,7 +59,7 @@ module Context where
           ; isSemigroup = record
             { assoc = λ x y z ρ → *-assoc (x ρ) (y ρ) (z ρ)
             ; ∙-cong = λ x₁≈x₂ y₁≈y₂ ρ → *-cong (x₁≈x₂ ρ) (y₁≈y₂ ρ)
-            ; isEquivalence = Setoid.isEquivalence ≋-setoid
+            ; isEquivalence = ≋-equiv
             }
           }
         }
@@ -92,11 +99,10 @@ open Context
 open AlmostCommutativeRing exprRing
 module Coeff = AlmostCommutativeRing coeffs
 open import Polynomials.Ring.Reasoning exprRing
-open Reader
 
 data Poly : Carrier → Set (a ⊔ ℓ) where
   ⟦⟧ : Poly 0#
-  ⟦_∷_⟧ : ∀ x {xs} → Poly xs → Poly (κ x + ρ * xs)
+  ⟦_∷_⟧ : ∀ x {xs} → Poly xs → Poly (λ ρ → x Coeff.+ ρ Coeff.* xs ρ)
 
 infixr 0 _⇐_
 record Expr (expr : Carrier) : Set (a ⊔ ℓ) where
