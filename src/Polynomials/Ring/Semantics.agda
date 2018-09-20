@@ -28,27 +28,15 @@ _^_ : Carrier → ℕ → Carrier
 x ^ zero = 1#
 x ^ suc n = x * x ^ n
 
-drop : ∀ {i n} → i ≤ n → Vec Carrier n → Vec Carrier i
-drop m≤m Ρ = Ρ
-drop (≤-s si≤n) (_ ∷ Ρ) = drop si≤n Ρ
 
-vec-uncons : ∀ {n} → Vec Carrier (suc n) → Carrier × Vec Carrier n
-vec-uncons (x ∷ xs) = x , xs
-
-drop-1 : ∀ {i n} → suc i ≤ n → Vec Carrier n → Carrier × Vec Carrier i
-drop-1 si≤n xs = vec-uncons (drop si≤n xs)
+⟦_δ_∷_⟧ : Carrier → ℕ → Carrier → Carrier → Carrier
+⟦ x δ i ∷ xs ⟧ ρ = (x + xs * ρ) * ρ ^ i
 
 mutual
-  ⌊_⌋⟦_δ_∷_⟧ : ∀ {n} → ⌊ n ⌋ → Poly n → ℕ → (Carrier × Vec Carrier n → Carrier) → Carrier × Vec Carrier n → Carrier
-  ⌊ a ⌋⟦ x δ i ∷ xs ⟧ (ρ , Ρ) = (⌊ a ⌋⟦ x ⟧ Ρ + xs (ρ , Ρ) * ρ) * ρ ^ i
+  Σ⟦_π_⟧ : ∀ {i n} → Coeffs i → suc i ≤ n → Vec Carrier n → Carrier
+  Σ⟦ xs π m≤m ⟧ (ρ ∷ Ρ) = foldr (λ { (x ≠0 Δ i) xs → ⟦ ⟦ x ⟧ Ρ δ i ∷ xs ⟧ ρ }) 0# xs
+  Σ⟦ xs π ≤-s i≤n ⟧ (_ ∷ Ρ) = Σ⟦ xs π i≤n ⟧ Ρ
 
-  ⌊_⌋Σ⟦_⟧ : ∀ {n} → ⌊ n ⌋ → Coeffs n → (Carrier × Vec Carrier n) → Carrier
-  ⌊ a ⌋Σ⟦ xs ⟧ = foldr (λ { (x ≠0 Δ i) xs → ⌊ a ⌋⟦ x δ i ∷ xs ⟧ }) (λ _ → 0#) xs
-
-  ⌊_⌋⟦_⟧ : ∀ {n} → ⌊ n ⌋ → Poly n → Vec Carrier n → Carrier
-  ⌊ _ ⌋⟦ Κ x  Π i≤n ⟧ _ = ⟦ x ⟧ᵣ
-  ⌊ acc wf ⌋⟦ Σ xs Π i≤n ⟧ Ρ = ⌊ wf _ i≤n ⌋Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
-
-
-⟦_⟧ : ∀ {n} → Poly n → Vec Carrier n → Carrier
-⟦_⟧ = ⌊ ⌊↓⌋ ⌋⟦_⟧
+  ⟦_⟧ : ∀ {n} → Poly n → Vec Carrier n → Carrier
+  ⟦ Κ x  Π i≤n ⟧ _ = ⟦ x ⟧ᵣ
+  ⟦ Σ xs Π i≤n ⟧ Ρ = Σ⟦ xs π i≤n ⟧ Ρ
