@@ -8,7 +8,7 @@ open import Relation.Unary
 open import Level using (_⊔_; Lift; lift; lower)
 open import Data.Empty
 open import Data.Unit using (⊤; tt)
-open import Data.List as List using (_∷_; []; List)
+open import Data.List as List using (_∷_; []; List; foldr)
 open import Data.Vec as Vec using (_∷_; []; Vec)
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Function
@@ -225,17 +225,17 @@ open import Data.Nat.Order.Gappy public
 --       → Ordering i≤n (≤-s j≤i-1 ⋈ i≤n)
 --   eq : ∀ {i} → (i≤n : i ≤ n) → Ordering i≤n i≤n
 
--- _∺_ : ∀ {i j n}
+-- _cmp_ : ∀ {i j n}
 --     → (x : i ≤ n)
 --     → (y : j ≤ n)
 --     → Ordering x y
--- m≤m ∺ m≤m = eq m≤m
--- m≤m ∺ ≤-s y = m≤m > y
--- ≤-s x ∺ m≤m = x < m≤m
--- ≤-s x ∺ ≤-s y with x ∺ y
--- ≤-s .(≤-s i≤j-1 ⋈ y) ∺ ≤-s y            | i≤j-1 < .y = i≤j-1 < ≤-s y
--- ≤-s x            ∺ ≤-s .(≤-s j≤i-1 ⋈ x) | .x > j≤i-1 = ≤-s x > j≤i-1
--- ≤-s x            ∺ ≤-s .x               | eq .x = eq (≤-s x)
+-- m≤m cmp m≤m = eq m≤m
+-- m≤m cmp ≤-s y = m≤m > y
+-- ≤-s x cmp m≤m = x < m≤m
+-- ≤-s x cmp ≤-s y with x cmp y
+-- ≤-s .(≤-s i≤j-1 ⋈ y) cmp ≤-s y            | i≤j-1 < .y = i≤j-1 < ≤-s y
+-- ≤-s x            cmp ≤-s .(≤-s j≤i-1 ⋈ x) | .x > j≤i-1 = ≤-s x > j≤i-1
+-- ≤-s x            cmp ≤-s .x               | eq .x = eq (≤-s x)
 
 -- z≤n : ∀ {n} → zero ≤ n
 -- z≤n {zero} = m≤m
@@ -385,7 +385,7 @@ mutual
 
   infixl 6 _⊞_
   _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
-  (xs Π i≤n) ⊞ (ys Π j≤n) = ⊞-match (i≤n ∺ j≤n) xs ys
+  (xs Π i≤n) ⊞ (ys Π j≤n) = ⊞-match (i≤n cmp j≤n) xs ys
 
   ⊞-match : ∀ {i j n}
         → {i≤n : i ≤ n}
@@ -406,7 +406,7 @@ mutual
        → Coeffs k
   ⊞-inj i≤k xs [] = xs Π i≤k ^ zero ∷↓ []
   ⊞-inj i≤k xs (y Π j≤k ≠0 Δ zero ∷ ys) =
-    ⊞-match (j≤k ∺ i≤k) y xs ^ zero ∷↓ ys
+    ⊞-match (j≤k cmp i≤k) y xs ^ zero ∷↓ ys
   ⊞-inj i≤k xs (y Δ suc j ∷ ys) =
     xs Π i≤k ^ zero ∷↓ y Δ j ∷ ys
 
@@ -434,53 +434,78 @@ mutual
 -- Negation
 ----------------------------------------------------------------------
 
-mutual
-  ⊟_ : ∀ {n} → Poly n → Poly n
-  ⊟_ (Κ x  Π i≤n) = Κ (- x) Π i≤n
-  ⊟_ (Σ xs Π i≤n) = ⊟-coeffs xs Π↓ i≤n
+open import Induction.Nat
+open import Induction.WellFounded
 
-  ⊟-coeffs : ∀ {n} → Coeffs n → Coeffs n
-  ⊟-coeffs (x ≠0 Δ i  ∷ xs) = ⊟ x ^ i ∷↓ ⊟-coeffs xs
-  ⊟-coeffs [] = []
+⌊_⌋ : ℕ → Set
+⌊_⌋ = Acc ℕ._<′_
+
+⌊↓⌋ : ∀ {n} → ⌊ n ⌋
+⌊↓⌋ {n} = <′-wellFounded n
+
+-- recurse on acc directly
+-- https://github.com/agda/agda/issues/3190#issuecomment-416900716
+
+mutual
+  ⊟-step : ∀ {n} → ⌊ n ⌋ → Poly n → Poly n
+  ⊟-step _        (Κ x  Π i≤n) = Κ (- x) Π i≤n
+  ⊟-step (acc wf) (Σ xs Π i≤n) =
+    foldr (⊟-cons (wf _ i≤n)) [] xs Π↓ i≤n
+
+  ⊟-cons : ∀ {n} → ⌊ n ⌋ → CoeffExp n → Coeffs n → Coeffs n
+  ⊟-cons ac (x ≠0 Δ i) xs = ⊟-step ac x ^ i ∷↓ xs
+
+⊟_ : ∀ {n} → Poly n → Poly n
+⊟_ = ⊟-step ⌊↓⌋
 
 ----------------------------------------------------------------------
 -- Multiplication
 ----------------------------------------------------------------------
 mutual
-  infixl 7 _⊠_
-  _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
-  (xs Π i≤n) ⊠ (ys Π j≤n) = ⊠-match (i≤n ∺ j≤n) xs ys
+  ⊠-step : ∀ {n} → ⌊ n ⌋ → Poly n → Poly n → Poly n
+  ⊠-step a (xs Π i≤n) (ys Π j≤n) = ⊠-match a (i≤n cmp j≤n) xs ys
 
   ⊠-inj : ∀ {i k}
+        → ⌊ k ⌋
         → i ≤ k
         → FlatPoly i
+        → CoeffExp k
         → Coeffs k
         → Coeffs k
-  ⊠-inj _ _ [] = []
-  ⊠-inj i≤k x (y Π j≤k ≠0 Δ p ∷ ys) =
-    ⊠-match (i≤k ∺ j≤k) x y ^ p ∷↓ ⊠-inj i≤k x ys
+  ⊠-inj a i≤k x (y Π j≤k ≠0 Δ p) ys =
+    ⊠-match a (i≤k cmp j≤k) x y ^ p ∷↓ ys
 
   ⊠-match : ∀ {i j n}
+          → ⌊ n ⌋
           → {i≤n : i ≤ n}
           → {j≤n : j ≤ n}
           → Ordering i≤n j≤n
           → FlatPoly i
           → FlatPoly j
           → Poly n
-  ⊠-match (eq i&j≤n) (Κ x)  (Κ y)  = Κ (x * y)         Π  i&j≤n
-  ⊠-match (eq i&j≤n) (Σ xs) (Σ ys) = ⊠-coeffs xs ys    Π↓ i&j≤n
-  ⊠-match (i≤j-1 < j≤n) xs (Σ ys)  = ⊠-inj i≤j-1 xs ys Π↓ j≤n
-  ⊠-match (i≤n > j≤i-1) (Σ xs) ys  = ⊠-inj j≤i-1 ys xs Π↓ i≤n
+  ⊠-match _ (eq i&j≤n)        (Κ  x) (Κ  y) = Κ (x * y)                               Π  i&j≤n
+  ⊠-match (acc wf) (eq i&j≤n) (Σ xs) (Σ ys) = ⊠-coeffs (wf _ i&j≤n) xs ys             Π↓ i&j≤n
+  ⊠-match (acc wf) (i≤j-1 < j≤n) xs (Σ ys)  = foldr (⊠-inj (wf _ j≤n) i≤j-1 xs) [] ys Π↓ j≤n
+  ⊠-match (acc wf) (i≤n > j≤i-1) (Σ xs) ys  = foldr (⊠-inj (wf _ i≤n) j≤i-1 ys) [] xs Π↓ i≤n
 
   -- A simple shift-and-add algorithm.
-  ⊠-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
-  ⊠-coeffs _ [] = []
-  ⊠-coeffs xs (y ≠0 Δ j ∷ ys) = ⊠-step y ys xs ⍓ j
+  ⊠-coeffs : ∀ {n} → ⌊ n ⌋ → Coeffs n → Coeffs n → Coeffs n
+  ⊠-coeffs _ _ [] = []
+  ⊠-coeffs a xs (y ≠0 Δ j ∷ ys) = foldr (⊠-cons a y ys) [] xs ⍓ j
 
-  ⊠-step : ∀ {n} → Poly n → Coeffs n → Coeffs n → Coeffs n
-  ⊠-step y ys [] = []
-  ⊠-step y ys (x Π j≤n ≠0 Δ i ∷ xs) =
-    (x Π j≤n) ⊠ y ^ i ∷↓ ⊞-coeffs (⊠-inj j≤n x ys) (⊠-step y ys xs)
+  ⊠-cons : ∀ {n}
+         → ⌊ n ⌋
+         → Poly n
+         → Coeffs n
+         → CoeffExp n
+         → Coeffs n
+         → Coeffs n
+  ⊠-cons a y ys (x Π j≤n ≠0 Δ i) xs =
+    ⊠-step a (x Π j≤n) y ^ i ∷↓ ⊞-coeffs (foldr (⊠-inj a j≤n x) [] ys) xs
+
+infixl 7 _⊠_
+_⊠_ : ∀ {n} → Poly n → Poly n → Poly n
+_⊠_ = ⊠-step ⌊↓⌋
 
 ----------------------------------------------------------------------
 -- Constants and Variables
