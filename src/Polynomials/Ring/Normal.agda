@@ -333,12 +333,17 @@ _⍓_ : ∀ {n} → Coeffs n → ℕ → Coeffs n
 [] ⍓ i = []
 (x Δ j ∷ xs) ⍓ i = x Δ (j ℕ.+ i) ∷ xs
 
+open import Data.Product using (_×_; _,_)
+
+norm-cons : ∀ {n} → Poly n × ℕ × Coeffs n → Coeffs n
+norm-cons (x , i , xs) with zero? x
+... | yes p = xs ⍓ suc i
+... | no ¬p = _≠0 x {¬p} Δ i ∷ xs
+
 -- Normalising cons
 infixr 5 _^_∷↓_
 _^_∷↓_ : ∀ {n} → Poly n → ℕ → Coeffs n → Coeffs n
-x ^ i ∷↓ xs with zero? x
-... | yes p = xs ⍓ suc i
-... | no ¬p = _≠0 x {¬p} Δ i ∷ xs
+x ^ i ∷↓ xs = norm-cons (x , i , xs)
 
 -- Inject a polynomial into a larger polynomoial with more variables
 _Π↑_ : ∀ {n m} → Poly n → (suc n ≤ m) → Poly m
