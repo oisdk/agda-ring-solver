@@ -124,8 +124,7 @@ pow-add x (suc i) j =
 
 pow-hom : ∀ {n} i
         → (xs : Coeffs n)
-        → (ρ : Carrier)
-        → (Ρ : Vec Carrier n)
+        → ∀ ρ Ρ
         → Σ⟦ xs ⟧ (ρ , Ρ) * ρ ^ i ≈ Σ⟦ xs ⍓ i ⟧ (ρ , Ρ)
 pow-hom i [] ρ Ρ = zeroˡ (ρ ^ i)
 pow-hom i (x Δ j ∷ xs) ρ Ρ = *-assoc _ (ρ ^ j) (ρ ^ i) ︔ *≫ pow-add ρ j i
@@ -137,11 +136,8 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
 
 ∷↓-hom : ∀ {n}
        → (x : Poly n)
-       → (i : ℕ)
-       → (xs : Coeffs n)
-       → (ρ : Carrier)
-       → (Ρ : Vec Carrier n)
-       → Σ⟦ x ^ i ∷↓ xs ⟧ (ρ , Ρ) ≈ (⟦ x ⟧ Ρ + Σ⟦ xs ⟧ (ρ , Ρ) * ρ) * ρ ^ i
+       → ∀ i xs ρ Ρ
+       → Σ⟦ x ^ i ∷↓ xs ⟧ (ρ , Ρ) ≈ ⟦ ⟦ x ⟧ Ρ δ i ∷ Σ⟦ xs ⟧ (ρ , Ρ) ⟧ ρ
 ∷↓-hom x i xs ρ Ρ with zero? x
 ∷↓-hom x i xs ρ Ρ | no ¬p = refl
 ∷↓-hom x i xs ρ Ρ | yes p =
@@ -155,53 +151,42 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
     (⟦ x ⟧ Ρ + Σ⟦ xs ⟧ (ρ , Ρ) * ρ) * ρ ^ i
   ∎
 
-∷↓-cong : ∀ {n}
-        → (x : Poly n)
-        → (i : ℕ)
-        → (xs : Coeffs n)
-        → (ys : Coeffs n)
-        → (ρ : Carrier)
-        → (Ρ : Vec Carrier n)
-        → Σ⟦ xs ⟧(ρ , Ρ) ≈ Σ⟦ ys ⟧(ρ , Ρ)
-        → Σ⟦ x ^ i ∷↓ xs ⟧(ρ , Ρ) ≈ Σ⟦ x ^ i ∷↓ ys ⟧(ρ , Ρ)
-∷↓-cong x i xs ys ρ Ρ prf = ∷↓-hom x i xs ρ Ρ ︔ ≪* +≫ ≪* prf ︔ sym (∷↓-hom x i ys ρ Ρ)
-
 Σ-Π↑-hom : ∀ {i n m}
          → (xs : Coeffs i)
          → (si≤n : suc i ≤ n)
          → (sn≤m : suc n ≤ m)
-         → (Ρ : Vec Carrier m)
-         → Σ⟦ xs ⟧ (drop-1 (≤-s si≤n ⋈ sn≤m) Ρ)
-         ≈ Σ⟦ xs ⟧ (drop-1 si≤n (proj₂ (drop-1 sn≤m Ρ)))
-Σ-Π↑-hom xs si≤n m≤m (ρ ∷ Ρ) = refl
-Σ-Π↑-hom xs si≤n (≤-s sn≤m) (_ ∷ Ρ) = Σ-Π↑-hom xs si≤n sn≤m Ρ
+         → ∀ ρ
+         → Σ⟦ xs ⟧ (drop-1 (≤-s si≤n ⋈ sn≤m) ρ)
+         ≈ Σ⟦ xs ⟧ (drop-1 si≤n (proj₂ (drop-1 sn≤m ρ)))
+Σ-Π↑-hom xs si≤n m≤m (_ ∷ _) = refl
+Σ-Π↑-hom xs si≤n (≤-s sn≤m) (_ ∷ ρ) = Σ-Π↑-hom xs si≤n sn≤m ρ
 
 Π↑-hom : ∀ {n m}
        → (x : Poly n)
        → (sn≤m : suc n ≤ m)
-       → (Ρ : Vec Carrier m)
-       → ⟦ x Π↑ sn≤m ⟧ Ρ ≈ ⟦ x ⟧ (proj₂ (drop-1 sn≤m Ρ))
-Π↑-hom (Κ x  Π i≤sn) sn≤m Ρ = refl
-Π↑-hom (Σ xs Π i≤sn) sn≤m Ρ = Σ-Π↑-hom xs i≤sn sn≤m Ρ
+       → ∀ ρ
+       → ⟦ x Π↑ sn≤m ⟧ ρ ≈ ⟦ x ⟧ (proj₂ (drop-1 sn≤m ρ))
+Π↑-hom (Κ x  Π i≤sn) _ _ = refl
+Π↑-hom (Σ xs Π i≤sn) = Σ-Π↑-hom xs i≤sn
 
 ⋈-hom : ∀ {i j-1 n}
       → (i≤j-1 : i ≤ j-1)
       → (j≤n   : suc j-1 ≤ n)
       → (x : FlatPoly i)
-      → (Ρ : Vec Carrier n)
-      → ⟦ x Π i≤j-1 ⟧ (proj₂ (drop-1 j≤n Ρ)) ≈ ⟦ x Π (≤-s i≤j-1 ⋈ j≤n) ⟧ Ρ
-⋈-hom i≤j-1 j≤n (Κ x) Ρ = refl
-⋈-hom i≤j-1 m≤m (Σ x) (ρ ∷ Ρ) = refl
-⋈-hom i≤j-1 (≤-s j≤n) (Σ x {xn}) (ρ ∷ Ρ) = ⋈-hom i≤j-1 j≤n (Σ x {xn}) Ρ
+      → ∀ ρ
+      → ⟦ x Π i≤j-1 ⟧ (proj₂ (drop-1 j≤n ρ)) ≈ ⟦ x Π (≤-s i≤j-1 ⋈ j≤n) ⟧ ρ
+⋈-hom i≤j-1 j≤n (Κ x) _ = refl
+⋈-hom i≤j-1 m≤m (Σ x) (_ ∷ _) = refl
+⋈-hom i≤j-1 (≤-s j≤n) (Σ x {xn}) (_ ∷ ρ) = ⋈-hom i≤j-1 j≤n (Σ x {xn}) ρ
 
 Π↓-hom : ∀ {n m}
        → (xs : Coeffs n)
        → (sn≤m : suc n ≤ m)
-       → (Ρ : Vec Carrier m)
-       → ⟦ xs Π↓ sn≤m ⟧ Ρ ≈ Σ⟦ xs ⟧ (drop-1 sn≤m Ρ)
-Π↓-hom []                       sn≤m Ρ = 0-homo
-Π↓-hom (x₁   Δ zero  ∷ x₂ ∷ xs) sn≤m Ρ = refl
-Π↓-hom (x    Δ suc j ∷ xs)      sn≤m Ρ = refl
+       → ∀ ρ
+       → ⟦ xs Π↓ sn≤m ⟧ ρ ≈ Σ⟦ xs ⟧ (drop-1 sn≤m ρ)
+Π↓-hom []                       sn≤m _ = 0-homo
+Π↓-hom (x₁   Δ zero  ∷ x₂ ∷ xs) sn≤m _ = refl
+Π↓-hom (x    Δ suc j ∷ xs)      sn≤m _ = refl
 Π↓-hom (_≠0 x {x≠0} Δ zero  ∷ []) sn≤m Ρ =
   let (ρ , Ρ′) = drop-1 sn≤m Ρ
   in
