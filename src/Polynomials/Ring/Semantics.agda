@@ -5,7 +5,7 @@ open import Algebra.Solver.Ring.AlmostCommutativeRing
 open import Relation.Unary
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.Vec as Vec using (Vec; []; _∷_)
-open import Data.List as List using (List; []; _∷_)
+open import Data.List as List using (List; []; _∷_; foldr)
 open import Level using (lift)
 open import Data.Product
 
@@ -38,12 +38,28 @@ vec-uncons (x ∷ xs) = x , xs
 drop-1 : ∀ {i n} → suc i ≤ n → Vec Carrier n → Carrier × Vec Carrier i
 drop-1 si≤n xs = vec-uncons (drop si≤n xs)
 
-mutual
-  Σ⟦_⟧ : ∀ {n} → Coeffs n → (Carrier × Vec Carrier n) → Carrier
-  Σ⟦ x ≠0 Δ i ∷ xs ⟧ (ρ , Ρ) = (⟦ x ⟧ Ρ + Σ⟦ xs ⟧ (ρ , Ρ) * ρ) * ρ ^ i
-  Σ⟦ [] ⟧ _ = 0#
+data VecAcc (n : ℕ) : Set r₃ where
+  vacc : (∀ {m} → suc m ≤ n → Carrier × VecAcc m) → VecAcc n
 
-  ⟦_⟧ : ∀ {n} → Poly n → Vec Carrier n → Carrier
-  ⟦ Κ x  Π i≤n ⟧ _ = ⟦ x ⟧ᵣ
-  ⟦ Σ xs Π i≤n ⟧ Ρ = Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
+open VecAcc
+
+vecAcc : ∀ {n} → Vec Carrier n → VecAcc n
+vecAcc xs = vacc (vecAcc′ xs)
+  where
+  vecAcc′ : ∀ {m n} → Vec Carrier n → suc m ≤ n → Carrier × VecAcc m
+  vecAcc′ (x ∷ xs) m≤m = x , vecAcc xs
+  vecAcc′ (x ∷ xs) (≤-s sm≤n) = vecAcc′ xs sm≤n
+-- recur (vecAcc (x ∷ xs)) m≤m = x , vecAcc xs
+-- recur (vecAcc (x ∷ xs)) (≤-s sm≤n) = recur (vecAcc xs) sm≤n
+
+⟦_δ_∷_⟧ : Carrier → ℕ → Carrier → Carrier → Carrier
+⟦ x δ i ∷ xs ⟧ ρ = (x + xs * ρ) * ρ ^ i
+
+mutual
+  Σ⟦_⟧ : ∀ {n} → Coeffs n → (Carrier × VecAcc n) → Carrier
+  Σ⟦ xs ⟧ (ρ , Ρ) = foldr (λ { (x ≠0 Δ i) xs → ⟦ Π⟦ x ⟧ Ρ δ i ∷ xs ⟧ ρ  }) 0# xs
+
+  Π⟦_⟧ : ∀ {n} → Poly n → VecAcc n → Carrier
+  Π⟦ Κ x  Π i≤n ⟧ _ = ⟦ x ⟧ᵣ
+  Π⟦ Σ xs Π i≤n ⟧ (vacc ρ) = Σ⟦ xs ⟧ (ρ i≤n)
 
