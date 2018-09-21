@@ -223,3 +223,9 @@ foldR : ∀ {a b p} {A : Set a} {B : Set b} (_~_ : B → List.List A → Set p)
 foldR _ f b [] = b
 foldR P f b (x ∷ xs) = f x (foldR P f b xs)
 
+-- Here's what we're trying to get to:
+--
+-- foldrRH : (∀ y {ys zs} → ys ~ zs → uncurry₃ ⟦_δ_∷_⟧ (f y ys) ~ ⟦_δ_∷_⟧ y zs )
+--        → b ~ 0#
+--        → ∀ xs
+--        → foldr f b xs ~ xs
