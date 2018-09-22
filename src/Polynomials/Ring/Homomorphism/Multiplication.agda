@@ -22,8 +22,7 @@ open import Polynomials.Ring.Homomorphism.Lemmas coeff Zero-C zero-c? ring morph
 open import Polynomials.Ring.Homomorphism.Addition coeff Zero-C zero-c? ring morphism Zero-C⟶Zero-R
 open AlmostCommutativeRing ring hiding (zero)
 open import Polynomials.Ring.Reasoning ring
-open import Polynomials.Ring.Normal coeff Zero-C zero-c?
-open import Polynomials.Ring.Semantics coeff Zero-C zero-c? ring morphism
+open import Polynomials.Ring.Normal coeff Zero-C zero-c? ring morphism
 open _-Raw-AlmostCommutative⟶_ morphism renaming (⟦_⟧ to ⟦_⟧ᵣ)
 
 open import Relation.Nullary

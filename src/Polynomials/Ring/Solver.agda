@@ -29,8 +29,10 @@ open import Polynomials.Ring.Expr public
 ⟦ x ⊗ y ⟧ ρ = ⟦ x ⟧ ρ * ⟦ y ⟧ ρ
 ⟦ ⊝ x ⟧ ρ = - ⟦ x ⟧ ρ
 
-open import Polynomials.Ring.Normal coeff Zero-C zero-c?
-  using (Poly; _⊞_; _⊠_; ⊟_; κ; ι)
+open import Polynomials.Ring.Normal.Definition coeff Zero-C zero-c?
+  using (Poly)
+open import Polynomials.Ring.Normal.Operations coeff Zero-C zero-c?
+  using (_⊞_; _⊠_; ⊟_; κ; ι)
 
 norm : ∀ {n} → Expr Raw.Carrier n → Poly n
 norm (Κ x) = κ x
@@ -39,7 +41,7 @@ norm (x ⊕ y) = norm x ⊞ norm y
 norm (x ⊗ y) = norm x ⊠ norm y
 norm (⊝ x) = ⊟ norm x
 
-open import Polynomials.Ring.Semantics coeff Zero-C zero-c? ring morphism
+open import Polynomials.Ring.Normal.Semantics coeff Zero-C zero-c? ring morphism
   renaming (⟦_⟧ to ⟦_⟧ₚ)
 
 ⟦_⇓⟧ : ∀ {n} → Expr Raw.Carrier n → Vec Carrier n → Carrier

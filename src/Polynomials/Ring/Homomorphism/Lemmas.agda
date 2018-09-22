@@ -93,8 +93,7 @@ module AOPA where
 
 open AlmostCommutativeRing ring hiding (zero)
 open import Polynomials.Ring.Reasoning ring
-open import Polynomials.Ring.Normal coeff Zero-C zero-c?
-open import Polynomials.Ring.Semantics coeff Zero-C zero-c? ring morphism
+open import Polynomials.Ring.Normal coeff Zero-C zero-c? ring morphism
 open _-Raw-AlmostCommutative⟶_ morphism renaming (⟦_⟧ to ⟦_⟧ᵣ)
 module Raw = RawRing coeff
 open import Relation.Nullary
@@ -137,7 +136,7 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
 ∷↓-hom : ∀ {n}
        → (x : Poly n)
        → ∀ i xs ρ Ρ
-       → Σ⟦ x ^ i ∷↓ xs ⟧ (ρ , Ρ) ≈ ⟦ ⟦ x ⟧ Ρ δ i ∷ Σ⟦ xs ⟧ (ρ , Ρ) ⟧ ρ
+       → Σ⟦ x ^ i ∷↓ xs ⟧ (ρ , Ρ) ≈ ⟦ ⟦ x ⟧ Ρ Δ i [∷] Σ⟦ xs ⟧ (ρ , Ρ) ⟧ ρ
 ∷↓-hom x i xs ρ Ρ with zero? x
 ∷↓-hom x i xs ρ Ρ | no ¬p = refl
 ∷↓-hom x i xs ρ Ρ | yes p =

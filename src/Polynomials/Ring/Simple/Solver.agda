@@ -17,7 +17,8 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
   ⟦ x ⊗ y ⟧ ρ = ⟦ x ⟧ ρ * ⟦ y ⟧ ρ
   ⟦ ⊝ x ⟧ ρ = - ⟦ x ⟧ ρ
 
-  open import Polynomials.Ring.Normal rawRing (0# ≈_) (0# ≟_)
+  open import Polynomials.Ring.Normal.Definition rawRing (0# ≈_) (0# ≟_)
+  open import Polynomials.Ring.Normal.Operations rawRing (0# ≈_) (0# ≟_)
 
   norm : ∀ {n} → Expr Carrier n → Poly n
   norm = go
@@ -44,7 +45,7 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
   ⟦_⇓⟧ : ∀ {n} → Expr Carrier n → Vec Carrier n → Carrier
   ⟦ expr ⇓⟧ = ⟦ norm expr ⟧ₚ where
 
-    open import Polynomials.Ring.Semantics rawRing (0# ≈_) (0# ≟_) complex (UnDec.-raw-almostCommutative⟶ complex)
+    open import Polynomials.Ring.Normal.Semantics rawRing (0# ≈_) (0# ≟_) complex (UnDec.-raw-almostCommutative⟶ complex)
       renaming (⟦_⟧ to ⟦_⟧ₚ)
 
   correct : ∀ {n} (expr : Expr Carrier n) ρ → ⟦ expr ⇓⟧ ρ ≈ ⟦ expr ⟧ ρ

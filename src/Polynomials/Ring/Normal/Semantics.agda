@@ -9,7 +9,7 @@ open import Data.List as List using (List; []; _∷_)
 open import Level using (lift)
 open import Data.Product
 
-module Polynomials.Ring.Semantics
+module Polynomials.Ring.Normal.Semantics
   {r₁ r₂ r₃ r₄}
   (coeff : RawRing r₁)
   (Zero-C : Pred (RawRing.Carrier coeff) r₂)
@@ -18,8 +18,9 @@ module Polynomials.Ring.Semantics
   (morphism : coeff -Raw-AlmostCommutative⟶ ring)
   where
 
+open import Data.Nat.Order.Gappy
 open AlmostCommutativeRing ring
-open import Polynomials.Ring.Normal coeff Zero-C zero-c?
+open import Polynomials.Ring.Normal.Definition coeff Zero-C zero-c?
 open _-Raw-AlmostCommutative⟶_ morphism using () renaming (⟦_⟧ to ⟦_⟧ᵣ)
 
 -- Exponentiation
@@ -38,15 +39,14 @@ vec-uncons (x ∷ xs) = x , xs
 drop-1 : ∀ {i n} → suc i ≤ n → Vec Carrier n → Carrier × Vec Carrier i
 drop-1 si≤n xs = vec-uncons (drop si≤n xs)
 
-⟦_δ_∷_⟧ : Carrier → ℕ → Carrier → Carrier → Carrier
-⟦ x δ i ∷ xs ⟧ ρ =  (x + xs * ρ) * ρ ^ i
+⟦_[∷]_⟧ : PowInd Carrier → Carrier → Carrier → Carrier
+⟦ x Δ i [∷] xs ⟧ ρ =  (x + xs * ρ) * ρ ^ i
 
 mutual
   Σ⟦_⟧ : ∀ {n} → Coeffs n → (Carrier × Vec Carrier n) → Carrier
-  Σ⟦ x ≠0 Δ i ∷ xs ⟧ (ρ , Ρ) = ⟦ ⟦ x ⟧ Ρ δ i ∷ Σ⟦ xs ⟧ (ρ , Ρ) ⟧ ρ
+  Σ⟦ x ≠0 Δ i ∷ xs ⟧ (ρ , Ρ) = ⟦ (⟦ x ⟧ Ρ Δ i) [∷] Σ⟦ xs ⟧ (ρ , Ρ) ⟧ ρ
   Σ⟦ [] ⟧ _ = 0#
 
   ⟦_⟧ : ∀ {n} → Poly n → Vec Carrier n → Carrier
   ⟦ Κ x  Π i≤n ⟧ _ = ⟦ x ⟧ᵣ
   ⟦ Σ xs Π i≤n ⟧ Ρ = Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
-
