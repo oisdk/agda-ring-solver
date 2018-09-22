@@ -136,7 +136,7 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
 ∷↓-hom : ∀ {n}
        → (x : Poly n)
        → ∀ i xs ρ Ρ
-       → Σ⟦ x ^ i ∷↓ xs ⟧ (ρ , Ρ) ≈ (ρ , Ρ) ⟦ x Δ i [∷] xs ⟧
+       → Σ⟦ x ^ i ∷↓ xs ⟧ (ρ , Ρ) ≈ (ρ , Ρ) ⟦∷⟧ (x Δ i , xs)
 ∷↓-hom x i xs ρ Ρ with zero? x
 ∷↓-hom x i xs ρ Ρ | no ¬p = refl
 ∷↓-hom x i xs ρ Ρ | yes p =
@@ -149,6 +149,9 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
   ≈⟨ ≪* (sym (+-identityˡ _) ︔ ≪+ sym (zero-hom x p _)) ⟩
     (⟦ x ⟧ Ρ + Σ⟦ xs ⟧ (ρ , Ρ) * ρ) * ρ ^ i
   ∎
+
+norm-cons-hom : ∀ {n} x ρ (Ρ : Vec Carrier n) → Σ⟦ norm-cons x ⟧ (ρ , Ρ) ≈ (ρ , Ρ) ⟦∷⟧ x
+norm-cons-hom (x Δ i , xs) ρ Ρ = ∷↓-hom x i xs ρ Ρ
 
 Σ-Π↑-hom : ∀ {i n m}
          → (xs : Coeffs i)
@@ -224,13 +227,14 @@ foldR P f b (x ∷ xs) = f x (foldR P f b xs)
 
 -- Here's what we're trying to get to:
 --
-foldrRH : ∀ {n ρ Ρ}
+foldrRH : ∀ {n} ρ Ρ
         → (fn : CoeffExp n → Coeffs n → PowInd (Poly n) × Coeffs n)
         → (b : Coeffs n)
         → (equiv : Carrier → Carrier)
-        → (∀ y {ys zs} → Σ⟦ ys ⟧ (ρ , Ρ) ≈ equiv (Σ⟦ zs ⟧ (ρ , Ρ)) → uncurry (_⟦_[∷]_⟧ (ρ , Ρ)) (fn y ys) ≈ equiv ((ρ , Ρ) ⟦ un-coeff y [∷] ys ⟧) )
+        → (∀ y {ys zs} → Σ⟦ ys ⟧ (ρ , Ρ) ≈ equiv (Σ⟦ zs ⟧ (ρ , Ρ)) → (ρ , Ρ) ⟦∷⟧ (fn y ys) ≈ equiv ((ρ , Ρ) ⟦∷⟧ (un-coeff y , zs)) )
         → (Σ⟦ b ⟧ (ρ , Ρ) ≈ equiv 0#)
         → ∀ xs
         → Σ⟦ foldr (λ x xs → norm-cons (fn x xs)) b xs ⟧ (ρ , Ρ) ≈ equiv (Σ⟦ xs ⟧ (ρ , Ρ))
-foldrRH fn b equiv step base [] = base
-foldrRH fn b equiv step base (x ∷ xs) = {!!}
+foldrRH _ _ fn b equiv step base [] = base
+foldrRH ρ Ρ fn b equiv step base (x ∷ xs) =
+  norm-cons-hom (fn x (foldr (λ z z₁ → norm-cons (fn z z₁)) b xs)) ρ Ρ ⟨ trans ⟩ step x {(foldr (λ z z₁ → norm-cons (fn z z₁)) b xs)} {xs} (foldrRH ρ Ρ fn b equiv step base xs)
