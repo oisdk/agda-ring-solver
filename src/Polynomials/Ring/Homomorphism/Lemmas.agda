@@ -225,7 +225,11 @@ foldR P f b (x ∷ xs) = f x (foldR P f b xs)
 
 -- Here's what we're trying to get to:
 --
--- foldrRH : (∀ y {ys zs} → ys ~ zs → uncurry₃ ⟦_δ_∷_⟧ (f y ys) ~ ⟦_δ_∷_⟧ y zs )
---        → b ~ 0#
---        → ∀ xs
---        → foldr f b xs ~ xs
+-- foldrRH : ∀ {n} → (_~_ : {!!} → {!!} → Set {!!})
+--         → {f : CoeffExp n → Coeffs n → Carrier × ℕ × Coeffs n}
+--         → {b : {!!}}
+--         → (∀ y {ys zs} → ys ~ zs → uncurry₃ ⟦_δ_∷_⟧ (f y ys) ~ uncurry ⟦_δ_∷_⟧ (un-coeff y) zs )
+--         → b ~ 0#
+--         → ∀ xs
+--         → foldr f b xs ~ xs
+-- foldrRH = {!!}

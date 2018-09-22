@@ -283,12 +283,15 @@ mutual
   --
   -- This is sparse Horner normal form.
   infixl 6 _Δ_
-  record CoeffExp (i : ℕ) : Set (a ⊔ ℓ) where
+  record PowInd {l} (c : ℕ → Set l) (i : ℕ) : Set l where
     inductive
     constructor _Δ_
     field
-      coeff : Coeff i
+      coeff : c i
       pow   : ℕ
+
+  CoeffExp : ℕ → Set (a ⊔ ℓ)
+  CoeffExp = PowInd Coeff
 
   Coeffs : ℕ → Set (a ⊔ ℓ)
   Coeffs n = List (CoeffExp n)
@@ -335,15 +338,18 @@ _⍓_ : ∀ {n} → Coeffs n → ℕ → Coeffs n
 
 open import Data.Product using (_×_; _,_)
 
-norm-cons : ∀ {n} → Poly n × ℕ × Coeffs n → Coeffs n
-norm-cons (x , i , xs) with zero? x
+norm-cons : ∀ {n} → PowInd Poly n × Coeffs n → Coeffs n
+norm-cons (x Δ i , xs) with zero? x
 ... | yes p = xs ⍓ suc i
 ... | no ¬p = _≠0 x {¬p} Δ i ∷ xs
+
+un-coeff : ∀ {n} → CoeffExp n → PowInd Poly n
+un-coeff (poly ≠0 Δ pow) =  poly Δ pow
 
 -- Normalising cons
 infixr 5 _^_∷↓_
 _^_∷↓_ : ∀ {n} → Poly n → ℕ → Coeffs n → Coeffs n
-x ^ i ∷↓ xs = norm-cons (x , i , xs)
+x ^ i ∷↓ xs = norm-cons (x Δ i , xs)
 
 -- Inject a polynomial into a larger polynomoial with more variables
 _Π↑_ : ∀ {n m} → Poly n → (suc n ≤ m) → Poly m
