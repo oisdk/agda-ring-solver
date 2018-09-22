@@ -15,7 +15,7 @@ module Polynomials.Ring.Homomorphism.Lemmas
   (Zero-C⟶Zero-R : ∀ x → Zero-C x → AlmostCommutativeRing._≈_ ring (_-Raw-AlmostCommutative⟶_.⟦_⟧ morphism x) (AlmostCommutativeRing.0# ring))
   where
 
-open import Data.List as List using (_∷_; []; foldr)
+open import Data.List as List using (_∷_; []; foldr; List)
 open import Function
 
 module _ {ℓ₁ ℓ₂} (setoid : Setoid ℓ₁ ℓ₂) where
@@ -213,13 +213,13 @@ drop-1⇒lookup : ∀ {n}
 drop-1⇒lookup Fin.zero (ρ ∷ Ρ) = ≡.refl
 drop-1⇒lookup (Fin.suc i) (ρ ∷ Ρ) = drop-1⇒lookup i Ρ
 
-foldR : ∀ {a b p} {A : Set a} {B : Set b} (_~_ : B → List.List A → Set p)
+foldR : ∀ {a b p} {A : Set a} {B : Set b} (_R_ : B → List A → Set p)
            → {f : A → B → B}
            → {b : B}
-           → (∀ y {ys zs} → ys ~ zs → f y ys ~ (y ∷ zs))
-           → b ~ []
+           → (∀ y {ys zs} → ys R zs → f y ys R (y ∷ zs))
+           → b R []
            → ∀ xs
-           → foldr f b xs ~ xs
+           → foldr f b xs R xs
 foldR _ f b [] = b
 foldR P f b (x ∷ xs) = f x (foldR P f b xs)
 
