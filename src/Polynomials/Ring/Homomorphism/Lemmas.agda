@@ -136,7 +136,7 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
 ∷↓-hom : ∀ {n}
        → (x : Poly n)
        → ∀ i xs ρ Ρ
-       → Σ⟦ x ^ i ∷↓ xs ⟧ (ρ , Ρ) ≈ ⟦ ⟦ x ⟧ Ρ Δ i [∷] Σ⟦ xs ⟧ (ρ , Ρ) ⟧ ρ
+       → Σ⟦ x ^ i ∷↓ xs ⟧ (ρ , Ρ) ≈ (ρ , Ρ) ⟦ x Δ i [∷] xs ⟧
 ∷↓-hom x i xs ρ Ρ with zero? x
 ∷↓-hom x i xs ρ Ρ | no ¬p = refl
 ∷↓-hom x i xs ρ Ρ | yes p =
@@ -224,11 +224,13 @@ foldR P f b (x ∷ xs) = f x (foldR P f b xs)
 
 -- Here's what we're trying to get to:
 --
--- foldrRH : ∀ {n} → (_~_ : {!!} → {!!} → Set {!!})
---         → {f : CoeffExp n → Coeffs n → Carrier × ℕ × Coeffs n}
---         → {b : {!!}}
---         → (∀ y {ys zs} → ys ~ zs → uncurry₃ ⟦_δ_∷_⟧ (f y ys) ~ uncurry ⟦_δ_∷_⟧ (un-coeff y) zs )
---         → b ~ 0#
---         → ∀ xs
---         → foldr f b xs ~ xs
--- foldrRH = {!!}
+foldrRH : ∀ {n ρ Ρ}
+        → (fn : CoeffExp n → Coeffs n → PowInd (Poly n) × Coeffs n)
+        → (b : Coeffs n)
+        → (equiv : Carrier → Carrier)
+        → (∀ y {ys zs} → Σ⟦ ys ⟧ (ρ , Ρ) ≈ equiv (Σ⟦ zs ⟧ (ρ , Ρ)) → uncurry (_⟦_[∷]_⟧ (ρ , Ρ)) (fn y ys) ≈ equiv ((ρ , Ρ) ⟦ un-coeff y [∷] ys ⟧) )
+        → (Σ⟦ b ⟧ (ρ , Ρ) ≈ equiv 0#)
+        → ∀ xs
+        → Σ⟦ foldr (λ x xs → norm-cons (fn x xs)) b xs ⟧ (ρ , Ρ) ≈ equiv (Σ⟦ xs ⟧ (ρ , Ρ))
+foldrRH fn b equiv step base [] = base
+foldrRH fn b equiv step base (x ∷ xs) = {!!}
