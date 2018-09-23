@@ -4,26 +4,20 @@ open import Algebra
 open import Relation.Binary hiding (Decidable)
 open import Relation.Unary
 open import Algebra.Solver.Ring.AlmostCommutativeRing
+open import Polynomials.Ring.Normal.Parameters
 
 ----------------------------------------------------------------------
 -- Homomorphism
 ----------------------------------------------------------------------
 module Polynomials.Ring.Homomorphism.Negation
   {r₁ r₂ r₃ r₄}
-  (coeff : RawRing r₁)
-  (Zero-C : Pred (RawRing.Carrier coeff) r₂)
-  (zero-c? : Decidable Zero-C)
-  (ring : AlmostCommutativeRing r₃ r₄)
-  (morphism : coeff -Raw-AlmostCommutative⟶ ring)
-  (Zero-C⟶Zero-R : ∀ x → Zero-C x → AlmostCommutativeRing._≈_ ring (_-Raw-AlmostCommutative⟶_.⟦_⟧ morphism x) (AlmostCommutativeRing.0# ring))
+  (homo : Homomorphism r₁ r₂ r₃ r₄)
   where
 
-open import Polynomials.Ring.Homomorphism.Lemmas coeff Zero-C zero-c? ring morphism Zero-C⟶Zero-R
-
-open AlmostCommutativeRing ring hiding (zero)
+open Homomorphism homo
+open import Polynomials.Ring.Homomorphism.Lemmas homo
 open import Polynomials.Ring.Reasoning ring
-open import Polynomials.Ring.Normal coeff Zero-C zero-c? ring morphism
-open _-Raw-AlmostCommutative⟶_ morphism renaming (⟦_⟧ to ⟦_⟧ᵣ)
+open import Polynomials.Ring.Normal homo
 
 open import Relation.Nullary
 open import Data.Nat as ℕ using (ℕ; suc; zero)
@@ -41,42 +35,36 @@ open import Induction.Nat
 open import Relation.Binary.Lifted
 open Intensional setoid
 
-⊟-step-hom : ∀ {n} (a : Acc ℕ._<′_ n) → (xs : Poly n) → ⟦ ⊟-step a xs ⟧ ≋ -_ ∘ ⟦ xs ⟧
-⊟-step-hom a (Κ x  Π i≤n) Ρ = -‿homo x
-⊟-step-hom (acc wf) (Σ xs Π i≤n) Ρ =
+⊟-step-hom : ∀ {n} (a : ⌊ n ⌋) → (xs : Poly n) → ⟦ ⊟-step a xs ⟧ ≋ -_ ∘ ⟦ xs ⟧
+⊟-step-hom a (Κ x  Π i≤n) ρ = -‿homo x
+⊟-step-hom (acc wf) (Σ xs Π i≤n) ρ′ =
+  let (ρ , ρs) = drop-1 i≤n ρ′
+      neg-zero =
+        begin
+          0#
+        ≈⟨ sym (zeroʳ _) ⟩
+          - 0# * 0#
+        ≈⟨ -‿*-distribˡ 0# 0# ⟩
+          - (0# * 0#)
+        ≈⟨ -‿cong (zeroˡ 0#) ⟩
+          - 0#
+        ∎
+      neg-step = λ x {ys} zs ys≋zs →
+        begin
+          ⟦ ⊟-step (wf _ i≤n) x ⟧ ρs + Σ⟦ ys ⟧ (ρ , ρs) * ρ
+        ≈⟨ ⊟-step-hom (wf _ i≤n) x ρs ⟨ +-cong ⟩ (≪* ys≋zs) ⟩
+          - ⟦ x ⟧ ρs + - Σ⟦ zs ⟧ (ρ , ρs) * ρ
+        ≈⟨ (+≫ -‿*-distribˡ _ _)  ⟨ trans ⟩ -‿+-comm _ _ ⟩
+          - (⟦ x ⟧ ρs + Σ⟦ zs ⟧ (ρ , ρs) * ρ)
+        ∎
+  in
   begin
-    ⟦ foldr (⊟-cons (wf _ i≤n)) [] xs Π↓ i≤n ⟧ Ρ
-  ≈⟨ Π↓-hom (foldr (⊟-cons _) [] xs) i≤n Ρ ⟩
-    Σ⟦ foldr (⊟-cons _) [] xs ⟧ (drop-1 i≤n Ρ)
-  ≈⟨ foldR  (λ ys zs → Σ⟦ ys ⟧ ≋ -_ ∘ Σ⟦ zs ⟧) neg-step neg-zero xs (drop-1 i≤n Ρ) ⟩
-    - Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
+    ⟦ poly-foldr (⊟-cons (wf _ i≤n)) xs Π↓ i≤n ⟧ ρ′
+  ≈⟨ Π↓-hom (poly-foldr (⊟-cons _) xs) i≤n ρ′ ⟩
+    Σ⟦ poly-foldr (⊟-cons _) xs ⟧ (ρ , ρs)
+  ≈⟨ poly-foldR ρ ρs (⊟-cons (wf _ i≤n)) -_ -‿*-distribˡ neg-step neg-zero xs ⟩
+    - Σ⟦ xs ⟧ (ρ , ρs)
   ∎
-  where
-  neg-step = λ x′ {ys} {zs} ys≋zs Ρ′ →
-    let x ≠0 Δ i = x′
-        (ρ , Ρ″) = Ρ′
-    in
-    begin
-      Σ⟦ ⊟-step (wf _ i≤n) x ^ i ∷↓ ys ⟧ Ρ′
-    ≈⟨ ∷↓-hom (⊟-step (wf _ i≤n) x) i _ ρ Ρ″ ⟩
-      (⟦ ⊟-step (wf _ i≤n) x ⟧ Ρ″ + Σ⟦ ys ⟧ (ρ , Ρ″) * ρ) * ρ ^ i
-    ≈⟨ ≪* (⊟-step-hom (wf _ i≤n) x Ρ″ ⟨ +-cong ⟩ (≪* ys≋zs Ρ′)) ⟩
-      (- ⟦ x ⟧ Ρ″ + - Σ⟦ zs ⟧ Ρ′ * ρ) * ρ ^ i
-    ≈⟨ ≪* ((+≫ -‿*-distribˡ _ _)  ⟨ trans ⟩ -‿+-comm _ _ ) ⟩
-      - (⟦ x ⟧ Ρ″ + Σ⟦ zs ⟧ Ρ′ * ρ) * ρ ^ i
-    ≈⟨  -‿*-distribˡ  _ _  ⟩
-      - ((⟦ x ⟧ Ρ″ + Σ⟦ zs ⟧ Ρ′ * ρ) * ρ ^ i)
-    ∎
-  neg-zero = λ _ →
-    begin
-      0#
-    ≈⟨ sym (zeroʳ _) ⟩
-      - 0# * 0#
-    ≈⟨ -‿*-distribˡ 0# 0# ⟩
-      - (0# * 0#)
-    ≈⟨ -‿cong (zeroˡ 0#) ⟩
-      - 0#
-    ∎
 
 ⊟-hom : ∀ {n}
       → (xs : Poly n)

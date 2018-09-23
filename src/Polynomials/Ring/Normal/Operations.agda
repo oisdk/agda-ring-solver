@@ -14,16 +14,19 @@ open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Function
 open import Data.Fin as Fin using (Fin)
 open import Data.Nat.Order.Compare using (compare)
+open import Polynomials.Ring.Normal.Parameters
 
 -- Multivariate polynomials.
 module Polynomials.Ring.Normal.Operations
   {a ℓ}
-  (coeffs : RawRing a)
-  (Zero-C : Pred (RawRing.Carrier coeffs) ℓ)
-  (zero-c? : Decidable Zero-C)
+  (coeffs : RawCoeff a ℓ)
   where
 
-open import Polynomials.Ring.Normal.Definition coeffs Zero-C zero-c?
+open import Polynomials.Ring.Normal.Definition coeffs
+open import Polynomials.Ring.Normal.Construction coeffs
+open RawCoeff coeffs
+open import Data.Product
+
 open import Data.Nat.Order.Gappy
 ----------------------------------------------------------------------
 -- Gaps
@@ -241,7 +244,6 @@ open import Data.Nat.Order.Gappy
 -- z≤n : ∀ {n} → zero ≤ n
 -- z≤n {zero} = m≤m
 -- z≤n {suc n} = ≤-s z≤n
-open RawRing coeffs
 
 ----------------------------------------------------------------------
 -- Definitions
@@ -300,11 +302,11 @@ mutual
        → FlatPoly i
        → Coeffs k
        → Coeffs k
-  ⊞-inj i≤k xs [] = xs Π i≤k ^ zero ∷↓ []
+  ⊞-inj i≤k xs [] = xs Π i≤k Δ zero ∷↓ []
   ⊞-inj i≤k xs (y Π j≤k ≠0 Δ zero ∷ ys) =
-    ⊞-match (j≤k cmp i≤k) y xs ^ zero ∷↓ ys
+    ⊞-match (j≤k cmp i≤k) y xs Δ zero ∷↓ ys
   ⊞-inj i≤k xs (y Δ suc j ∷ ys) =
-    xs Π i≤k ^ zero ∷↓ y Δ j ∷ ys
+    xs Π i≤k Δ zero ∷↓ y Δ j ∷ ys
 
   ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
   ⊞-coeffs [] ys = ys
@@ -312,17 +314,17 @@ mutual
 
   ⊞-zip : ∀ {p q n}
         → ℕ.Ordering p q
-        → Coeff n
+        → NonZero n
         → Coeffs n
-        → Coeff n
+        → NonZero n
         → Coeffs n
         → Coeffs n
   ⊞-zip (ℕ.less    i k) x xs y ys = x Δ i ∷ ⊞-zip-r y k ys xs
   ⊞-zip (ℕ.greater j k) x xs y ys = y Δ j ∷ ⊞-zip-r x k xs ys
   ⊞-zip (ℕ.equal   i  ) (x ≠0) xs (y ≠0) ys =
-    (x ⊞ y) ^ i ∷↓ ⊞-coeffs xs ys
+    (x ⊞ y) Δ i ∷↓ ⊞-coeffs xs ys
 
-  ⊞-zip-r : ∀ {n} → Coeff n → ℕ → Coeffs n → Coeffs n → Coeffs n
+  ⊞-zip-r : ∀ {n} → NonZero n → ℕ → Coeffs n → Coeffs n → Coeffs n
   ⊞-zip-r x i xs [] = x Δ i ∷ xs
   ⊞-zip-r x i xs (y Δ j ∷ ys) = ⊞-zip (compare i j) x xs y ys
 
@@ -346,10 +348,10 @@ mutual
   ⊟-step : ∀ {n} → ⌊ n ⌋ → Poly n → Poly n
   ⊟-step _        (Κ x  Π i≤n) = Κ (- x) Π i≤n
   ⊟-step (acc wf) (Σ xs Π i≤n) =
-    foldr (⊟-cons (wf _ i≤n)) [] xs Π↓ i≤n
+    poly-foldr (⊟-cons (wf _ i≤n)) xs Π↓ i≤n
 
-  ⊟-cons : ∀ {n} → ⌊ n ⌋ → CoeffExp n → Coeffs n → Coeffs n
-  ⊟-cons ac (x ≠0 Δ i) xs = ⊟-step ac x ^ i ∷↓ xs
+  ⊟-cons : ∀ {n} → ⌊ n ⌋ → Fold n
+  ⊟-cons ac x xs = ⊟-step ac x , xs
 
 ⊟_ : ∀ {n} → Poly n → Poly n
 ⊟_ = ⊟-step ⌊↓⌋
@@ -365,11 +367,9 @@ mutual
         → ⌊ k ⌋
         → i ≤ k
         → FlatPoly i
-        → CoeffExp k
-        → Coeffs k
-        → Coeffs k
-  ⊠-inj a i≤k x (y Π j≤k ≠0 Δ p) ys =
-    ⊠-match a (i≤k cmp j≤k) x y ^ p ∷↓ ys
+        → Fold k
+  ⊠-inj a i≤k x (y Π j≤k) ys =
+    ⊠-match a (i≤k cmp j≤k) x y , ys
 
   ⊠-match : ∀ {i j n}
           → ⌊ n ⌋
@@ -381,23 +381,21 @@ mutual
           → Poly n
   ⊠-match _ (eq i&j≤n)        (Κ  x) (Κ  y) = Κ (x * y)                               Π  i&j≤n
   ⊠-match (acc wf) (eq i&j≤n) (Σ xs) (Σ ys) = ⊠-coeffs (wf _ i&j≤n) xs ys             Π↓ i&j≤n
-  ⊠-match (acc wf) (i≤j-1 < j≤n) xs (Σ ys)  = foldr (⊠-inj (wf _ j≤n) i≤j-1 xs) [] ys Π↓ j≤n
-  ⊠-match (acc wf) (i≤n > j≤i-1) (Σ xs) ys  = foldr (⊠-inj (wf _ i≤n) j≤i-1 ys) [] xs Π↓ i≤n
+  ⊠-match (acc wf) (i≤j-1 < j≤n) xs (Σ ys)  = poly-foldr (⊠-inj (wf _ j≤n) i≤j-1 xs) ys Π↓ j≤n
+  ⊠-match (acc wf) (i≤n > j≤i-1) (Σ xs) ys  = poly-foldr (⊠-inj (wf _ i≤n) j≤i-1 ys) xs Π↓ i≤n
 
   -- A simple shift-and-add algorithm.
   ⊠-coeffs : ∀ {n} → ⌊ n ⌋ → Coeffs n → Coeffs n → Coeffs n
   ⊠-coeffs _ _ [] = []
-  ⊠-coeffs a xs (y ≠0 Δ j ∷ ys) = foldr (⊠-cons a y ys) [] xs ⍓ j
+  ⊠-coeffs a xs (y ≠0 Δ j ∷ ys) = poly-foldr (⊠-cons a y ys) xs ⍓ j
 
   ⊠-cons : ∀ {n}
          → ⌊ n ⌋
          → Poly n
          → Coeffs n
-         → CoeffExp n
-         → Coeffs n
-         → Coeffs n
-  ⊠-cons a y ys (x Π j≤n ≠0 Δ i) xs =
-    ⊠-step a (x Π j≤n) y ^ i ∷↓ ⊞-coeffs (foldr (⊠-inj a j≤n x) [] ys) xs
+         → Fold n
+  ⊠-cons a y ys (x Π j≤n) xs =
+    ⊠-step a (x Π j≤n) y , ⊞-coeffs (poly-foldr (⊠-inj a j≤n x) ys) xs
 
 infixl 7 _⊠_
 _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
@@ -413,4 +411,4 @@ _⊠_ = ⊠-step ⌊↓⌋
 
 -- A variable
 ι : ∀ {n} → Fin n → Poly n
-ι i = (κ 1# ^ 1 ∷↓ []) Π↓ Fin⇒≤ i
+ι i = (κ 1# Δ 1 ∷↓ []) Π↓ Fin⇒≤ i

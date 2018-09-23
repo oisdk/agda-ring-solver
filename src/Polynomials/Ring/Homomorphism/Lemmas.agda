@@ -4,19 +4,15 @@ open import Algebra
 open import Relation.Binary hiding (Decidable)
 open import Relation.Unary
 open import Algebra.Solver.Ring.AlmostCommutativeRing
+open import Polynomials.Ring.Normal.Parameters
+open import Data.List as List using (_∷_; []; foldr; List)
+open import Function
 
 module Polynomials.Ring.Homomorphism.Lemmas
   {r₁ r₂ r₃ r₄}
-  (coeff : RawRing r₁)
-  (Zero-C : Pred (RawRing.Carrier coeff) r₂)
-  (zero-c? : Decidable Zero-C)
-  (ring : AlmostCommutativeRing r₃ r₄)
-  (morphism : coeff -Raw-AlmostCommutative⟶ ring)
-  (Zero-C⟶Zero-R : ∀ x → Zero-C x → AlmostCommutativeRing._≈_ ring (_-Raw-AlmostCommutative⟶_.⟦_⟧ morphism x) (AlmostCommutativeRing.0# ring))
+  (homo : Homomorphism r₁ r₂ r₃ r₄)
   where
 
-open import Data.List as List using (_∷_; []; foldr; List)
-open import Function
 
 module _ {ℓ₁ ℓ₂} (setoid : Setoid ℓ₁ ℓ₂) where
   open Setoid setoid
@@ -91,11 +87,10 @@ module AOPA where
   foldR : {A B : Set} → (B ← (A × B)) → ℙ B → (B ← List A)
   foldR R S = ∈ ₁∘ foldr₁ (Λ (R ○ (idR ⨉ ∈))) S
 
-open AlmostCommutativeRing ring hiding (zero)
+open Homomorphism homo
+
 open import Polynomials.Ring.Reasoning ring
-open import Polynomials.Ring.Normal coeff Zero-C zero-c? ring morphism
-open _-Raw-AlmostCommutative⟶_ morphism renaming (⟦_⟧ to ⟦_⟧ᵣ)
-module Raw = RawRing coeff
+open import Polynomials.Ring.Normal homo
 open import Relation.Nullary
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.Product hiding (Σ)
@@ -136,7 +131,7 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
 ∷↓-hom : ∀ {n}
        → (x : Poly n)
        → ∀ i xs ρ Ρ
-       → Σ⟦ x ^ i ∷↓ xs ⟧ (ρ , Ρ) ≈ (ρ , Ρ) ⟦∷⟧ (x Δ i , xs)
+       → Σ⟦ x Δ i ∷↓ xs ⟧ (ρ , Ρ) ≈ (ρ , Ρ) ⟦∷⟧ (x , xs) * ρ ^ i
 ∷↓-hom x i xs ρ Ρ with zero? x
 ∷↓-hom x i xs ρ Ρ | no ¬p = refl
 ∷↓-hom x i xs ρ Ρ | yes p =
@@ -150,8 +145,8 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
     (⟦ x ⟧ Ρ + Σ⟦ xs ⟧ (ρ , Ρ) * ρ) * ρ ^ i
   ∎
 
-norm-cons-hom : ∀ {n} x ρ (Ρ : Vec Carrier n) → Σ⟦ norm-cons x ⟧ (ρ , Ρ) ≈ (ρ , Ρ) ⟦∷⟧ x
-norm-cons-hom (x Δ i , xs) ρ Ρ = ∷↓-hom x i xs ρ Ρ
+-- norm-cons-hom : ∀ {n} x ρ (Ρ : Vec Carrier n) → Σ⟦ norm-cons x ⟧ (ρ , Ρ) ≈ (ρ , Ρ) ⟦∷⟧ x
+-- norm-cons-hom (x Δ i , xs) ρ Ρ = ∷↓-hom x i xs ρ Ρ
 
 Σ-Π↑-hom : ∀ {i n m}
          → (xs : Coeffs i)
@@ -203,7 +198,7 @@ norm-cons-hom (x Δ i , xs) ρ Ρ = ∷↓-hom x i xs ρ Ρ
   ≈⟨ ≪* +≫ sym (zeroˡ ρ) ⟩
     (⟦ x ⟧ Ρ′ + 0# * ρ) * 1#
   ≡⟨⟩
-    Σ⟦ _≠0 x {x≠0} Δ zero ∷ [] ⟧ (ρ , Ρ′)
+    Σ⟦ _≠0 x {x≠0} Δ 0 ∷ [] ⟧ (ρ , Ρ′)
   ∎
 
 open import Relation.Binary.PropositionalEquality as ≡ using (_≡_)
@@ -225,16 +220,27 @@ foldR : ∀ {a b p} {A : Set a} {B : Set b} (_R_ : B → List A → Set p)
 foldR _ f b [] = b
 foldR P f b (x ∷ xs) = f x (foldR P f b xs)
 
--- Here's what we're trying to get to:
---
-foldrRH : ∀ {n} ρ Ρ
-        → (fn : CoeffExp n → Coeffs n → PowInd (Poly n) × Coeffs n)
-        → (b : Coeffs n)
-        → (equiv : Carrier → Carrier)
-        → (∀ y {ys zs} → Σ⟦ ys ⟧ (ρ , Ρ) ≈ equiv (Σ⟦ zs ⟧ (ρ , Ρ)) → (ρ , Ρ) ⟦∷⟧ (fn y ys) ≈ equiv ((ρ , Ρ) ⟦∷⟧ (un-coeff y , zs)) )
-        → (Σ⟦ b ⟧ (ρ , Ρ) ≈ equiv 0#)
+poly-foldR : ∀ {n} ρ Ρ
+        → (f : Fold n)
+        → (e : Carrier → Carrier)
+        → (∀ x y → e x * y ≈ e (x * y))
+        → (∀ y {ys} zs → Σ⟦ ys ⟧ (ρ , Ρ) ≈ e (Σ⟦ zs ⟧ (ρ , Ρ)) → (ρ , Ρ) ⟦∷⟧ (f y ys) ≈ e ((ρ , Ρ) ⟦∷⟧ (y , zs)) )
+        → (0# ≈ e 0#)
         → ∀ xs
-        → Σ⟦ foldr (λ x xs → norm-cons (fn x xs)) b xs ⟧ (ρ , Ρ) ≈ equiv (Σ⟦ xs ⟧ (ρ , Ρ))
-foldrRH _ _ fn b equiv step base [] = base
-foldrRH ρ Ρ fn b equiv step base (x ∷ xs) =
-  norm-cons-hom (fn x (foldr (λ z z₁ → norm-cons (fn z z₁)) b xs)) ρ Ρ ⟨ trans ⟩ step x {(foldr (λ z z₁ → norm-cons (fn z z₁)) b xs)} {xs} (foldrRH ρ Ρ fn b equiv step base xs)
+        → Σ⟦ poly-foldr f xs ⟧ (ρ , Ρ) ≈ e (Σ⟦ xs ⟧ (ρ , Ρ))
+poly-foldR ρ Ρ f e dist step base [] = base
+poly-foldR ρ Ρ f e dist step base (x ≠0 Δ i ∷ xs) =
+  let ys = poly-foldr f xs
+      y,zs = f x ys
+      y = proj₁ y,zs
+      zs = proj₂ y,zs
+  in
+  begin
+    Σ⟦ y Δ i ∷↓ zs ⟧ (ρ , Ρ)
+  ≈⟨ ∷↓-hom y i zs ρ Ρ ⟩
+    (ρ , Ρ) ⟦∷⟧ (y , zs) * ρ ^ i
+  ≈⟨ ≪* step x xs (poly-foldR ρ Ρ f e dist step base xs) ⟩
+    e ((ρ , Ρ) ⟦∷⟧ (x , xs)) * ρ ^ i
+  ≈⟨ dist _ (ρ ^ i) ⟩
+    e ((ρ , Ρ) ⟦∷⟧ (x , xs) * ρ ^ i)
+  ∎

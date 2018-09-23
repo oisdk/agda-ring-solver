@@ -1,23 +1,18 @@
 {-# OPTIONS --without-K #-}
 
-open import Algebra
-open import Relation.Binary hiding (Decidable)
-open import Relation.Nullary
-open import Relation.Unary
-open import Level using (_⊔_; Lift; lift; lower)
-open import Data.Empty
-open import Data.Unit using (⊤; tt)
-open import Data.List as List using (_∷_; []; List; foldr)
-open import Data.Vec as Vec using (_∷_; []; Vec)
+open import Relation.Nullary using (¬_)
+open import Level using (_⊔_; Lift)
+open import Data.Empty using (⊥)
+open import Data.Unit using (⊤)
+open import Data.List as List using (_∷_; []; List)
 open import Data.Nat as ℕ using (ℕ; suc; zero)
-open import Function
+open import Polynomials.Ring.Normal.Parameters
 open import Data.Nat.Order.Gappy
+open import Function using (_∘_)
 
 module Polynomials.Ring.Normal.Definition
   {a ℓ}
-  (coeffs : RawRing a)
-  (Zero-C : Pred (RawRing.Carrier coeffs) ℓ)
-  (zero-c? : Decidable Zero-C)
+  (coeffs : RawCoeff a ℓ)
   where
 
 infixl 6 _Δ_
@@ -37,7 +32,7 @@ module _ where
   map-ind : ∀ {c} {C : Set c} → (ℕ → ℕ) → PowInd C → PowInd C
   map-ind f (x Δ i) = x Δ f i
 
-open RawRing coeffs
+open RawCoeff coeffs
 
 mutual
   -- A Polynomial is indexed by the number of variables it contains.
@@ -57,7 +52,7 @@ mutual
   --   _Σ_ : ∀ {i} → suc i ≤ n → (xs : Coeffs i) → .{xn : Norm xs} → Poly n
 
   data FlatPoly : ℕ → Set (a ⊔ ℓ) where
-    Κ : Carrier → FlatPoly 0
+    Κ : Carrier → FlatPoly zero
     Σ : ∀ {n} → (xs : Coeffs n) → .{xn : Norm xs} → FlatPoly (suc n)
 
   -- A list of coefficients, paired with the exponent *gap* from the
@@ -76,16 +71,13 @@ mutual
   --
   -- This is sparse Horner normal form.
 
-  CoeffExp : ℕ → Set (a ⊔ ℓ)
-  CoeffExp i = PowInd (Coeff i)
-
   Coeffs : ℕ → Set (a ⊔ ℓ)
-  Coeffs n = List (CoeffExp n)
+  Coeffs = List ∘ PowInd ∘ NonZero
 
   -- We disallow zeroes in the coefficient list. This condition alone
   -- is enough to ensure a unique representation for any polynomial.
   infixl 6 _≠0
-  record Coeff (i : ℕ) : Set (a ⊔ ℓ) where
+  record NonZero (i : ℕ) : Set (a ⊔ ℓ) where
     inductive
     constructor _≠0
     field
@@ -103,48 +95,3 @@ mutual
   Norm (_ Δ zero  ∷ _ ∷ _) = ⊤
   Norm (_ Δ suc _ ∷ _)     = ⊤
 
-----------------------------------------------------------------------
--- Construction
---
--- Because the polynomial is stored in a canonical form, we use a
--- normalising cons operator to construct the coefficient lists.
-----------------------------------------------------------------------
-
--- Decision procedure for Zero
-zero? : ∀ {n} → (p : Poly n) → Dec (Zero p)
-zero? (Κ x       Π _) = zero-c? x
-zero? (Σ []      Π _) = yes (lift tt)
-zero? (Σ (_ ∷ _) Π _) = no lower
-
--- Exponentiate the first variable of a polynomial
-infixr 8 _⍓_
-_⍓_ : ∀ {n} → Coeffs n → ℕ → Coeffs n
-[] ⍓ i = []
-(x Δ j ∷ xs) ⍓ i = x Δ (j ℕ.+ i) ∷ xs
-
-open import Data.Product using (_×_; _,_)
-
-norm-cons : ∀ {n} → PowInd (Poly n) × Coeffs n → Coeffs n
-norm-cons (x Δ i , xs) with zero? x
-... | yes p = xs ⍓ suc i
-... | no ¬p = _≠0 x {¬p} Δ i ∷ xs
-
-un-coeff : ∀ {n} → CoeffExp n → PowInd (Poly n)
-un-coeff = map-coeff Coeff.poly
-
--- Normalising cons
-infixr 5 _^_∷↓_
-_^_∷↓_ : ∀ {n} → Poly n → ℕ → Coeffs n → Coeffs n
-x ^ i ∷↓ xs = norm-cons (x Δ i , xs)
-
--- Inject a polynomial into a larger polynomoial with more variables
-_Π↑_ : ∀ {n m} → Poly n → (suc n ≤ m) → Poly m
-(xs Π i≤n) Π↑ n≤m = xs Π (≤-s i≤n ⋈ n≤m)
-
--- Normalising Π
-infixr 4 _Π↓_
-_Π↓_ : ∀ {i n} → Coeffs i → suc i ≤ n → Poly n
-[]                       Π↓ i≤n = Κ 0# Π z≤n
-(x ≠0 Δ zero  ∷ [])      Π↓ i≤n = x Π↑ i≤n
-(x₁   Δ zero  ∷ x₂ ∷ xs) Π↓ i≤n = Σ (x₁ Δ zero  ∷ x₂ ∷ xs) Π i≤n
-(x    Δ suc j ∷ xs)      Π↓ i≤n = Σ (x  Δ suc j ∷ xs) Π i≤n

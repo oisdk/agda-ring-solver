@@ -8,20 +8,16 @@ open import Data.Vec as Vec using (Vec; []; _∷_)
 open import Data.List as List using (List; []; _∷_)
 open import Level using (lift)
 open import Data.Product
+open import Polynomials.Ring.Normal.Parameters
 
 module Polynomials.Ring.Normal.Semantics
   {r₁ r₂ r₃ r₄}
-  (coeff : RawRing r₁)
-  (Zero-C : Pred (RawRing.Carrier coeff) r₂)
-  (zero-c? : Decidable Zero-C)
-  (ring : AlmostCommutativeRing r₃ r₄)
-  (morphism : coeff -Raw-AlmostCommutative⟶ ring)
+  (homo : Homomorphism r₁ r₂ r₃ r₄)
   where
 
 open import Data.Nat.Order.Gappy
-open AlmostCommutativeRing ring
-open import Polynomials.Ring.Normal.Definition coeff Zero-C zero-c?
-open _-Raw-AlmostCommutative⟶_ morphism using () renaming (⟦_⟧ to ⟦_⟧ᵣ)
+open Homomorphism homo
+open import Polynomials.Ring.Normal.Definition coeffs
 
 -- Exponentiation
 infixr 8 _^_
@@ -39,13 +35,12 @@ vec-uncons (x ∷ xs) = x , xs
 drop-1 : ∀ {i n} → suc i ≤ n → Vec Carrier n → Carrier × Vec Carrier i
 drop-1 si≤n xs = vec-uncons (drop si≤n xs)
 
-
 mutual
-  _⟦∷⟧_ : ∀ {n} → Carrier × Vec Carrier n → PowInd (Poly n) × Coeffs n → Carrier
-  (ρ , Ρ) ⟦∷⟧ (x Δ i , xs) =  (⟦ x ⟧ Ρ + Σ⟦ xs ⟧ (ρ , Ρ) * ρ) * ρ ^ i
+  _⟦∷⟧_ : ∀ {n} → Carrier × Vec Carrier n → Poly n × Coeffs n → Carrier
+  (ρ , Ρ) ⟦∷⟧ (x , xs) = ⟦ x ⟧ Ρ + Σ⟦ xs ⟧ (ρ , Ρ) * ρ
 
   Σ⟦_⟧ : ∀ {n} → Coeffs n → (Carrier × Vec Carrier n) → Carrier
-  Σ⟦ x ≠0 Δ i ∷ xs ⟧ (ρ , Ρ) = (ρ , Ρ) ⟦∷⟧ (x Δ i , xs)
+  Σ⟦ x ≠0 Δ i ∷ xs ⟧ (ρ , Ρ) = (ρ , Ρ) ⟦∷⟧ (x , xs) * ρ ^ i
   Σ⟦ [] ⟧ _ = 0#
 
   ⟦_⟧ : ∀ {n} → Poly n → Vec Carrier n → Carrier

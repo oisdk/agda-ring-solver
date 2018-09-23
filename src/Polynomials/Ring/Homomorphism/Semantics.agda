@@ -4,26 +4,20 @@ open import Algebra
 open import Relation.Binary hiding (Decidable)
 open import Relation.Unary
 open import Algebra.Solver.Ring.AlmostCommutativeRing
+open import Polynomials.Ring.Normal.Parameters
 
 ----------------------------------------------------------------------
 -- Homomorphism
 ----------------------------------------------------------------------
 module Polynomials.Ring.Homomorphism.Semantics
   {r₁ r₂ r₃ r₄}
-  (coeff : RawRing r₁)
-  (Zero-C : Pred (RawRing.Carrier coeff) r₂)
-  (zero-c? : Decidable Zero-C)
-  (ring : AlmostCommutativeRing r₃ r₄)
-  (morphism : coeff -Raw-AlmostCommutative⟶ ring)
-  (Zero-C⟶Zero-R : ∀ x → Zero-C x → AlmostCommutativeRing._≈_ ring (_-Raw-AlmostCommutative⟶_.⟦_⟧ morphism x) (AlmostCommutativeRing.0# ring))
+  (homo : Homomorphism r₁ r₂ r₃ r₄)
   where
 
-open import Polynomials.Ring.Homomorphism.Lemmas coeff Zero-C zero-c? ring morphism Zero-C⟶Zero-R
-
-open AlmostCommutativeRing ring hiding (zero)
+open import Polynomials.Ring.Homomorphism.Lemmas homo
+open import Polynomials.Ring.Normal homo
+open Homomorphism homo
 open import Polynomials.Ring.Reasoning ring
-open import Polynomials.Ring.Normal coeff Zero-C zero-c? ring morphism
-open _-Raw-AlmostCommutative⟶_ morphism renaming (⟦_⟧ to ⟦_⟧ᵣ)
 
 open import Data.Product hiding (Σ)
 open import Function
@@ -43,9 +37,9 @@ open import Data.Fin as Fin using (Fin)
   let (ρ , Ρ) = drop-1 (Fin⇒≤ i) Ρ′
   in
   begin
-    ⟦ (κ Raw.1# ^ 1 ∷↓ []) Π↓ Fin⇒≤ i ⟧ Ρ′
-  ≈⟨ Π↓-hom (κ Raw.1# ^ 1 ∷↓ []) (Fin⇒≤ i) Ρ′ ⟩
-    Σ⟦ κ Raw.1# ^ 1 ∷↓ [] ⟧ (ρ , Ρ)
+    ⟦ (κ Raw.1# Δ 1 ∷↓ []) Π↓ Fin⇒≤ i ⟧ Ρ′
+  ≈⟨ Π↓-hom (κ Raw.1# Δ 1 ∷↓ []) (Fin⇒≤ i) Ρ′ ⟩
+    Σ⟦ κ Raw.1# Δ 1 ∷↓ [] ⟧ (ρ , Ρ)
   ≈⟨ ∷↓-hom (κ Raw.1#) 1 [] ρ Ρ  ⟩
     (⟦ κ Raw.1# ⟧ Ρ + Σ⟦ [] ⟧ (ρ , Ρ) * ρ) * ρ ^ 1
   ≡⟨⟩

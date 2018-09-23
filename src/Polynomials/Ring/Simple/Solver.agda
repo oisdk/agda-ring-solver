@@ -4,6 +4,7 @@ open import Polynomials.Ring.Expr public
 open import Polynomials.Ring.Simple.AlmostCommutativeRing public
 open import Data.Vec
 open import Algebra.Solver.Ring.AlmostCommutativeRing using (-raw-almostCommutative⟶)
+open import Polynomials.Ring.Normal.Parameters
 open import Function
 
 open import Data.Vec.N-ary
@@ -17,8 +18,14 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
   ⟦ x ⊗ y ⟧ ρ = ⟦ x ⟧ ρ * ⟦ y ⟧ ρ
   ⟦ ⊝ x ⟧ ρ = - ⟦ x ⟧ ρ
 
-  open import Polynomials.Ring.Normal.Definition rawRing (0# ≈_) (0# ≟_)
-  open import Polynomials.Ring.Normal.Operations rawRing (0# ≈_) (0# ≟_)
+  rawCoeff : RawCoeff ℓ₁ ℓ₂
+  rawCoeff = record
+    { coeffs = rawRing
+    ; Zero-C = 0# ≈_
+    ; zero-c? = 0# ≟_
+    }
+  open import Polynomials.Ring.Normal.Definition rawCoeff
+  open import Polynomials.Ring.Normal.Operations rawCoeff
 
   norm : ∀ {n} → Expr Carrier n → Poly n
   norm = go
@@ -42,16 +49,24 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
         }
     }
 
+  homo : Homomorphism ℓ₁ ℓ₂ ℓ₁ ℓ₂
+  homo = record
+    { coeffs = rawCoeff
+    ; ring = complex
+    ; morphism = UnDec.-raw-almostCommutative⟶ complex
+    ; Zero-C⟶Zero-R = λ x z → sym z
+    }
+
   ⟦_⇓⟧ : ∀ {n} → Expr Carrier n → Vec Carrier n → Carrier
   ⟦ expr ⇓⟧ = ⟦ norm expr ⟧ₚ where
 
-    open import Polynomials.Ring.Normal.Semantics rawRing (0# ≈_) (0# ≟_) complex (UnDec.-raw-almostCommutative⟶ complex)
+    open import Polynomials.Ring.Normal.Semantics homo
       renaming (⟦_⟧ to ⟦_⟧ₚ)
 
   correct : ∀ {n} (expr : Expr Carrier n) ρ → ⟦ expr ⇓⟧ ρ ≈ ⟦ expr ⟧ ρ
   correct {n = n} = go
     where
-    open import Polynomials.Ring.Homomorphism rawRing (0# ≈_) (0# ≟_) complex (UnDec.-raw-almostCommutative⟶ complex) (λ x z → sym z)
+    open import Polynomials.Ring.Homomorphism homo
 
     go : ∀ (expr : Expr Carrier n) ρ → ⟦ expr ⇓⟧ ρ ≈ ⟦ expr ⟧ ρ
     go (Κ x) ρ = κ-hom x ρ
