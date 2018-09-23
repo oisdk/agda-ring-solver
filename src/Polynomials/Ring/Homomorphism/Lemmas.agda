@@ -131,7 +131,7 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
 ∷↓-hom : ∀ {n}
        → (x : Poly n)
        → ∀ i xs ρ Ρ
-       → Σ⟦ x Δ i ∷↓ xs ⟧ (ρ , Ρ) ≈ (ρ , Ρ) ⟦∷⟧ (x , xs) * ρ ^ i
+       → Σ⟦ x Δ i ∷↓ xs ⟧ (ρ , Ρ) ≈ ((x , xs) ⟦∷⟧ (ρ , Ρ)) * ρ ^ i
 ∷↓-hom x i xs ρ Ρ with zero? x
 ∷↓-hom x i xs ρ Ρ | no ¬p = refl
 ∷↓-hom x i xs ρ Ρ | yes p =
@@ -220,14 +220,14 @@ foldR : ∀ {a b p} {A : Set a} {B : Set b} (_R_ : B → List A → Set p)
 foldR _ f b [] = b
 foldR P f b (x ∷ xs) = f x (foldR P f b xs)
 
-poly-foldR : ∀ {n} ρ Ρ
+poly-foldR : ∀ {n} ρ ρs
         → (f : Fold n)
         → (e : Carrier → Carrier)
         → (∀ x y → e x * y ≈ e (x * y))
-        → (∀ y {ys} zs → Σ⟦ ys ⟧ (ρ , Ρ) ≈ e (Σ⟦ zs ⟧ (ρ , Ρ)) → (ρ , Ρ) ⟦∷⟧ (f y ys) ≈ e ((ρ , Ρ) ⟦∷⟧ (y , zs)) )
+        → (∀ y {ys} zs → Σ⟦ ys ⟧ (ρ , ρs) ≈ e (Σ⟦ zs ⟧ (ρ , ρs)) → f y ys ⟦∷⟧ (ρ , ρs) ≈ e ((y , zs) ⟦∷⟧ (ρ , ρs)) )
         → (0# ≈ e 0#)
         → ∀ xs
-        → Σ⟦ poly-foldr f xs ⟧ (ρ , Ρ) ≈ e (Σ⟦ xs ⟧ (ρ , Ρ))
+        → Σ⟦ poly-foldr f xs ⟧ (ρ , ρs) ≈ e (Σ⟦ xs ⟧ (ρ , ρs))
 poly-foldR ρ Ρ f e dist step base [] = base
 poly-foldR ρ Ρ f e dist step base (x ≠0 Δ i ∷ xs) =
   let ys = poly-foldr f xs
@@ -238,9 +238,35 @@ poly-foldR ρ Ρ f e dist step base (x ≠0 Δ i ∷ xs) =
   begin
     Σ⟦ y Δ i ∷↓ zs ⟧ (ρ , Ρ)
   ≈⟨ ∷↓-hom y i zs ρ Ρ ⟩
-    (ρ , Ρ) ⟦∷⟧ (y , zs) * ρ ^ i
+    (y , zs) ⟦∷⟧ (ρ , Ρ) * ρ ^ i
   ≈⟨ ≪* step x xs (poly-foldR ρ Ρ f e dist step base xs) ⟩
-    e ((ρ , Ρ) ⟦∷⟧ (x , xs)) * ρ ^ i
+    e ((x , xs) ⟦∷⟧ (ρ , Ρ)) * ρ ^ i
   ≈⟨ dist _ (ρ ^ i) ⟩
-    e ((ρ , Ρ) ⟦∷⟧ (x , xs) * ρ ^ i)
+    e ((x , xs) ⟦∷⟧ (ρ , Ρ) * ρ ^ i)
   ∎
+
+-- NOTES:
+--
+-- Useful laws:
+--
+-- * Third Homomorphism Theorem
+--    If a function can be expressed as both foldl f₁ e and foldr f₂
+--    e, then there is an associative f with unit e where
+--    foldl f e == foldr f e == h
+--    J. Gibbons. The Third Homomorphism Theorem. J. Functional Prog., Vol 6, No 4, 657–665, 1996.
+--
+-- * foldr-fusion
+--    If g a ∘ h ≡ h ∘ f a
+--    then
+--    h ∘ foldr f z ≡ foldr g (h z)
+--
+-- * First duality
+--    foldr ∙ b ≡ foldl ∙ b
+--   (when ∙ is associative)
+--
+-- * Second duality:
+--    foldr ⊕ e ≡ foldl ⊗ e
+--    when
+--    a ⊕ (b ⊗ c) ≡ (a ⊕ b) ⊗ c
+--    a ⊕ e ≡ e ⊗ a
+

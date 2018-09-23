@@ -36,11 +36,11 @@ drop-1 : ∀ {i n} → suc i ≤ n → Vec Carrier n → Carrier × Vec Carrier 
 drop-1 si≤n xs = vec-uncons (drop si≤n xs)
 
 mutual
-  _⟦∷⟧_ : ∀ {n} → Carrier × Vec Carrier n → Poly n × Coeffs n → Carrier
-  (ρ , Ρ) ⟦∷⟧ (x , xs) = ⟦ x ⟧ Ρ + Σ⟦ xs ⟧ (ρ , Ρ) * ρ
+  _⟦∷⟧_ : ∀ {n} → Poly n × Coeffs n → Carrier × Vec Carrier n → Carrier
+  (x , xs) ⟦∷⟧ (ρ , ρs) = ⟦ x ⟧ ρs + Σ⟦ xs ⟧ (ρ , ρs) * ρ
 
   Σ⟦_⟧ : ∀ {n} → Coeffs n → (Carrier × Vec Carrier n) → Carrier
-  Σ⟦ x ≠0 Δ i ∷ xs ⟧ (ρ , Ρ) = (ρ , Ρ) ⟦∷⟧ (x , xs) * ρ ^ i
+  Σ⟦ x ≠0 Δ i ∷ xs ⟧ (ρ , ρs) = (x , xs) ⟦∷⟧ (ρ , ρs) * ρ ^ i
   Σ⟦ [] ⟧ _ = 0#
 
   ⟦_⟧ : ∀ {n} → Poly n → Vec Carrier n → Carrier
