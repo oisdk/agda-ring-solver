@@ -99,6 +99,7 @@ open Context
 open AlmostCommutativeRing exprRing
 module Coeff = AlmostCommutativeRing coeffs
 open import Polynomials.Ring.Reasoning exprRing
+-- This looks a lot like ALGEBRAIC ORNAMENTATION
 
 data Poly : Carrier → Set (a ⊔ ℓ) where
   ⟦⟧ : Poly 0#
