@@ -332,14 +332,7 @@ mutual
 -- Negation
 ----------------------------------------------------------------------
 
-open import Induction.Nat
-open import Induction.WellFounded
-
-⌊_⌋ : ℕ → Set
-⌊_⌋ = Acc ℕ._<′_
-
-⌊↓⌋ : ∀ {n} → ⌊ n ⌋
-⌊↓⌋ {n} = <′-wellFounded n
+open import Induction.WellFounded.Syntax
 
 -- recurse on acc directly
 -- https://github.com/agda/agda/issues/3190#issuecomment-416900716

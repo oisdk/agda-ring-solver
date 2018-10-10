@@ -30,7 +30,7 @@ open import Data.List as List using (List; _∷_; []; foldr)
 open import Data.Vec as Vec using (Vec; _∷_; [])
 open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
-open import Induction.WellFounded
+open import Induction.WellFounded.Syntax
 
 
 mutual
