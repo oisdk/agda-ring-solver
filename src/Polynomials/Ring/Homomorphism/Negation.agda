@@ -59,9 +59,9 @@ open Intensional setoid
         ∎
   in
   begin
-    ⟦ poly-foldr (⊟-cons (wf _ i≤n)) xs Π↓ i≤n ⟧ ρ′
-  ≈⟨ Π↓-hom (poly-foldr (⊟-cons _) xs) i≤n ρ′ ⟩
-    Σ⟦ poly-foldr (⊟-cons _) xs ⟧ (ρ , ρs)
+    ⟦ para (⊟-cons (wf _ i≤n)) xs Π↓ i≤n ⟧ ρ′
+  ≈⟨ Π↓-hom (para (⊟-cons _) xs) i≤n ρ′ ⟩
+    Σ⟦ para (⊟-cons _) xs ⟧ (ρ , ρs)
   ≈⟨ poly-foldR ρ ρs (⊟-cons (wf _ i≤n)) -_ -‿*-distribˡ neg-step neg-zero xs ⟩
     - Σ⟦ xs ⟧ (ρ , ρs)
   ∎

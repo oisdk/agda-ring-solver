@@ -54,9 +54,9 @@ mutual
     let (ρ , Ρ′) = drop-1 j≤n Ρ
     in
     begin
-      ⟦ poly-foldr (⊠-inj (wf _ j≤n) i≤j-1 xs) ys Π↓ j≤n ⟧ Ρ
-    ≈⟨ Π↓-hom (poly-foldr (⊠-inj (wf _ j≤n) i≤j-1 xs) ys) j≤n Ρ ⟩
-      Σ⟦ poly-foldr (⊠-inj (wf _ j≤n) i≤j-1 xs) ys ⟧ (drop-1 j≤n Ρ)
+      ⟦ para (⊠-inj (wf _ j≤n) i≤j-1 xs) ys Π↓ j≤n ⟧ Ρ
+    ≈⟨ Π↓-hom (para (⊠-inj (wf _ j≤n) i≤j-1 xs) ys) j≤n Ρ ⟩
+      Σ⟦ para (⊠-inj (wf _ j≤n) i≤j-1 xs) ys ⟧ (drop-1 j≤n Ρ)
     ≈⟨ ⊠-inj-hom (wf _ j≤n) i≤j-1 xs ys ρ Ρ′ ⟩
       ⟦ xs Π i≤j-1 ⟧ (proj₂ (drop-1 j≤n Ρ)) * Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
     ≈⟨ ≪* ⋈-hom i≤j-1 j≤n xs Ρ ⟩
@@ -66,9 +66,9 @@ mutual
     let (ρ , Ρ′) = drop-1 i≤n Ρ
     in
     begin
-      ⟦ poly-foldr (⊠-inj (wf _ i≤n) j≤i-1 ys) xs Π↓ i≤n ⟧ Ρ
-    ≈⟨ Π↓-hom (poly-foldr (⊠-inj (wf _ i≤n) j≤i-1 ys) xs) i≤n Ρ ⟩
-      Σ⟦ poly-foldr (⊠-inj (wf _ i≤n) j≤i-1 ys) xs ⟧ (drop-1 i≤n Ρ)
+      ⟦ para (⊠-inj (wf _ i≤n) j≤i-1 ys) xs Π↓ i≤n ⟧ Ρ
+    ≈⟨ Π↓-hom (para (⊠-inj (wf _ i≤n) j≤i-1 ys) xs) i≤n Ρ ⟩
+      Σ⟦ para (⊠-inj (wf _ i≤n) j≤i-1 ys) xs ⟧ (drop-1 i≤n Ρ)
     ≈⟨ ⊠-inj-hom (wf _ i≤n) j≤i-1 ys xs ρ Ρ′ ⟩
       ⟦ ys Π j≤i-1 ⟧ (proj₂ (drop-1 i≤n Ρ)) * Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
     ≈⟨ ≪* ⋈-hom j≤i-1 i≤n ys Ρ ⟩
@@ -92,7 +92,7 @@ mutual
              → (xs : Coeffs n)
              → (ρ : Carrier)
              → (Ρ : Vec Carrier n)
-             → Σ⟦ poly-foldr (⊠-cons a y ys) xs ⟧ (ρ , Ρ)
+             → Σ⟦ para (⊠-cons a y ys) xs ⟧ (ρ , Ρ)
              ≈ Σ⟦ xs ⟧ (ρ , Ρ) * (⟦ y ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ)
   ⊠-cons-hom a y ys xs ρ Ρ = poly-foldR ρ Ρ (⊠-cons a y ys) (_* (⟦ y ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ)) dist step base xs
     where
@@ -105,9 +105,9 @@ mutual
           ys′ = Σ⟦ ys ⟧ (ρ , Ρ)
       in
       begin
-        ⟦ ⊠-step a (z Π j≤n) y ⟧ Ρ + Σ⟦ ⊞-coeffs (poly-foldr (⊠-inj a j≤n z) ys) ys₁ ⟧ (ρ , Ρ) * ρ
-      ≈⟨ ⊠-step-hom a (z Π j≤n) y Ρ ⟨ +-cong ⟩ (≪* ⊞-coeffs-hom (poly-foldr (⊠-inj a j≤n z) ys) _ (ρ , Ρ)) ⟩
-        x′ * y′ + (Σ⟦ poly-foldr (⊠-inj a j≤n z) ys ⟧ (ρ , Ρ) + Σ⟦ ys₁ ⟧ (ρ , Ρ)) * ρ
+        ⟦ ⊠-step a (z Π j≤n) y ⟧ Ρ + Σ⟦ ⊞-coeffs (para (⊠-inj a j≤n z) ys) ys₁ ⟧ (ρ , Ρ) * ρ
+      ≈⟨ ⊠-step-hom a (z Π j≤n) y Ρ ⟨ +-cong ⟩ (≪* ⊞-coeffs-hom (para (⊠-inj a j≤n z) ys) _ (ρ , Ρ)) ⟩
+        x′ * y′ + (Σ⟦ para (⊠-inj a j≤n z) ys ⟧ (ρ , Ρ) + Σ⟦ ys₁ ⟧ (ρ , Ρ)) * ρ
       ≈⟨ +≫ ≪* (⊠-inj-hom a j≤n z ys ρ Ρ ⟨ +-cong ⟩ ys≋zs) ⟩
         x′ * y′ + (x′ * ys′ + xs′ * (y′ + ys′ * ρ)) * ρ
       ≈⟨ +≫ distribʳ ρ _ _ ⟩
@@ -134,9 +134,9 @@ mutual
         ys′ = Σ⟦ ys ⟧ (ρ , Ρ)
     in
     begin
-      Σ⟦ poly-foldr (⊠-cons a y ys) xs ⍓ j ⟧ (ρ , Ρ)
-    ≈⟨ sym (pow-hom j (poly-foldr (⊠-cons a y ys) xs) ρ Ρ) ⟩
-      Σ⟦ poly-foldr (⊠-cons a y ys) xs ⟧ (ρ , Ρ) * ρ ^ j
+      Σ⟦ para (⊠-cons a y ys) xs ⍓ j ⟧ (ρ , Ρ)
+    ≈⟨ sym (pow-hom j (para (⊠-cons a y ys) xs) ρ Ρ) ⟩
+      Σ⟦ para (⊠-cons a y ys) xs ⟧ (ρ , Ρ) * ρ ^ j
     ≈⟨ ≪* ⊠-cons-hom a y ys xs ρ Ρ ⟩
       xs′ * (y′ + ys′ * ρ) * ρ ^ j
     ≈⟨ *-assoc _ _ _ ⟩
@@ -150,7 +150,7 @@ mutual
             → (xs : Coeffs k)
             → (ρ : Carrier)
             → (Ρ : Vec Carrier k)
-            → Σ⟦ poly-foldr (⊠-inj a i≤k x) xs ⟧ (ρ , Ρ) ≈ ⟦ x Π i≤k ⟧ Ρ * Σ⟦ xs ⟧ (ρ , Ρ)
+            → Σ⟦ para (⊠-inj a i≤k x) xs ⟧ (ρ , Ρ) ≈ ⟦ x Π i≤k ⟧ Ρ * Σ⟦ xs ⟧ (ρ , Ρ)
   ⊠-inj-hom a i≤k x xs ρ Ρ = poly-foldR ρ Ρ (⊠-inj a i≤k x) (⟦ x Π i≤k ⟧ Ρ *_) (*-assoc _) inj-step (sym (zeroʳ _)) xs
     where
     inj-step = λ { (y Π j≤k) {ys} zs ys≋zs →

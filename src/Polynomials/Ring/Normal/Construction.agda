@@ -56,9 +56,12 @@ _Π↓_ : ∀ {i n} → Coeffs i → suc i ≤ n → Poly n
 (x₁   Δ zero  ∷ x₂ ∷ xs) Π↓ i≤n = Σ (x₁ Δ zero  ∷ x₂ ∷ xs) Π i≤n
 (x    Δ suc j ∷ xs)      Π↓ i≤n = Σ (x  Δ suc j ∷ xs) Π i≤n
 
-Fold : ℕ → Set (a ⊔ ℓ)
-Fold i = Poly i → Coeffs i → Poly i × Coeffs i
+PolyF : ℕ → Set (a ⊔ ℓ)
+PolyF i = Poly i × Coeffs i
 
-poly-foldr : ∀ {i} → Fold i → Coeffs i → Coeffs i
-poly-foldr f = foldr (λ { (x ≠0 Δ i) xs → uncurry (_∷↓_ ∘ (_Δ i)) (f x xs) }) []
+Fold : ℕ → Set (a ⊔ ℓ)
+Fold i = PolyF i → PolyF i
+
+para : ∀ {i} → Fold i → Coeffs i → Coeffs i
+para f = foldr (λ { (x ≠0 Δ i) → uncurry (_∷↓_ ∘ (_Δ i)) ∘ curry f x}) []
 

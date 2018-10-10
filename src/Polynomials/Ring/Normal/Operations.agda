@@ -348,10 +348,10 @@ mutual
   ⊟-step : ∀ {n} → ⌊ n ⌋ → Poly n → Poly n
   ⊟-step _        (Κ x  Π i≤n) = Κ (- x) Π i≤n
   ⊟-step (acc wf) (Σ xs Π i≤n) =
-    poly-foldr (⊟-cons (wf _ i≤n)) xs Π↓ i≤n
+    para (⊟-cons (wf _ i≤n)) xs Π↓ i≤n
 
   ⊟-cons : ∀ {n} → ⌊ n ⌋ → Fold n
-  ⊟-cons ac x xs = ⊟-step ac x , xs
+  ⊟-cons ac (x , xs) = ⊟-step ac x , xs
 
 ⊟_ : ∀ {n} → Poly n → Poly n
 ⊟_ = ⊟-step ⌊↓⌋
@@ -368,7 +368,7 @@ mutual
         → i ≤ k
         → FlatPoly i
         → Fold k
-  ⊠-inj a i≤k x (y Π j≤k) ys =
+  ⊠-inj a i≤k x (y Π j≤k , ys) =
     ⊠-match a (i≤k cmp j≤k) x y , ys
 
   ⊠-match : ∀ {i j n}
@@ -381,21 +381,21 @@ mutual
           → Poly n
   ⊠-match _ (eq i&j≤n)        (Κ  x) (Κ  y) = Κ (x * y)                               Π  i&j≤n
   ⊠-match (acc wf) (eq i&j≤n) (Σ xs) (Σ ys) = ⊠-coeffs (wf _ i&j≤n) xs ys             Π↓ i&j≤n
-  ⊠-match (acc wf) (i≤j-1 < j≤n) xs (Σ ys)  = poly-foldr (⊠-inj (wf _ j≤n) i≤j-1 xs) ys Π↓ j≤n
-  ⊠-match (acc wf) (i≤n > j≤i-1) (Σ xs) ys  = poly-foldr (⊠-inj (wf _ i≤n) j≤i-1 ys) xs Π↓ i≤n
+  ⊠-match (acc wf) (i≤j-1 < j≤n) xs (Σ ys)  = para (⊠-inj (wf _ j≤n) i≤j-1 xs) ys Π↓ j≤n
+  ⊠-match (acc wf) (i≤n > j≤i-1) (Σ xs) ys  = para (⊠-inj (wf _ i≤n) j≤i-1 ys) xs Π↓ i≤n
 
   -- A simple shift-and-add algorithm.
   ⊠-coeffs : ∀ {n} → ⌊ n ⌋ → Coeffs n → Coeffs n → Coeffs n
   ⊠-coeffs _ _ [] = []
-  ⊠-coeffs a xs (y ≠0 Δ j ∷ ys) = poly-foldr (⊠-cons a y ys) xs ⍓ j
+  ⊠-coeffs a xs (y ≠0 Δ j ∷ ys) = para (⊠-cons a y ys) xs ⍓ j
 
   ⊠-cons : ∀ {n}
          → ⌊ n ⌋
          → Poly n
          → Coeffs n
          → Fold n
-  ⊠-cons a y ys (x Π j≤n) xs =
-    ⊠-step a (x Π j≤n) y , ⊞-coeffs (poly-foldr (⊠-inj a j≤n x) ys) xs
+  ⊠-cons a y ys (x Π j≤n , xs) =
+    ⊠-step a (x Π j≤n) y , ⊞-coeffs (para (⊠-inj a j≤n x) ys) xs
 
 infixl 7 _⊠_
 _⊠_ : ∀ {n} → Poly n → Poly n → Poly n

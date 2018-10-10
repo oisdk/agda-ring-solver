@@ -224,14 +224,14 @@ poly-foldR : ∀ {n} ρ ρs
         → (f : Fold n)
         → (e : Carrier → Carrier)
         → (∀ x y → e x * y ≈ e (x * y))
-        → (∀ y {ys} zs → Σ⟦ ys ⟧ (ρ , ρs) ≈ e (Σ⟦ zs ⟧ (ρ , ρs)) → f y ys ⟦∷⟧ (ρ , ρs) ≈ e ((y , zs) ⟦∷⟧ (ρ , ρs)) )
+        → (∀ y {ys} zs → Σ⟦ ys ⟧ (ρ , ρs) ≈ e (Σ⟦ zs ⟧ (ρ , ρs)) → f (y , ys) ⟦∷⟧ (ρ , ρs) ≈ e ((y , zs) ⟦∷⟧ (ρ , ρs)) )
         → (0# ≈ e 0#)
         → ∀ xs
-        → Σ⟦ poly-foldr f xs ⟧ (ρ , ρs) ≈ e (Σ⟦ xs ⟧ (ρ , ρs))
+        → Σ⟦ para f xs ⟧ (ρ , ρs) ≈ e (Σ⟦ xs ⟧ (ρ , ρs))
 poly-foldR ρ Ρ f e dist step base [] = base
 poly-foldR ρ Ρ f e dist step base (x ≠0 Δ i ∷ xs) =
-  let ys = poly-foldr f xs
-      y,zs = f x ys
+  let ys = para f xs
+      y,zs = f (x , ys)
       y = proj₁ y,zs
       zs = proj₂ y,zs
   in
