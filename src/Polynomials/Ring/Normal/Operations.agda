@@ -152,7 +152,7 @@ open import Data.Nat.Order.Gappy
 -- ≤-compare (≤-s m≤n) m≤m = less m≤n
 -- ≤-compare (≤-s i≤n) (≤-s j≤n) = ≤-compare i≤n j≤n
 --
--- A few things too note here:
+-- A few things to note here:
 --
 -- 1. The ≤-compare function is one of those reassuring ones for which
 --    Agda can completely fill in the type for me.

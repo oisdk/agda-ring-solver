@@ -221,13 +221,13 @@ foldR _ f b [] = b
 foldR P f b (x ∷ xs) = f x (foldR P f b xs)
 
 poly-foldR : ∀ {n} ρ ρs
-        → (f : Fold n)
-        → (e : Carrier → Carrier)
-        → (∀ x y → e x * y ≈ e (x * y))
-        → (∀ y {ys} zs → Σ⟦ ys ⟧ (ρ , ρs) ≈ e (Σ⟦ zs ⟧ (ρ , ρs)) → f (y , ys) ⟦∷⟧ (ρ , ρs) ≈ e ((y , zs) ⟦∷⟧ (ρ , ρs)) )
-        → (0# ≈ e 0#)
+        → ([f] : Fold n)
+        → (f : Carrier → Carrier)
+        → (∀ x y → f x * y ≈ f (x * y))
+        → (∀ y {ys} zs → Σ⟦ ys ⟧ (ρ , ρs) ≈ f (Σ⟦ zs ⟧ (ρ , ρs)) → [f] (y , ys) ⟦∷⟧ (ρ , ρs) ≈ f ((y , zs) ⟦∷⟧ (ρ , ρs)) )
+        → (0# ≈ f 0#)
         → ∀ xs
-        → Σ⟦ para f xs ⟧ (ρ , ρs) ≈ e (Σ⟦ xs ⟧ (ρ , ρs))
+        → Σ⟦ para [f] xs ⟧ (ρ , ρs) ≈ f (Σ⟦ xs ⟧ (ρ , ρs))
 poly-foldR ρ Ρ f e dist step base [] = base
 poly-foldR ρ Ρ f e dist step base (x ≠0 Δ i ∷ xs) =
   let ys = para f xs
