@@ -372,8 +372,8 @@ mutual
           → FlatPoly i
           → FlatPoly j
           → Poly n
-  ⊠-match _ (eq i&j≤n)        (Κ  x) (Κ  y) = Κ (x * y)                               Π  i&j≤n
-  ⊠-match (acc wf) (eq i&j≤n) (Σ xs) (Σ ys) = ⊠-coeffs (wf _ i&j≤n) xs ys             Π↓ i&j≤n
+  ⊠-match _ (eq i&j≤n)        (Κ  x) (Κ  y) = Κ (x * y)                           Π  i&j≤n
+  ⊠-match (acc wf) (eq i&j≤n) (Σ xs) (Σ ys) = ⊠-coeffs (wf _ i&j≤n) xs ys         Π↓ i&j≤n
   ⊠-match (acc wf) (i≤j-1 < j≤n) xs (Σ ys)  = para (⊠-inj (wf _ j≤n) i≤j-1 xs) ys Π↓ j≤n
   ⊠-match (acc wf) (i≤n > j≤i-1) (Σ xs) ys  = para (⊠-inj (wf _ i≤n) j≤i-1 ys) xs Π↓ i≤n
 
