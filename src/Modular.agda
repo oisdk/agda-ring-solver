@@ -10,11 +10,12 @@ data _≥_ (m : ℕ) : ℕ → Set where
   m≥m : m ≥ m
   s≥m : ∀ {n} → m ≥ suc n → m ≥ n
 
-record Mod (n : ℕ) : Set where
+record Mod (p : ℕ) : Set where
   constructor [_+_]
   field
-    space : ℕ
-    proof : n ≥ space
+    d   : ℕ
+    p≥d : p ≥ d
+open Mod
 
 open import Data.Product
 
@@ -33,29 +34,30 @@ toNat : ∀ {n m} → n ≥ m → ℕ
 toNat m≥m = zero
 toNat (s≥m prf) = suc (toNat prf)
 
-toNat′ : ∀ {m} → Mod m → ℕ
-toNat′ [ _ + prf ] = toNat prf
-
 open import Data.Empty
 
 0≯m : ∀ {m} → 0 ≥ suc m → ⊥
 0≯m (s≥m 0>m) = 0≯m 0>m
 
--- n+m≥m⇒ℕ≡m : ∀ n m → (n+m≥m : m ℕ.+ n ≥ m) → toNat n+m≥m ≡ n
--- n+m≥m⇒ℕ≡m .0 zero m≥m = refl
--- n+m≥m⇒ℕ≡m n zero (s≥m n+m≥m) = {!!}
--- n+m≥m⇒ℕ≡m n (suc m) n+m≥m = {!!}
---   where
---   prf : {!!}
---   prf = n+m≥m⇒ℕ≡m {!!} {!!} {!!}
+open import Function
+open import Relation.Binary.PropositionalEquality
+import Data.Nat.Properties as Prop
+import Data.Empty.Irrelevant as Irrel
 
--- fromNat : ∀ n m → (n≥m : n ≥ m) →  Σ[ x ∈ Mod n ] (toNat′ x ≡ m)
--- fromNat n zero n≥m = [ n + m≥m ] , refl
--- fromNat n (suc m) n≥m with fromNat n m (s≥m n≥m)
--- fromNat n (suc m) n≥m | [ zero + proof ] , snd = {!!}
--- fromNat n (suc m) n≥m | [ suc space + proof ] , snd = [ space + s≥m proof ] , cong suc snd
+n≢sk+n : ∀ k n → n ≡ suc (k ℕ.+ n) → ⊥
+n≢sk+n k n wit with Prop.+-cancelʳ-≡ 0 (suc k) wit
+... | ()
 
--- -- fromNat zero prf    = [ _ + m≥m ]
--- -- fromNat (suc n) prf with fromNat n (s≥m prf)
--- -- fromNat (suc n) prf | [ suc m + prf₂ ] = [ m + s≥m prf₂ ]
--- -- fromNat (suc n) prf | [ zero  + prf₂ ] = [ {!!} + {!!} ]
+n≱sk+n : ∀ n k {sk+n} → sk+n ≡ suc k ℕ.+ n → n ≥ sk+n → ⊥
+n≱sk+n n k wit m≥m = ⊥-elim (n≢sk+n k n wit)
+n≱sk+n n k wit (s≥m n≥sk+n) = n≱sk+n n (suc k) (cong suc wit) n≥sk+n
+
+toNat-contra : ∀ n m → (n≥m : n ≥ m) → n ≥ suc (m ℕ.+ toNat n≥m) → ⊥
+toNat-contra n m m≥m n≥st = n≱sk+n n zero (cong suc (Prop.+-comm n 0)) n≥st
+toNat-contra n m (s≥m n≥m) n≥st = toNat-contra n (suc m) n≥m (subst (λ x → n ≥ suc x) (Prop.+-suc m (toNat n≥m)) n≥st)
+
+fromNat : ∀ {n} m → .(n≥m : n ≥ m) →  Σ[ x ∈ Mod n ] toNat (p≥d x) ≡ m
+fromNat zero n≥m = [ _ + m≥m ] , refl
+fromNat (suc m) n≥m with fromNat m (s≥m n≥m)
+fromNat (suc .(toNat n≥0)) n≥m | [ zero + n≥0 ] , refl = Irrel.⊥-elim (toNat-contra _ zero n≥0 n≥m)
+fromNat (suc m) n≥m | [ suc s + p ] , x≡m = [ s + s≥m p ] , cong suc x≡m
