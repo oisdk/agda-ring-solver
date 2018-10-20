@@ -123,20 +123,18 @@ fromNat (suc m) n≥m with fromNat m (s≥m n≥m)
 -_ [ m ∣ n≥m ] = proj₁ (fromNat m n≥m)
 
 module DecEq where
-  data toNat_⇒_ {n} (x : Mod n) : ℕ → Set where
-    acc : toNat x ⇒ toNat (p≥d x)
-
-  ≟-term : ∀ {i n} (x y : Mod n) → toNat x ⇒ i → Dec (x ≡ y)
+  open import Relation.Binary.PropositionalEquality renaming ([_] to ⟦_⟧)
+  ≟-term : ∀ {i n} (x y : Mod n) → Reveal toNat · (p≥d x) is i → Dec (x ≡ y)
   ≟-term [ d₁ ∣ m≥m ] [ .d₁ ∣ m≥m ] _ = yes refl
   ≟-term [ d₁ ∣ m≥m ] [ d₂ ∣ s≥m p≥d₂ ] _ = no (λ ())
   ≟-term [ d₁ ∣ s≥m p≥d₁ ] [ d₂ ∣ m≥m ] _ = no (λ ())
-  ≟-term [ d₁ ∣ s≥m p≥d₁ ] [ d₂ ∣ s≥m p≥d₂ ] acc with ≟-term [ suc d₁ ∣ p≥d₁ ] [ suc d₂ ∣ p≥d₂ ] acc
-  ≟-term [ d₁ ∣ s≥m p≥d₁ ] [ .d₁ ∣ s≥m .p≥d₁ ] acc | yes refl = yes refl
-  ≟-term [ d₁ ∣ s≥m p≥d₁ ] [ d₂ ∣ s≥m p≥d₂ ] acc | no ¬p = no λ { refl → ¬p refl }
+  ≟-term [ d₁ ∣ s≥m p≥d₁ ] [ d₂ ∣ s≥m p≥d₂ ] ⟦ refl ⟧ with ≟-term [ suc d₁ ∣ p≥d₁ ] [ suc d₂ ∣ p≥d₂ ] ⟦ refl ⟧
+  ≟-term [ d₁ ∣ s≥m p≥d₁ ] [ .d₁ ∣ s≥m .p≥d₁ ]  _ | yes refl = yes refl
+  ≟-term [ d₁ ∣ s≥m p≥d₁ ] [ d₂ ∣ s≥m p≥d₂ ]  _  | no ¬p = no λ { refl → ¬p refl }
 
   infix 4 _≟_
   _≟_ : ∀ {n} (x y : Mod n) → Dec (x ≡ y)
-  x ≟ y = ≟-term x y acc
+  x ≟ y = ≟-term x y ⟦ refl ⟧
 open DecEq public using (_≟_)
 
 infixl 6 _+_
