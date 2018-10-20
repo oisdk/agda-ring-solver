@@ -106,6 +106,21 @@ mapAccumL {A = A} {B = B} {C = C} f b xs = go (f b (head xs)) (tail xs)
   head (go (x , _) _) = x
   tail (go (_ , b) xs) = go (f b (head xs)) (tail xs)
 
+record ⟪_⟫ {b} (B : Size → Set b) (i : Size) : Set b where
+  coinductive
+  field unbox : ∀ {j : Size< i} → B j
+open ⟪_⟫ public
+
+foldr : ∀ {a b} {A : Set a} (B : Size → Set b)
+      → (∀ {j} → A → ⟪ B ⟫ j → B j)
+      → ∀ {i}
+      → Stream {i} A
+      → B i
+foldr {A = A} B f xs = f (head xs) (go (tail xs))
+  where
+  go : ∀ {i} → (∀ {j : Size< i} → Stream {j} A) → ⟪ B ⟫ i
+  unbox (go xs) = f (head xs) (go (tail xs))
+
 interleave : ∀ {i a} {A : Set a}
            → Stream {i} A
            → Stream {i} A
