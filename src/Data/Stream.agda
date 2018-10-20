@@ -99,12 +99,12 @@ head (scanl f b xs) = b
 tail (scanl f b xs) = scanl f (f b (head xs)) (tail xs)
 
 mapAccumL : ∀ {i a b c} {A : Set a} {B : Set b} {C : Set c}
-          → (A → B → A × C) → A → Stream {i} B → Stream {i} C
+          → (A → B → C × A) → A → Stream {i} B → Stream {i} C
 mapAccumL {A = A} {B = B} {C = C} f b xs = go (f b (head xs)) (tail xs)
   where
-  go : ∀ {i} → A × C → (∀ {j : Size< i} → Stream {j} B) → Stream {i} C
-  head (go (_ , x) _) = x
-  tail (go (b , _) xs) = go (f b (head xs)) (tail xs)
+  go : ∀ {i} → C × A → (∀ {j : Size< i} → Stream {j} B) → Stream {i} C
+  head (go (x , _) _) = x
+  tail (go (_ , b) xs) = go (f b (head xs)) (tail xs)
 
 interleave : ∀ {i a} {A : Set a}
            → Stream {i} A

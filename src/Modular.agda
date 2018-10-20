@@ -89,7 +89,7 @@ module ≥ where
   toNat-≥ : ∀ {n m} → (x : m ≥ n) → m ≥ toNat x
   toNat-≥ {n} x = subst (λ y → y ≥ toNat x) (Prop.+-comm n (toNat x) ⟨ trans ⟩ sym (toNat-+ x))  (n+m≥m n (toNat x))
 
-open ≥ using (_≥_; m≥m; s≥m; toNat; 0≯m; ≥-pred; m≥0; n+m≥m; toNat-≥)
+open ≥ public using (_≥_; m≥m; s≥m; toNat; 0≯m; ≥-pred; m≥0; n+m≥m; toNat-≥)
 
 record Mod (p : ℕ) : Set where
   constructor [_∣_]
