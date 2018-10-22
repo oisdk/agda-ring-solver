@@ -1,6 +1,6 @@
 module Positional.PAdic where
 
-open import Modular renaming (_+_ to _M+_; -_ to M-_; _*_ to _M*_; incr to incr-m)
+open import Modular as Mod using (Mod; [_∣_]; m≥m; s≥m; m≥0)
 open import Data.Stream
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Agda.Builtin.Size
@@ -25,31 +25,33 @@ negate {n} xs = neg (head xs) (tail xs)
   neg : ∀ {i} → Mod n → (∀ {j : Size< i} → ℤ {j} n)→ ℤ {i} n
   head (neg [ d ∣ m≥m ] ys) = [ d ∣ m≥m ]
   tail (neg [ d ∣ m≥m ] ys) = neg (head ys) (tail ys)
-  head (neg [ d ∣ s≥m p≥d ] ys) = M- [ suc d ∣ p≥d ]
-  tail (neg [ d ∣ s≥m p≥d ] ys) = map M-_ ys
+  head (neg [ d ∣ s≥m p≥d ] ys) = Mod.- [ suc d ∣ p≥d ]
+  tail (neg [ d ∣ s≥m p≥d ] ys) = map Mod.-_ ys
 
 open import Data.Bool
 open import Data.Product hiding (map)
 open import Function
 
+infixl 6 _+_
 _+_ : ∀ {n i} → ℤ {i} n → ℤ {i} n → ℤ {i} n
-_+_ {n} xs ys = mapAccumL f false ⦇ xs M+ ys ⦈
+_+_ {n} xs ys = mapAccumL f false ⦇ xs Mod.+ ys ⦈
   where
   f : Bool → Mod n × Bool → Mod n × Bool
   f false = id
-  f true (x , c) with incr-m x
+  f true (x , c) with Mod.incr x
   f true (x , c) | y , c′ = y , c ∨ c′
 
 incr : ∀ {n i} → ℤ {i} n → ℤ {i} n
-incr {n} xs = go (incr-m (head xs)) (tail xs)
+incr {n} xs = go (Mod.incr (head xs)) (tail xs)
   where
   go : ∀ {i} → Mod n × Bool → (∀ {j : Size< i} → ℤ {j} n) → ℤ {i} n
   head (go (y , c) ys) = y
   tail (go (y , false) ys) = ys
   tail (go (y , true) ys) = incr ys
 
-addSing : ∀ {n i} → Mod n → ℤ {i} n → ℤ {i} n
-addSing {n} x xs = go (x M+ head xs) (tail xs)
+infixl 6 _M+_
+_M+_ : ∀ {n i} → Mod n → ℤ {i} n → ℤ {i} n
+_M+_ {n} x xs = go (x Mod.+ head xs) (tail xs)
   where
   go : ∀ {i} → Mod n × Bool → (∀ {j : Size< i} → ℤ {j} n) → ℤ {i} n
   head (go (y , c) ys) = y
@@ -58,14 +60,21 @@ addSing {n} x xs = go (x M+ head xs) (tail xs)
 
 carry : ∀ {n i} → Stream {i} (Mod n × Mod n) → ℤ {i} n
 head (carry xs) = proj₁ (head xs)
-tail (carry xs) = addSing (proj₂ (head xs)) (carry (tail xs))
+tail (carry xs) = proj₂ (head xs) M+ carry (tail xs)
 
+infixl 7 _*M_
+_*M_ : ∀ {n i} → ℤ {i} n → Mod n → ℤ {i} n
+xs *M y = carry (map (Mod._* y) xs)
+
+infixl 7 _*_
 _*_ : ∀ {n i} → ℤ {i} n → ℤ {i} n → ℤ {i} n
 _*_ {n} xs′ = go (head xs′) (tail xs′)
   where
   go : ∀ {i} → Mod n → (∀ {j : Size< i} → ℤ {j} n) → ℤ {i} n → ℤ {i} n
-  go {i} x xs ys = go′ (x M* head ys)
+  go {i} x xs ys = go′ (x Mod.* head ys)
     where
     go′ : Mod n × Mod n → ℤ {i} n
     head (go′ (s , c)) = s
-    tail (go′ (s , c)) = addSing c (carry (map (_M* head ys) xs) + go x xs (tail ys))
+    tail (go′ (s , c)) = c M+ xs *M head ys + go x xs (tail ys)
+
+module Ball where

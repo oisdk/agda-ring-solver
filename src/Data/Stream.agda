@@ -56,6 +56,14 @@ take : ∀ {a} {A : Set a}
 take zero _ = []
 take (suc n) xs = head xs ∷ take n (tail xs)
 
+open import Data.Vec using (Vec; _∷_; [])
+takeVec : ∀ {a} {A : Set a}
+        → (n : ℕ)
+        → Stream A
+        → Vec A n
+takeVec zero xs = []
+takeVec (suc n) xs = head xs ∷ takeVec n (tail xs)
+
 iterate : ∀ {a} {A : Set a}
         → (A → A)
         → A
