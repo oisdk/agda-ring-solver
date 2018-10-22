@@ -77,4 +77,3 @@ _*_ {n} xs′ = go (head xs′) (tail xs′)
     head (go′ (s , c)) = s
     tail (go′ (s , c)) = c M+ xs *M head ys + go x xs (tail ys)
 
-module Ball where
