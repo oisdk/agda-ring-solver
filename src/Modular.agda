@@ -145,20 +145,17 @@ fromNat (suc m) n≥m with fromNat m (s≥m n≥m)
 -_ : ∀ {n} → Mod n → Mod n
 -_ [ m ∣ n≥m ] = proj₁ (fromNat m n≥m)
 
-module DecEq where
-  open import Relation.Binary.PropositionalEquality renaming ([_] to ⟦_⟧)
-  ≟-term : ∀ {i n} (x y : Mod n) → Reveal toNat · (p≥d x) is i → Dec (x ≡ y)
-  ≟-term [ d₁ ∣ m≥m ] [ .d₁ ∣ m≥m ] _ = yes refl
-  ≟-term [ d₁ ∣ m≥m ] [ d₂ ∣ s≥m p≥d₂ ] _ = no (λ ())
-  ≟-term [ d₁ ∣ s≥m p≥d₁ ] [ d₂ ∣ m≥m ] _ = no (λ ())
-  ≟-term [ d₁ ∣ s≥m p≥d₁ ] [ d₂ ∣ s≥m p≥d₂ ] ⟦ refl ⟧ with ≟-term [ suc d₁ ∣ p≥d₁ ] [ suc d₂ ∣ p≥d₂ ] ⟦ refl ⟧
-  ≟-term [ d₁ ∣ s≥m p≥d₁ ] [ .d₁ ∣ s≥m .p≥d₁ ]  _ | yes refl = yes refl
-  ≟-term [ d₁ ∣ s≥m p≥d₁ ] [ d₂ ∣ s≥m p≥d₂ ]  _  | no ¬p = no λ { refl → ¬p refl }
-
-  infix 4 _≟_
-  _≟_ : ∀ {n} (x y : Mod n) → Dec (x ≡ y)
-  x ≟ y = ≟-term x y ⟦ refl ⟧
-open DecEq public using (_≟_)
+infix 4 _≟_
+_≟_ : ∀ {n} (x y : Mod n) → Dec (x ≡ y)
+_≟_ {p} [ _ ∣ p≥d₁ ] [ _ ∣ p≥d₂ ] = go p≥d₁ p≥d₂
+  where
+  go : ∀ {d₁} (p≥d₁ : p ≥ d₁) → ∀ {d₂} (p≥d₂ : p ≥ d₂) → Dec ([ d₁ ∣ p≥d₁ ] ≡ [ d₂ ∣ p≥d₂ ])
+  go m≥m m≥m = yes refl
+  go m≥m (s≥m p≥d₂) = no (λ ())
+  go (s≥m p≥d₁) m≥m = no (λ ())
+  go (s≥m p≥d₁) (s≥m p≥d₂) with go p≥d₁ p≥d₂
+  go (s≥m p≥d₁) (s≥m .p≥d₁) | yes refl = yes refl
+  go (s≥m p≥d₁) (s≥m p≥d₂) | no ¬p = no λ { refl → ¬p refl }
 
 -- 𝒪(n)
 infixl 6 _+_
@@ -185,3 +182,28 @@ _*_ {p} x [ _ ∣ y ] = go [ _ ∣ m≥m ] m≥m y (toNat-≥ y)
   go s c (s≥m p≥d) l          | s′ , false = go s′ c p≥d (s≥m l)
   go s {suc d₁} c (s≥m p≥d) l | s′ , true = go s′ (s≥m c) p≥d (≥-pred l)
   go s {zero}   c (s≥m p≥d) l | s′ , true = Irrel.⊥-elim (0≯m l)
+
+
+module Order {p : ℕ} where
+  data _≤_ : Mod p → Mod p → Set where
+    z≤m : ∀ {n} → [ p ∣ m≥m ] ≤ n
+    s≤s : ∀ {n′ m′ n m} → [ suc n′ ∣ n ] ≤ [ suc m′ ∣ m ] → [ _ ∣ s≥m n ] ≤ [ _ ∣ s≥m m ]
+
+  _≤?_ : Decidable _≤_
+  [ d₁ ∣ p≥d₁ ] ≤? [ d₂ ∣ p≥d₂ ] = go p≥d₁ p≥d₂
+    where
+    go : ∀ {d₁} → (p≥d₁ : p ≥ d₁) → ∀ {d₂} (p≥d₂ : p ≥ d₂) → Dec ([ d₁ ∣ p≥d₁ ] ≤ [ d₂ ∣ p≥d₂ ])
+    go m≥m p≥d₂ = yes z≤m
+    go (s≥m p≥d₁) m≥m = no λ ()
+    go (s≥m p≥d₁) (s≥m p≥d₂) with go p≥d₁ p≥d₂
+    go (s≥m p≥d₁) (s≥m p≥d₂) | yes p = yes (s≤s p)
+    go (s≥m p≥d₁) (s≥m p≥d₂) | no ¬p = no λ { (s≤s x) → ¬p x }
+
+  _<_ : Mod p → Mod p → Set
+  [ zero  ∣ _   ] < _ = ⊥
+  [ suc d ∣ p≥d ] < y = [ d ∣ s≥m p≥d ] ≤ y
+
+  _<?_ : Decidable _<_
+  [ zero ∣ p≥d₁ ] <? _ = no (λ z → z)
+  [ suc d ∣ p≥d ] <? y = [ d ∣ s≥m p≥d ] ≤? y
+
