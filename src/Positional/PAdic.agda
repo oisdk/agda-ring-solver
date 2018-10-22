@@ -77,3 +77,15 @@ _*_ {n} xs′ = go (head xs′) (tail xs′)
     head (go′ (s , c)) = s
     tail (go′ (s , c)) = c M+ xs *M head ys + go x xs (tail ys)
 
+module Interval where
+  open import Data.List as List using (List; []; _∷_)
+  open import Relation.Nullary
+
+  Interval : ℕ → Set
+  Interval n = List (Mod n × Mod n)
+
+  commonPrefix : ∀ {n} → Interval n → List (Mod n) × Interval n
+  commonPrefix [] = [] , []
+  commonPrefix ((lb , ub) ∷ xs) with lb Mod.≟ ub
+  commonPrefix ((lb , ub) ∷ xs) | yes p = map₁ (lb ∷_) (commonPrefix xs)
+  commonPrefix ((lb , ub) ∷ xs) | no ¬p = [] , (lb , ub) ∷ xs
