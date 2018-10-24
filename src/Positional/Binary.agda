@@ -8,7 +8,7 @@ open import Data.Product
 open import Function
 open import Relation.Binary.PropositionalEquality
 
--- A list of zero runs.
+-- Each element in the list is the distance to the next 1.
 --
 -- 0  = []
 -- 52 = 001011 = [2,1,0]

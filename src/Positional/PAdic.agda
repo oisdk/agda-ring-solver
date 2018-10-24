@@ -37,17 +37,16 @@ _+_ : ∀ {n i} → ℤ {i} n → ℤ {i} n → ℤ {i} n
 _+_ {n} xs ys = mapAccumL f false ⦇ xs Mod.+ ys ⦈
   where
   f : Bool → Mod n × Bool → Mod n × Bool
-  f false = id
-  f true (x , c) with Mod.incr x
-  f true (x , c) | y , c′ = y , c ∨ c′
+  f false x = x
+  f true (x , c) = map₂ (c ∨_) (Mod.incr x)
 
 incr : ∀ {n i} → ℤ {i} n → ℤ {i} n
 incr {n} xs = go (Mod.incr (head xs)) (tail xs)
   where
   go : ∀ {i} → Mod n × Bool → (∀ {j : Size< i} → ℤ {j} n) → ℤ {i} n
-  head (go (y , c) ys) = y
+  head (go (y , _    ) ys) = y
   tail (go (y , false) ys) = ys
-  tail (go (y , true) ys) = incr ys
+  tail (go (y , true ) ys) = incr ys
 
 infixl 6 _M+_
 _M+_ : ∀ {n i} → Mod n → ℤ {i} n → ℤ {i} n
@@ -88,4 +87,4 @@ module Interval where
   commonPrefix [] = [] , []
   commonPrefix ((lb , ub) ∷ xs) with lb Mod.≟ ub
   commonPrefix ((lb , ub) ∷ xs) | yes p = map₁ (lb ∷_) (commonPrefix xs)
-  commonPrefix ((lb , ub) ∷ xs) | no ¬p = [] , (lb , ub) ∷ xs
+  commonPrefix xss@((lb , ub) ∷ xs) | no ¬p = [] , xss
