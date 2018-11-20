@@ -53,3 +53,30 @@ space f = suc (go f)
 Fin⇒≤ : ∀ {n} (x : Fin n) → space x ≤ n
 Fin⇒≤ Fin.zero = m≤m
 Fin⇒≤ (Fin.suc x) = ≤-s (Fin⇒≤ x)
+
+module Properties where
+  open import Relation.Binary
+  open import Relation.Nullary
+  open import Function
+
+  ≤-trans : Transitive _≤_
+  ≤-trans = _⋈_
+
+  s≤s : ∀ {m n} → m ≤ n → suc m ≤ suc n
+  s≤s m≤m = m≤m
+  s≤s (≤-s x) = ≤-s (s≤s x)
+
+  ≤-pred : ∀ {m n} → suc m ≤ n → m ≤ n
+  ≤-pred m≤m = ≤-s m≤m
+  ≤-pred (≤-s x) = ≤-s (≤-pred x)
+
+  ≤-pred-both : ∀ {m n} → suc m ≤ suc n → m ≤ n
+  ≤-pred-both m≤m = m≤m
+  ≤-pred-both (≤-s x) = ≤-pred x
+
+  _≤?_ : Decidable _≤_
+  zero ≤? y = yes z≤n
+  suc x ≤? zero = no (λ ())
+  suc x ≤? suc y with x ≤? y
+  (suc x ≤? suc y) | yes p = yes (s≤s p)
+  (suc x ≤? suc y) | no ¬p = no (¬p ∘ ≤-pred-both)

@@ -5,14 +5,16 @@ open import Function
 open import Positional.PAdic
 open Interval
 open import Level using (_⊔_)
-
+open import Relation.Binary.PropositionalEquality
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 
 record Model {s} (Symbol : Set s) (n : ℕ) : Set s where
   coinductive
   field
-    encode : Symbol → Interval n → Interval n × Model Symbol n
-    decode : Interval n → Symbol × Interval n × Model Symbol n
+    encode : Symbol → Interval n → Model Symbol n × Interval n
+    decode : Interval n → Model Symbol n × Symbol × Interval n
+    correct : ∀ x i → proj₂ (decode (proj₂ (encode x i))) ≡ (x , i)
+
 open Model
 open import Relation.Binary
 open import Relation.Nullary
@@ -106,9 +108,10 @@ module Huffman {k r} (Key : Set k) {_<_ : Rel Key r} (isStrictTotalOrder : IsStr
     gt (Building.node l r) (([ d ∣ s≥m p≥d ] , snd) ∷ int) = gt r int
 
     go : Model Key 1
-    encode go x int = int List.++ lk x , go
+    encode go x int = go , int List.++ lk x
     decode go x with gt tr x
-    decode go x | fst , snd = fst , snd , go
+    decode go x | fst , snd = go , fst , snd
+    correct go x i = {!!}
 
 module Example where
   import Data.Nat.Properties as Prop
@@ -122,5 +125,5 @@ module Example where
   coder : Model ℕ 1
   coder = huffman (0 , alphabet)
 
-  ex : proj₁ (decode coder (proj₁ (encode coder 3 []))) ≡ 3
-  ex = refl
+  -- ex : proj₁ (decode coder (proj₁ (encode coder 3 []))) ≡ 3
+  -- ex = refl

@@ -1,9 +1,10 @@
 module Positional.PAdic where
 
-open import Modular as Mod using (Mod; [_∣_]; m≥m; s≥m; m≥0)
+open import Modular as Mod using (Mod; m≥m; s≥m; m≥0)
 open import Data.Stream
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Agda.Builtin.Size
+open import Data.Product using (_,_)
 
 ℤ : {i : Size} → ℕ → Set
 ℤ {i} p = Stream {i} (Mod p)
@@ -12,10 +13,10 @@ inf : ∀ {n} → Mod n → ℤ n
 inf = pure
 
 0ₚ : ∀ {n} → ℤ n
-0ₚ = pure [ _ ∣ m≥m ]
+0ₚ = pure (_ , m≥m)
 
 -1ₚ : ∀ {n} → ℤ n
--1ₚ = pure [ _ ∣ m≥0 ]
+-1ₚ = pure (_ , m≥0)
 
 open Stream
 
@@ -23,10 +24,10 @@ negate : ∀ {n i} → ℤ {i} n → ℤ {i} n
 negate {n} xs = neg (head xs) (tail xs)
   where
   neg : ∀ {i} → Mod n → (∀ {j : Size< i} → ℤ {j} n)→ ℤ {i} n
-  head (neg [ d ∣ m≥m ] ys) = [ d ∣ m≥m ]
-  tail (neg [ d ∣ m≥m ] ys) = neg (head ys) (tail ys)
-  head (neg [ d ∣ s≥m p≥d ] ys) = Mod.- [ suc d ∣ p≥d ]
-  tail (neg [ d ∣ s≥m p≥d ] ys) = map Mod.-_ ys
+  head (neg (d , m≥m    ) ys) = d , m≥m
+  tail (neg (d , m≥m    ) ys) = neg (head ys) (tail ys)
+  head (neg (d , s≥m p≥d) ys) = Mod.- (suc d , p≥d)
+  tail (neg (d , s≥m p≥d) ys) = map Mod.-_ ys
 
 open import Data.Bool
 open import Data.Product hiding (map)
@@ -53,9 +54,9 @@ _M+_ : ∀ {n i} → Mod n → ℤ {i} n → ℤ {i} n
 _M+_ {n} x xs = go (x Mod.+ head xs) (tail xs)
   where
   go : ∀ {i} → Mod n × Bool → (∀ {j : Size< i} → ℤ {j} n) → ℤ {i} n
-  head (go (y , c) ys) = y
+  head (go (y , _    ) ys) = y
   tail (go (y , false) ys) = ys
-  tail (go (y , true) ys) = incr ys
+  tail (go (y , true ) ys) = incr ys
 
 carry : ∀ {n i} → Stream {i} (Mod n × Mod n) → ℤ {i} n
 head (carry xs) = proj₁ (head xs)
