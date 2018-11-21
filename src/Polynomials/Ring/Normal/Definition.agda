@@ -43,13 +43,13 @@ mutual
     field
       {i} : ℕ
       flat  : FlatPoly i
-      i≤n   : i ≤ n
+      i≤n   : i ≤′ n
 
   -- Possible alternative:
   -- infixl 6 _Σ_
   -- data Poly (n : ℕ) : Set (a ⊔ ℓ) where
   --   Κ   : Carrier → Poly n
-  --   _Σ_ : ∀ {i} → suc i ≤ n → (xs : Coeffs i) → .{xn : Norm xs} → Poly n
+  --   _Σ_ : ∀ {i} → suc i ≤′ n → (xs : Coeffs i) → .{xn : Norm xs} → Poly n
 
   data FlatPoly : ℕ → Set (a ⊔ ℓ) where
     Κ : Carrier → FlatPoly zero

@@ -35,16 +35,16 @@ open import Induction.Nat
 
 mutual
   ⊠-step-hom : ∀ {n}
-             → (a : Acc _<_ n)
+             → (a : Acc _<′_ n)
              → (xs ys : Poly n)
              → ∀ ρ
              → ⟦ ⊠-step a xs ys ⟧ ρ ≈ ⟦ xs ⟧ ρ * ⟦ ys ⟧ ρ
   ⊠-step-hom a (xs Π i≤n) (ys Π j≤n) = ⊠-match-hom a (i≤n cmp j≤n) xs ys
 
   ⊠-match-hom : ∀ {i j n}
-              → (a : Acc _<_ n)
-              → {i≤n : i ≤ n}
-              → {j≤n : j ≤ n}
+              → (a : Acc _<′_ n)
+              → {i≤n : i ≤′ n}
+              → {j≤n : j ≤′ n}
               → (ord : Ordering i≤n j≤n)
               → (xs : FlatPoly i)
               → (ys : FlatPoly j)
@@ -60,7 +60,7 @@ mutual
     ≈⟨ ⊠-inj-hom (wf _ j≤n) i≤j-1 xs ys ρ Ρ′ ⟩
       ⟦ xs Π i≤j-1 ⟧ (proj₂ (drop-1 j≤n Ρ)) * Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
     ≈⟨ ≪* ⋈-hom i≤j-1 j≤n xs Ρ ⟩
-      ⟦ xs Π (≤-s i≤j-1 ⋈ j≤n) ⟧ Ρ * Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
+      ⟦ xs Π (≤′-step i≤j-1 ⋈ j≤n) ⟧ Ρ * Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
     ∎
   ⊠-match-hom (acc wf) (gt i≤n j≤i-1) (Σ xs) ys Ρ =
     let (ρ , Ρ′) = drop-1 i≤n Ρ
@@ -72,9 +72,9 @@ mutual
     ≈⟨ ⊠-inj-hom (wf _ i≤n) j≤i-1 ys xs ρ Ρ′ ⟩
       ⟦ ys Π j≤i-1 ⟧ (proj₂ (drop-1 i≤n Ρ)) * Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
     ≈⟨ ≪* ⋈-hom j≤i-1 i≤n ys Ρ ⟩
-      ⟦ ys Π (≤-s j≤i-1 ⋈ i≤n) ⟧ Ρ * Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
+      ⟦ ys Π (≤′-step j≤i-1 ⋈ i≤n) ⟧ Ρ * Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
     ≈⟨ *-comm _ _ ⟩
-      Σ⟦ xs ⟧ (drop-1 i≤n Ρ) * ⟦ ys Π (≤-s j≤i-1 ⋈ i≤n) ⟧ Ρ
+      Σ⟦ xs ⟧ (drop-1 i≤n Ρ) * ⟦ ys Π (≤′-step j≤i-1 ⋈ i≤n) ⟧ Ρ
     ∎
   ⊠-match-hom (acc _) (eq ij≤n) (Κ x) (Κ y) Ρ = *-homo x y
   ⊠-match-hom (acc wf) (eq ij≤n) (Σ xs) (Σ ys) Ρ =
@@ -86,7 +86,7 @@ mutual
       Σ⟦ xs ⟧ (drop-1 ij≤n Ρ) * Σ⟦ ys ⟧ (drop-1 ij≤n Ρ)
     ∎
   ⊠-cons-hom : ∀ {n}
-             → (a : Acc _<_ n)
+             → (a : Acc _<′_ n)
              → (y : Poly n)
              → (ys : Coeffs n)
              → (xs : Coeffs n)
@@ -122,7 +122,7 @@ mutual
       ∎ }
 
   ⊠-coeffs-hom : ∀ {n}
-               → (a : Acc _<_ n)
+               → (a : Acc _<′_ n)
                → (xs : Coeffs n)
                → (ys : Coeffs n)
                → (Ρ : Carrier × Vec Carrier n)
@@ -144,8 +144,8 @@ mutual
     ∎
 
   ⊠-inj-hom : ∀ {i k}
-            → (a : Acc _<_ k)
-            → (i≤k : i ≤ k)
+            → (a : Acc _<′_ k)
+            → (i≤k : i ≤′ k)
             → (x : FlatPoly i)
             → (xs : Coeffs k)
             → (ρ : Carrier)

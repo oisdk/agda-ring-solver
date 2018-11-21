@@ -39,8 +39,8 @@ mutual
   ⊞-hom (xs Π i≤n) (ys Π j≤n) = ⊞-match-hom (i≤n cmp j≤n) xs ys
 
   ⊞-match-hom : ∀ {i j n}
-              → {i≤n : i ≤ n}
-              → {j≤n : j ≤ n}
+              → {i≤n : i ≤′ n}
+              → {j≤n : j ≤′ n}
               → (i-cmp-j : Ordering i≤n j≤n)
               → (xs : FlatPoly i)
               → (ys : FlatPoly j)
@@ -65,9 +65,9 @@ mutual
     ≈⟨ ⊞-inj-hom j≤i-1 ys xs ρ Ρ′ ⟩
       ⟦ ys Π j≤i-1 ⟧ (proj₂ (drop-1 i≤n Ρ)) + Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
     ≈⟨ ≪+ ⋈-hom j≤i-1 i≤n ys Ρ ⟩
-      ⟦ ys Π (≤-s j≤i-1 ⋈ i≤n) ⟧ Ρ + Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
+      ⟦ ys Π (≤′-step j≤i-1 ⋈ i≤n) ⟧ Ρ + Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
     ≈⟨ +-comm _ _ ⟩
-      Σ⟦ xs ⟧ (drop-1 i≤n Ρ) + ⟦ ys Π (≤-s j≤i-1 ⋈ i≤n) ⟧ Ρ
+      Σ⟦ xs ⟧ (drop-1 i≤n Ρ) + ⟦ ys Π (≤′-step j≤i-1 ⋈ i≤n) ⟧ Ρ
     ∎
   ⊞-match-hom (lt i≤j-1 j≤n) xs (Σ ys) Ρ =
     let (ρ , Ρ′) = drop-1 j≤n Ρ
@@ -79,11 +79,11 @@ mutual
     ≈⟨ ⊞-inj-hom i≤j-1 xs ys ρ Ρ′ ⟩
       ⟦ xs Π i≤j-1 ⟧ (proj₂ (drop-1 j≤n Ρ)) + Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
     ≈⟨ ≪+ ⋈-hom i≤j-1 j≤n xs Ρ ⟩
-      ⟦ xs Π (≤-s i≤j-1 ⋈ j≤n) ⟧ Ρ + Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
+      ⟦ xs Π (≤′-step i≤j-1 ⋈ j≤n) ⟧ Ρ + Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
     ∎
 
   ⊞-inj-hom : ∀ {i k}
-            → (i≤k : i ≤ k)
+            → (i≤k : i ≤′ k)
             → (x : FlatPoly i)
             → (ys : Coeffs k)
             → (ρ : Carrier)

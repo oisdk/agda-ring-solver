@@ -71,8 +71,8 @@ open import Data.Nat.Order.Gappy
 -- proof was _≤_ from Data.Nat:
 --
 -- data _≤_ : Rel ℕ 0ℓ where
---   z≤n : ∀ {n}                 → zero  ≤ n
---   s≤s : ∀ {m n} (m≤n : m ≤ n) → suc m ≤ suc n
+--   z≤n : ∀ {n}                 → zero  ≤′ n
+--   s≤s : ∀ {m n} (m≤n : m ≤′ n) → suc m ≤′ suc n
 --
 -- While this worked, this will actually give you a worse complexity
 -- than the naive encoding without gaps.
@@ -86,7 +86,7 @@ open import Data.Nat.Order.Gappy
 -- To see why that's a problem, consider the following sequence of
 -- nestings:
 --
---   (5 ≤ 6), (4 ≤ 5), (3 ≤ 4), (1 ≤ 3), (0 ≤ 1)
+--   (5 ≤′ 6), (4 ≤′ 5), (3 ≤′ 4), (1 ≤′ 3), (0 ≤′ 1)
 --
 -- The outer polynomial has 6 variables, but it has a gap to its inner
 -- polynomial of 5, and so on. What we compare in this case is the
@@ -126,8 +126,8 @@ open import Data.Nat.Order.Gappy
 --
 -- infix 4 _≤_
 -- data _≤_ (m : ℕ) : ℕ → Set where
---   m≤m : m ≤ m
---   ≤-s : ∀ {n} → (m≤n : m ≤ n) → m ≤ suc n
+--   m≤m : m ≤′ m
+--   ≤-s : ∀ {n} → (m≤n : m ≤′ n) → m ≤′ suc n
 --
 -- (This is a rewritten version of _≤′_ from Data.Nat.Base).
 --
@@ -138,13 +138,13 @@ open import Data.Nat.Order.Gappy
 -- tail):
 
 -- data Ordering : ℕ → ℕ → Set where
---   less    : ∀ {n m} → n ≤ m → Ordering n (suc m)
---   greater : ∀ {n m} → m ≤ n → Ordering (suc n) m
+--   less    : ∀ {n m} → n ≤′ m → Ordering n (suc m)
+--   greater : ∀ {n m} → m ≤′ n → Ordering (suc n) m
 --   equal   : ∀ {n}           → Ordering n n
 
 -- ≤-compare : ∀ {i j n}
---           → (i≤n : i ≤ n)
---           → (j≤n : j ≤ n)
+--           → (i≤n : i ≤′ n)
+--           → (j≤n : j ≤′ n)
 --           → Ordering i j
 -- ≤-compare m≤m m≤m = equal
 -- ≤-compare m≤m (≤-s m≤n) = greater m≤n
@@ -165,19 +165,19 @@ open import Data.Nat.Order.Gappy
 -- basically the following:
 --
 --   ∀ {i j n}
---   → (i≤n : i ≤ n)
---   → (j≤n : j ≤ n)
+--   → (i≤n : i ≤′ n)
+--   → (j≤n : j ≤′ n)
 --   → ∀ xs Ρ
 --   → Σ⟦ xs ⟧ (drop-1 i≤n Ρ) ≈ Σ⟦ xs ⟧ (drop-1 j≤n Ρ)
 --
 -- In effect, if the inequalities are over the same numbers, then
 -- they'll behave the same way when used in evaluation.
 --
--- The above is really just a consequence of ≤ being irrelevant:
+-- The above is really just a consequence of ≤′ being irrelevant:
 --
 --   ∀ {i n}
---   → (x : i ≤ n)
---   → (y : i ≤ n)
+--   → (x : i ≤′ n)
+--   → (y : i ≤′ n)
 --   → x ≡ y
 --
 -- Trying to prove this convinced me that it might not even be possible
@@ -185,14 +185,14 @@ open import Data.Nat.Order.Gappy
 -- prove things like:
 --
 --   ∀ {i j n}
---   → (i≤j : i ≤ j)
---   → (j≤n : j ≤ n)
+--   → (i≤j : i ≤′ j)
+--   → (j≤n : j ≤′ n)
 --   → (x : FlatPoly i)
 --   → (Ρ : Vec Carrier n)
 --   → ⟦ x Π (i≤j ⋈ j≤n) ⟧ Ρ ≈ ⟦ x Π i≤j ⟧ (drop j≤n Ρ)
 --
 -- ⋈ is transitivity, defined as:
--- _⋈_ : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
+-- _⋈_ : ∀ {x y z} → x ≤′ y → y ≤′ z → x ≤′ z
 -- xs ⋈ m≤m = xs
 -- xs ⋈ (≤-s ys) = ≤-s (xs ⋈ ys)
 --
@@ -214,23 +214,23 @@ open import Data.Nat.Order.Gappy
 -- my transitivity proof as well as everything else. The result is the
 -- following:
 -- data Ordering {n : ℕ} : ∀ {i j}
---                       → (i≤n : i ≤ n)
---                       → (j≤n : j ≤ n)
+--                       → (i≤n : i ≤′ n)
+--                       → (j≤n : j ≤′ n)
 --                       → Set
 --                       where
 --   _<_ : ∀ {i j-1}
---       → (i≤j-1 : i ≤ j-1)
---       → (j≤n : suc j-1 ≤ n)
+--       → (i≤j-1 : i ≤′ j-1)
+--       → (j≤n : suc j-1 ≤′ n)
 --       → Ordering (≤-s i≤j-1 ⋈ j≤n) j≤n
 --   _>_ : ∀ {i-1 j}
---       → (i≤n : suc i-1 ≤ n)
---       → (j≤i-1 : j ≤ i-1)
+--       → (i≤n : suc i-1 ≤′ n)
+--       → (j≤i-1 : j ≤′ i-1)
 --       → Ordering i≤n (≤-s j≤i-1 ⋈ i≤n)
---   eq : ∀ {i} → (i≤n : i ≤ n) → Ordering i≤n i≤n
+--   eq : ∀ {i} → (i≤n : i ≤′ n) → Ordering i≤n i≤n
 
 -- _cmp_ : ∀ {i j n}
---     → (x : i ≤ n)
---     → (y : j ≤ n)
+--     → (x : i ≤′ n)
+--     → (y : j ≤′ n)
 --     → Ordering x y
 -- m≤m cmp m≤m = eq m≤m
 -- m≤m cmp ≤-s y = m≤m > y
@@ -240,7 +240,7 @@ open import Data.Nat.Order.Gappy
 -- ≤-s x            cmp ≤-s .(≤-s j≤i-1 ⋈ x) | .x > j≤i-1 = ≤-s x > j≤i-1
 -- ≤-s x            cmp ≤-s .x               | eq .x = eq (≤-s x)
 
--- z≤n : ∀ {n} → zero ≤ n
+-- z≤n : ∀ {n} → zero ≤′ n
 -- z≤n {zero} = m≤m
 -- z≤n {suc n} = ≤-s z≤n
 
@@ -285,8 +285,8 @@ mutual
   (xs Π i≤n) ⊞ (ys Π j≤n) = ⊞-match (i≤n cmp j≤n) xs ys
 
   ⊞-match : ∀ {i j n}
-        → {i≤n : i ≤ n}
-        → {j≤n : j ≤ n}
+        → {i≤n : i ≤′ n}
+        → {j≤n : j ≤′ n}
         → Ordering i≤n j≤n
         → FlatPoly i
         → FlatPoly j
@@ -297,7 +297,7 @@ mutual
   ⊞-match (gt i≤n j≤i-1) (Σ xs)  ys    = ⊞-inj j≤i-1 ys xs Π↓ i≤n
 
   ⊞-inj : ∀ {i k}
-       → (i ≤ k)
+       → (i ≤′ k)
        → FlatPoly i
        → Coeffs k
        → Coeffs k
@@ -338,12 +338,12 @@ open import Induction.Nat
 -- https://github.com/agda/agda/issues/3190#issuecomment-416900716
 
 mutual
-  ⊟-step : ∀ {n} → Acc _<_ n → Poly n → Poly n
+  ⊟-step : ∀ {n} → Acc _<′_ n → Poly n → Poly n
   ⊟-step _        (Κ x  Π i≤n) = Κ (- x) Π i≤n
   ⊟-step (acc wf) (Σ xs Π i≤n) =
     para (⊟-cons (wf _ i≤n)) xs Π↓ i≤n
 
-  ⊟-cons : ∀ {n} → Acc _<_ n → Fold n
+  ⊟-cons : ∀ {n} → Acc _<′_ n → Fold n
   ⊟-cons ac (x , xs) = ⊟-step ac x , xs
 
 ⊟_ : ∀ {n} → Poly n → Poly n
@@ -353,21 +353,21 @@ mutual
 -- Multiplication
 ----------------------------------------------------------------------
 mutual
-  ⊠-step : ∀ {n} → Acc _<_ n → Poly n → Poly n → Poly n
+  ⊠-step : ∀ {n} → Acc _<′_ n → Poly n → Poly n → Poly n
   ⊠-step a (xs Π i≤n) (ys Π j≤n) = ⊠-match a (i≤n cmp j≤n) xs ys
 
   ⊠-inj : ∀ {i k}
-        → Acc _<_ k
-        → i ≤ k
+        → Acc _<′_ k
+        → i ≤′ k
         → FlatPoly i
         → Fold k
   ⊠-inj a i≤k x (y Π j≤k , ys) =
     ⊠-match a (i≤k cmp j≤k) x y , ys
 
   ⊠-match : ∀ {i j n}
-          → Acc _<_ n
-          → {i≤n : i ≤ n}
-          → {j≤n : j ≤ n}
+          → Acc _<′_ n
+          → {i≤n : i ≤′ n}
+          → {j≤n : j ≤′ n}
           → Ordering i≤n j≤n
           → FlatPoly i
           → FlatPoly j
@@ -378,12 +378,12 @@ mutual
   ⊠-match (acc wf) (gt i≤n j≤i-1) (Σ xs) ys  = para (⊠-inj (wf _ i≤n) j≤i-1 ys) xs Π↓ i≤n
 
   -- A simple shift-and-add algorithm.
-  ⊠-coeffs : ∀ {n} → Acc _<_ n → Coeffs n → Coeffs n → Coeffs n
+  ⊠-coeffs : ∀ {n} → Acc _<′_ n → Coeffs n → Coeffs n → Coeffs n
   ⊠-coeffs _ _ [] = []
   ⊠-coeffs a xs (y ≠0 Δ j ∷ ys) = para (⊠-cons a y ys) xs ⍓ j
 
   ⊠-cons : ∀ {n}
-         → Acc _<_ n
+         → Acc _<′_ n
          → Poly n
          → Coeffs n
          → Fold n
