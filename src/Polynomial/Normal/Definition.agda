@@ -7,7 +7,7 @@ open import Data.Unit using (⊤)
 open import Data.List as List using (_∷_; []; List)
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Polynomial.Normal.Parameters
-open import Data.Nat.Order.Gappy
+open import Polynomial.Normal.InjectionIndex
 open import Function using (_∘_)
 
 module Polynomial.Normal.Definition

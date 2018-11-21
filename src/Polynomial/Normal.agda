@@ -6,7 +6,7 @@ module Polynomial.Normal
   where
 
 open Homomorphism homo
-open import Data.Nat.Order.Gappy public
+open import Polynomial.Normal.InjectionIndex public
 open import Polynomial.Normal.Definition coeffs public
 open import Polynomial.Normal.Construction coeffs public
 open import Polynomial.Normal.Operations coeffs public

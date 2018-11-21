@@ -26,7 +26,7 @@ open import Polynomial.Normal.Construction coeffs
 open RawCoeff coeffs
 open import Data.Product
 
-open import Data.Nat.Order.Gappy
+open import Polynomial.Normal.InjectionIndex
 ----------------------------------------------------------------------
 -- Gaps
 ----------------------------------------------------------------------

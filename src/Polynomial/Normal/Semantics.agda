@@ -15,7 +15,7 @@ module Polynomial.Normal.Semantics
   (homo : Homomorphism r₁ r₂ r₃ r₄)
   where
 
-open import Data.Nat.Order.Gappy
+open import Polynomial.Normal.InjectionIndex
 open Homomorphism homo
 open import Polynomial.Normal.Definition coeffs
 

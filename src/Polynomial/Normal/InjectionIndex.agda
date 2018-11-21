@@ -1,6 +1,6 @@
 {-# OPTIONS --without-K #-}
 
-module Data.Nat.Order.Gappy where
+module Polynomial.Normal.InjectionIndex where
 
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.Nat using (_≤′_; ≤′-refl; ≤′-step; _<′_) public

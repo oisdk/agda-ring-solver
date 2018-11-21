@@ -5,7 +5,7 @@ open import Level using (lift; lower; _⊔_)
 open import Data.Unit using (tt)
 open import Data.List as List using (_∷_; []; foldr)
 open import Data.Nat as ℕ using (ℕ; suc; zero)
-open import Data.Nat.Order.Gappy
+open import Polynomial.Normal.InjectionIndex
 open import Polynomial.Normal.Parameters
 open import Function
 open import Data.Product using (_×_; _,_; map₁; curry; uncurry)
