@@ -47,3 +47,4 @@ module Int where
 
   lemma₄ : ∀ x y → y + y * - 1 ≈ (x + x) + - (x * 2)
   lemma₄ = solve IntRing
+

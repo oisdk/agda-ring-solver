@@ -20,7 +20,7 @@ open import Polynomials.Ring.Normal homo
 
 open import Polynomials.Ring.Reasoning ring
 open import Relation.Nullary
-open import Data.Nat as ℕ using (ℕ; suc; zero)
+open import Data.Nat as ℕ using (ℕ; suc; zero; compare)
 open import Data.Product hiding (Σ)
 import Data.Nat.Properties as ℕ-≡
 import Relation.Binary.PropositionalEquality as ≡

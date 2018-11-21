@@ -19,7 +19,6 @@ open import Polynomials.Ring.Homomorphism.Addition homo
 open Homomorphism homo
 open import Polynomials.Ring.Reasoning ring
 open import Polynomials.Ring.Normal homo
-
 open import Relation.Nullary
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.Product hiding (Σ)

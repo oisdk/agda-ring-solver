@@ -17,12 +17,11 @@ open Homomorphism homo
 open import Polynomials.Ring.Reasoning ring
 open import Polynomials.Ring.Normal homo
 open import Relation.Nullary
-open import Data.Nat as ℕ using (ℕ; suc; zero)
+open import Data.Nat as ℕ using (ℕ; suc; zero; compare)
 open import Data.Product hiding (Σ)
 open import Data.Vec as Vec using (Vec; _∷_; [])
 open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
-open import Data.Nat.Order.Compare using (compare) public
 open import Level using (_⊔_)
 
 pow-add : ∀ x i j → x ^ i * x ^ j ≈ x ^ (i ℕ.+ j)

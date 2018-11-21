@@ -10,10 +10,9 @@ open import Data.Empty
 open import Data.Unit using (⊤; tt)
 open import Data.List as List using (_∷_; []; List; foldr)
 open import Data.Vec as Vec using (_∷_; []; Vec)
-open import Data.Nat as ℕ using (ℕ; suc; zero)
+open import Data.Nat as ℕ using (ℕ; suc; zero; compare)
 open import Function
 open import Data.Fin as Fin using (Fin)
-open import Data.Nat.Order.Compare using (compare)
 open import Polynomials.Ring.Normal.Parameters
 
 -- Multivariate polynomials.
