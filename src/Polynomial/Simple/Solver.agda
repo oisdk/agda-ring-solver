@@ -1,10 +1,10 @@
-module Polynomials.Simple.Solver where
+module Polynomial.Simple.Solver where
 
-open import Polynomials.Expr public
-open import Polynomials.Simple.AlmostCommutativeRing public
+open import Polynomial.Expr public
+open import Polynomial.Simple.AlmostCommutativeRing public
 open import Data.Vec
 open import Algebra.Solver.Ring.AlmostCommutativeRing using (-raw-almostCommutative⟶)
-open import Polynomials.Normal.Parameters
+open import Polynomial.Normal.Parameters
 open import Function
 
 open import Data.Vec.N-ary
@@ -24,8 +24,8 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
     ; Zero-C = 0# ≈_
     ; zero-c? = 0# ≟_
     }
-  open import Polynomials.Normal.Definition rawCoeff
-  open import Polynomials.Normal.Operations rawCoeff
+  open import Polynomial.Normal.Definition rawCoeff
+  open import Polynomial.Normal.Operations rawCoeff
 
   norm : ∀ {n} → Expr Carrier n → Poly n
   norm = go
@@ -60,13 +60,13 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
   ⟦_⇓⟧ : ∀ {n} → Expr Carrier n → Vec Carrier n → Carrier
   ⟦ expr ⇓⟧ = ⟦ norm expr ⟧ₚ where
 
-    open import Polynomials.Normal.Semantics homo
+    open import Polynomial.Normal.Semantics homo
       renaming (⟦_⟧ to ⟦_⟧ₚ)
 
   correct : ∀ {n} (expr : Expr Carrier n) ρ → ⟦ expr ⇓⟧ ρ ≈ ⟦ expr ⟧ ρ
   correct {n = n} = go
     where
-    open import Polynomials.Homomorphism homo
+    open import Polynomial.Homomorphism homo
 
     go : ∀ (expr : Expr Carrier n) ρ → ⟦ expr ⇓⟧ ρ ≈ ⟦ expr ⟧ ρ
     go (Κ x) ρ = κ-hom x ρ

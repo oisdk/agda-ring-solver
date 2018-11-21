@@ -6,11 +6,11 @@ open import Data.Empty using (⊥)
 open import Data.Unit using (⊤)
 open import Data.List as List using (_∷_; []; List)
 open import Data.Nat as ℕ using (ℕ; suc; zero)
-open import Polynomials.Normal.Parameters
+open import Polynomial.Normal.Parameters
 open import Data.Nat.Order.Gappy
 open import Function using (_∘_)
 
-module Polynomials.Normal.Definition
+module Polynomial.Normal.Definition
   {a ℓ}
   (coeffs : RawCoeff a ℓ)
   where

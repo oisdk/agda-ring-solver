@@ -6,7 +6,7 @@ open import Algebra.FunctionProperties
 open import Algebra.Solver.Ring.AlmostCommutativeRing
 
 -- Some specialised tools for equaltional reasoning.
-module Polynomials.Reasoning
+module Polynomial.Reasoning
   {a ℓ}
   (ring : AlmostCommutativeRing a ℓ)
   where

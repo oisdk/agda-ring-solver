@@ -4,18 +4,18 @@ open import Algebra
 open import Relation.Binary hiding (Decidable)
 open import Relation.Unary
 open import Algebra.Solver.Ring.AlmostCommutativeRing
-open import Polynomials.Normal.Parameters
+open import Polynomial.Normal.Parameters
 open import Data.List as List using (_∷_; []; foldr; List)
 open import Function
 
-module Polynomials.Homomorphism.Lemmas
+module Polynomial.Homomorphism.Lemmas
   {r₁ r₂ r₃ r₄}
   (homo : Homomorphism r₁ r₂ r₃ r₄)
   where
 open Homomorphism homo
 
-open import Polynomials.Reasoning ring
-open import Polynomials.Normal homo
+open import Polynomial.Reasoning ring
+open import Polynomial.Normal homo
 open import Relation.Nullary
 open import Data.Nat as ℕ using (ℕ; suc; zero; compare)
 open import Data.Product hiding (Σ)

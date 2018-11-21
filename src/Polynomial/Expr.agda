@@ -1,4 +1,4 @@
-module Polynomials.Expr where
+module Polynomial.Expr where
 
 open import Data.Nat using (ℕ)
 open import Data.Fin using (Fin)

@@ -8,16 +8,16 @@ open import Data.Vec as Vec using (Vec; []; _∷_)
 open import Data.List as List using (List; []; _∷_)
 open import Level using (lift)
 open import Data.Product
-open import Polynomials.Normal.Parameters
+open import Polynomial.Normal.Parameters
 
-module Polynomials.Normal.Semantics
+module Polynomial.Normal.Semantics
   {r₁ r₂ r₃ r₄}
   (homo : Homomorphism r₁ r₂ r₃ r₄)
   where
 
 open import Data.Nat.Order.Gappy
 open Homomorphism homo
-open import Polynomials.Normal.Definition coeffs
+open import Polynomial.Normal.Definition coeffs
 
 -- Exponentiation
 infixr 8 _^_

@@ -4,20 +4,20 @@ open import Algebra
 open import Relation.Binary hiding (Decidable)
 open import Relation.Unary
 open import Algebra.Solver.Ring.AlmostCommutativeRing
-open import Polynomials.Normal.Parameters
+open import Polynomial.Normal.Parameters
 
 ----------------------------------------------------------------------
 -- Homomorphism
 ----------------------------------------------------------------------
-module Polynomials.Homomorphism.Semantics
+module Polynomial.Homomorphism.Semantics
   {r₁ r₂ r₃ r₄}
   (homo : Homomorphism r₁ r₂ r₃ r₄)
   where
 
-open import Polynomials.Homomorphism.Lemmas homo
-open import Polynomials.Normal homo
+open import Polynomial.Homomorphism.Lemmas homo
+open import Polynomial.Normal homo
 open Homomorphism homo
-open import Polynomials.Reasoning ring
+open import Polynomial.Reasoning ring
 
 open import Data.Product hiding (Σ)
 open import Function
