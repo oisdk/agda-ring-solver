@@ -4,21 +4,21 @@ open import Algebra
 open import Relation.Binary hiding (Decidable)
 open import Relation.Unary
 open import Algebra.Solver.Ring.AlmostCommutativeRing
-open import Polynomials.Ring.Normal.Parameters
+open import Polynomials.Normal.Parameters
 
 ----------------------------------------------------------------------
 -- Homomorphism
 ----------------------------------------------------------------------
-module Polynomials.Ring.Homomorphism.Addition
+module Polynomials.Homomorphism.Addition
   {r₁ r₂ r₃ r₄}
   (homo : Homomorphism r₁ r₂ r₃ r₄)
   where
 
 open Homomorphism homo
-open import Polynomials.Ring.Homomorphism.Lemmas homo
-open import Polynomials.Ring.Normal homo
+open import Polynomials.Homomorphism.Lemmas homo
+open import Polynomials.Normal homo
 
-open import Polynomials.Ring.Reasoning ring
+open import Polynomials.Reasoning ring
 open import Relation.Nullary
 open import Data.Nat as ℕ using (ℕ; suc; zero; compare)
 open import Data.Product hiding (Σ)

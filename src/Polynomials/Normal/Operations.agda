@@ -13,16 +13,16 @@ open import Data.Vec as Vec using (_∷_; []; Vec)
 open import Data.Nat as ℕ using (ℕ; suc; zero; compare)
 open import Function
 open import Data.Fin as Fin using (Fin)
-open import Polynomials.Ring.Normal.Parameters
+open import Polynomials.Normal.Parameters
 
 -- Multivariate polynomials.
-module Polynomials.Ring.Normal.Operations
+module Polynomials.Normal.Operations
   {a ℓ}
   (coeffs : RawCoeff a ℓ)
   where
 
-open import Polynomials.Ring.Normal.Definition coeffs
-open import Polynomials.Ring.Normal.Construction coeffs
+open import Polynomials.Normal.Definition coeffs
+open import Polynomials.Normal.Construction coeffs
 open RawCoeff coeffs
 open import Data.Product
 

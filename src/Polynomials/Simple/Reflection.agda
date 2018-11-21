@@ -1,9 +1,9 @@
-module Polynomials.Ring.Simple.Reflection where
+module Polynomials.Simple.Reflection where
 
 open import Reflection
 open import Data.Maybe
-open import Polynomials.Ring.Expr
-open import Polynomials.Ring.Simple.AlmostCommutativeRing
+open import Polynomials.Expr
+open import Polynomials.Simple.AlmostCommutativeRing
 open import Relation.Nullary
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 import Data.Fin as Fin
@@ -79,7 +79,7 @@ module Internal where
     {-# CATCHALL #-}
     toExpr i t = constExpr i t
 
-  open import Polynomials.Ring.Simple.Solver renaming (solve to solve′)
+  open import Polynomials.Simple.Solver renaming (solve to solve′)
 
   open import Data.String
 

@@ -1,4 +1,4 @@
-module Polynomials.Ring.Simple.AlmostCommutativeRing where
+module Polynomials.Simple.AlmostCommutativeRing where
 
 import Algebra.Solver.Ring.AlmostCommutativeRing as Complex
 open import Level

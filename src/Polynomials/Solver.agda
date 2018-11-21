@@ -4,9 +4,9 @@ open import Algebra
 open import Relation.Binary hiding (Decidable)
 open import Relation.Unary
 open import Algebra.Solver.Ring.AlmostCommutativeRing
-open import Polynomials.Ring.Normal.Parameters
+open import Polynomials.Normal.Parameters
 
-module Polynomials.Ring.Solver
+module Polynomials.Solver
   {r₁ r₂ r₃ r₄}
   (homo : Homomorphism r₁ r₂ r₃ r₄)
   where
@@ -15,7 +15,7 @@ open Homomorphism homo
 open import Data.Fin as Fin using (Fin)
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.Vec as Vec using (Vec)
-open import Polynomials.Ring.Expr public
+open import Polynomials.Expr public
 
 ⟦_⟧ : ∀ {n} → Expr Raw.Carrier n → Vec Carrier n → Carrier
 ⟦ Κ x ⟧ ρ = _-Raw-AlmostCommutative⟶_.⟦_⟧ morphism x
@@ -24,9 +24,9 @@ open import Polynomials.Ring.Expr public
 ⟦ x ⊗ y ⟧ ρ = ⟦ x ⟧ ρ * ⟦ y ⟧ ρ
 ⟦ ⊝ x ⟧ ρ = - ⟦ x ⟧ ρ
 
-open import Polynomials.Ring.Normal.Definition coeffs
+open import Polynomials.Normal.Definition coeffs
   using (Poly)
-open import Polynomials.Ring.Normal.Operations coeffs
+open import Polynomials.Normal.Operations coeffs
   using (_⊞_; _⊠_; ⊟_; κ; ι)
 
 norm : ∀ {n} → Expr Raw.Carrier n → Poly n
@@ -36,13 +36,13 @@ norm (x ⊕ y) = norm x ⊞ norm y
 norm (x ⊗ y) = norm x ⊠ norm y
 norm (⊝ x) = ⊟ norm x
 
-open import Polynomials.Ring.Normal.Semantics homo
+open import Polynomials.Normal.Semantics homo
   renaming (⟦_⟧ to ⟦_⟧ₚ)
 
 ⟦_⇓⟧ : ∀ {n} → Expr Raw.Carrier n → Vec Carrier n → Carrier
 ⟦ x ⇓⟧ = ⟦ norm x ⟧ₚ
 
-import Polynomials.Ring.Homomorphism homo
+import Polynomials.Homomorphism homo
   as Hom
 open import Function
 

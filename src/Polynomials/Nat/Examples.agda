@@ -1,9 +1,9 @@
 {-# OPTIONS --without-K #-}
 
-module Polynomials.Ring.Nat.Examples where
+module Polynomials.Nat.Examples where
 
-open import Polynomials.Ring.Simple.AlmostCommutativeRing
-open import Polynomials.Ring.Simple.Reflection
+open import Polynomials.Simple.AlmostCommutativeRing
+open import Polynomials.Simple.Reflection
 open import Agda.Builtin.FromNat
 open Number {{...}} public
 

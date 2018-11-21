@@ -53,30 +53,3 @@ space f = suc (go f)
 Fin⇒≤ : ∀ {n} (x : Fin n) → space x ≤′ n
 Fin⇒≤ Fin.zero = ≤′-refl
 Fin⇒≤ (Fin.suc x) = ≤′-step (Fin⇒≤ x)
-
-module Properties where
-  open import Relation.Binary
-  open import Relation.Nullary
-  open import Function
-
-  ≤-trans : Transitive _≤′_
-  ≤-trans = _⋈_
-
-  s≤s : ∀ {m n} → m ≤′ n → suc m ≤′ suc n
-  s≤s ≤′-refl = ≤′-refl
-  s≤s (≤′-step x) = ≤′-step (s≤s x)
-
-  ≤-pred : ∀ {m n} → suc m ≤′ n → m ≤′ n
-  ≤-pred ≤′-refl = ≤′-step ≤′-refl
-  ≤-pred (≤′-step x) = ≤′-step (≤-pred x)
-
-  ≤-pred-both : ∀ {m n} → suc m ≤′ suc n → m ≤′ n
-  ≤-pred-both ≤′-refl = ≤′-refl
-  ≤-pred-both (≤′-step x) = ≤-pred x
-
-  _≤?_ : Decidable _≤′_
-  zero ≤? y = yes z≤n
-  suc x ≤? zero = no (λ ())
-  suc x ≤? suc y with x ≤? y
-  (suc x ≤? suc y) | yes p = yes (s≤s p)
-  (suc x ≤? suc y) | no ¬p = no (¬p ∘ ≤-pred-both)

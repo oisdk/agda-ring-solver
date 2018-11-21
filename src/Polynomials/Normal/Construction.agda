@@ -6,16 +6,16 @@ open import Data.Unit using (tt)
 open import Data.List as List using (_∷_; []; foldr)
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.Nat.Order.Gappy
-open import Polynomials.Ring.Normal.Parameters
+open import Polynomials.Normal.Parameters
 open import Function
 open import Data.Product using (_×_; _,_; map₁; curry; uncurry)
 
-module Polynomials.Ring.Normal.Construction
+module Polynomials.Normal.Construction
   {a ℓ}
   (coeffs : RawCoeff a ℓ)
   where
 
-open import Polynomials.Ring.Normal.Definition coeffs
+open import Polynomials.Normal.Definition coeffs
 open RawCoeff coeffs
 
 ----------------------------------------------------------------------
