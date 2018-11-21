@@ -3,7 +3,7 @@
 module Data.Nat.Order.Gappy where
 
 open import Data.Nat as ℕ using (ℕ; suc; zero)
-open import Data.Nat using () renaming (_≤′_ to _≤_; ≤′-refl to m≤m; ≤′-step to ≤-s) public
+open import Data.Nat using () renaming (_≤′_ to _≤_; ≤′-refl to m≤m; ≤′-step to ≤-s; _<′_ to _<_) public
 
 infixl 6 _⋈_
 _⋈_ : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
@@ -15,14 +15,14 @@ data Ordering {n : ℕ} : ∀ {i j}
                       → (j≤n : j ≤ n)
                       → Set
                       where
-  _<_ : ∀ {i j-1}
-      → (i≤j-1 : i ≤ j-1)
-      → (j≤n : suc j-1 ≤ n)
-      → Ordering (≤-s i≤j-1 ⋈ j≤n) j≤n
-  _>_ : ∀ {i-1 j}
-      → (i≤n : suc i-1 ≤ n)
-      → (j≤i-1 : j ≤ i-1)
-      → Ordering i≤n (≤-s j≤i-1 ⋈ i≤n)
+  lt : ∀ {i j-1}
+     → (i≤j-1 : i ≤ j-1)
+     → (j≤n : suc j-1 ≤ n)
+     → Ordering (≤-s i≤j-1 ⋈ j≤n) j≤n
+  gt : ∀ {i-1 j}
+     → (i≤n : suc i-1 ≤ n)
+     → (j≤i-1 : j ≤ i-1)
+     → Ordering i≤n (≤-s j≤i-1 ⋈ i≤n)
   eq : ∀ {i} → (i≤n : i ≤ n) → Ordering i≤n i≤n
 
 _cmp_ : ∀ {i j n}
@@ -30,11 +30,11 @@ _cmp_ : ∀ {i j n}
     → (y : j ≤ n)
     → Ordering x y
 m≤m cmp m≤m = eq m≤m
-m≤m cmp ≤-s y = m≤m > y
-≤-s x cmp m≤m = x < m≤m
+m≤m cmp ≤-s y = gt m≤m y
+≤-s x cmp m≤m = lt x m≤m
 ≤-s x cmp ≤-s y with x cmp y
-≤-s .(≤-s i≤j-1 ⋈ y) cmp ≤-s y                | i≤j-1 < .y = i≤j-1 < ≤-s y
-≤-s x                cmp ≤-s .(≤-s j≤i-1 ⋈ x) | .x > j≤i-1 = ≤-s x > j≤i-1
+≤-s .(≤-s i≤j-1 ⋈ y) cmp ≤-s y                | lt i≤j-1 .y = lt i≤j-1 (≤-s y)
+≤-s x                cmp ≤-s .(≤-s j≤i-1 ⋈ x) | gt .x j≤i-1 = gt (≤-s x) j≤i-1
 ≤-s x                cmp ≤-s .x               | eq .x = eq (≤-s x)
 
 z≤n : ∀ {n} → zero ≤ n

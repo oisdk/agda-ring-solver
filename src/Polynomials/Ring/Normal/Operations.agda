@@ -293,8 +293,8 @@ mutual
         → Poly n
   ⊞-match (eq i&j≤n)    (Κ x)  (Κ y)  = Κ (x + y)         Π  i&j≤n
   ⊞-match (eq i&j≤n)    (Σ xs) (Σ ys) = ⊞-coeffs    xs ys Π↓ i&j≤n
-  ⊞-match (i≤j-1 < j≤n)  xs    (Σ ys) = ⊞-inj i≤j-1 xs ys Π↓ j≤n
-  ⊞-match (i≤n > j≤i-1) (Σ xs)  ys    = ⊞-inj j≤i-1 ys xs Π↓ i≤n
+  ⊞-match (lt i≤j-1 j≤n)  xs    (Σ ys) = ⊞-inj i≤j-1 xs ys Π↓ j≤n
+  ⊞-match (gt i≤n j≤i-1) (Σ xs)  ys    = ⊞-inj j≤i-1 ys xs Π↓ i≤n
 
   ⊞-inj : ∀ {i k}
        → (i ≤ k)
@@ -331,32 +331,33 @@ mutual
 -- Negation
 ----------------------------------------------------------------------
 
-open import Induction.WellFounded.Syntax
+open import Induction.WellFounded
+open import Induction.Nat
 
 -- recurse on acc directly
 -- https://github.com/agda/agda/issues/3190#issuecomment-416900716
 
 mutual
-  ⊟-step : ∀ {n} → ⌊ n ⌋ → Poly n → Poly n
+  ⊟-step : ∀ {n} → Acc _<_ n → Poly n → Poly n
   ⊟-step _        (Κ x  Π i≤n) = Κ (- x) Π i≤n
   ⊟-step (acc wf) (Σ xs Π i≤n) =
     para (⊟-cons (wf _ i≤n)) xs Π↓ i≤n
 
-  ⊟-cons : ∀ {n} → ⌊ n ⌋ → Fold n
+  ⊟-cons : ∀ {n} → Acc _<_ n → Fold n
   ⊟-cons ac (x , xs) = ⊟-step ac x , xs
 
 ⊟_ : ∀ {n} → Poly n → Poly n
-⊟_ = ⊟-step ⌊↓⌋
+⊟_ = ⊟-step (<′-wellFounded _)
 
 ----------------------------------------------------------------------
 -- Multiplication
 ----------------------------------------------------------------------
 mutual
-  ⊠-step : ∀ {n} → ⌊ n ⌋ → Poly n → Poly n → Poly n
+  ⊠-step : ∀ {n} → Acc _<_ n → Poly n → Poly n → Poly n
   ⊠-step a (xs Π i≤n) (ys Π j≤n) = ⊠-match a (i≤n cmp j≤n) xs ys
 
   ⊠-inj : ∀ {i k}
-        → ⌊ k ⌋
+        → Acc _<_ k
         → i ≤ k
         → FlatPoly i
         → Fold k
@@ -364,7 +365,7 @@ mutual
     ⊠-match a (i≤k cmp j≤k) x y , ys
 
   ⊠-match : ∀ {i j n}
-          → ⌊ n ⌋
+          → Acc _<_ n
           → {i≤n : i ≤ n}
           → {j≤n : j ≤ n}
           → Ordering i≤n j≤n
@@ -373,16 +374,16 @@ mutual
           → Poly n
   ⊠-match _ (eq i&j≤n)        (Κ  x) (Κ  y) = Κ (x * y)                           Π  i&j≤n
   ⊠-match (acc wf) (eq i&j≤n) (Σ xs) (Σ ys) = ⊠-coeffs (wf _ i&j≤n) xs ys         Π↓ i&j≤n
-  ⊠-match (acc wf) (i≤j-1 < j≤n) xs (Σ ys)  = para (⊠-inj (wf _ j≤n) i≤j-1 xs) ys Π↓ j≤n
-  ⊠-match (acc wf) (i≤n > j≤i-1) (Σ xs) ys  = para (⊠-inj (wf _ i≤n) j≤i-1 ys) xs Π↓ i≤n
+  ⊠-match (acc wf) (lt i≤j-1 j≤n) xs (Σ ys)  = para (⊠-inj (wf _ j≤n) i≤j-1 xs) ys Π↓ j≤n
+  ⊠-match (acc wf) (gt i≤n j≤i-1) (Σ xs) ys  = para (⊠-inj (wf _ i≤n) j≤i-1 ys) xs Π↓ i≤n
 
   -- A simple shift-and-add algorithm.
-  ⊠-coeffs : ∀ {n} → ⌊ n ⌋ → Coeffs n → Coeffs n → Coeffs n
+  ⊠-coeffs : ∀ {n} → Acc _<_ n → Coeffs n → Coeffs n → Coeffs n
   ⊠-coeffs _ _ [] = []
   ⊠-coeffs a xs (y ≠0 Δ j ∷ ys) = para (⊠-cons a y ys) xs ⍓ j
 
   ⊠-cons : ∀ {n}
-         → ⌊ n ⌋
+         → Acc _<_ n
          → Poly n
          → Coeffs n
          → Fold n
@@ -391,7 +392,7 @@ mutual
 
 infixl 7 _⊠_
 _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
-_⊠_ = ⊠-step ⌊↓⌋
+_⊠_ = ⊠-step (<′-wellFounded _)
 
 ----------------------------------------------------------------------
 -- Constants and Variables

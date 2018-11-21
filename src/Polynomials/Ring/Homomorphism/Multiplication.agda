@@ -29,19 +29,20 @@ open import Data.List as List using (List; _∷_; []; foldr)
 open import Data.Vec as Vec using (Vec; _∷_; [])
 open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
-open import Induction.WellFounded.Syntax
+open import Induction.WellFounded
+open import Induction.Nat
 
 
 mutual
   ⊠-step-hom : ∀ {n}
-             → (a : ⌊ n ⌋)
+             → (a : Acc _<_ n)
              → (xs ys : Poly n)
              → ∀ ρ
              → ⟦ ⊠-step a xs ys ⟧ ρ ≈ ⟦ xs ⟧ ρ * ⟦ ys ⟧ ρ
   ⊠-step-hom a (xs Π i≤n) (ys Π j≤n) = ⊠-match-hom a (i≤n cmp j≤n) xs ys
 
   ⊠-match-hom : ∀ {i j n}
-              → (a : ⌊ n ⌋)
+              → (a : Acc _<_ n)
               → {i≤n : i ≤ n}
               → {j≤n : j ≤ n}
               → (ord : Ordering i≤n j≤n)
@@ -49,7 +50,7 @@ mutual
               → (ys : FlatPoly j)
               → (Ρ : Vec Carrier n)
               → ⟦ ⊠-match a ord xs ys ⟧ Ρ ≈ ⟦ xs Π i≤n ⟧ Ρ * ⟦ ys Π j≤n ⟧ Ρ
-  ⊠-match-hom (acc wf) (i≤j-1 < j≤n) xs (Σ ys) Ρ =
+  ⊠-match-hom (acc wf) (lt i≤j-1 j≤n) xs (Σ ys) Ρ =
     let (ρ , Ρ′) = drop-1 j≤n Ρ
     in
     begin
@@ -61,7 +62,7 @@ mutual
     ≈⟨ ≪* ⋈-hom i≤j-1 j≤n xs Ρ ⟩
       ⟦ xs Π (≤-s i≤j-1 ⋈ j≤n) ⟧ Ρ * Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
     ∎
-  ⊠-match-hom (acc wf) (i≤n > j≤i-1) (Σ xs) ys Ρ =
+  ⊠-match-hom (acc wf) (gt i≤n j≤i-1) (Σ xs) ys Ρ =
     let (ρ , Ρ′) = drop-1 i≤n Ρ
     in
     begin
@@ -85,7 +86,7 @@ mutual
       Σ⟦ xs ⟧ (drop-1 ij≤n Ρ) * Σ⟦ ys ⟧ (drop-1 ij≤n Ρ)
     ∎
   ⊠-cons-hom : ∀ {n}
-             → (a : ⌊ n ⌋)
+             → (a : Acc _<_ n)
              → (y : Poly n)
              → (ys : Coeffs n)
              → (xs : Coeffs n)
@@ -121,7 +122,7 @@ mutual
       ∎ }
 
   ⊠-coeffs-hom : ∀ {n}
-               → (a : ⌊ n ⌋)
+               → (a : Acc _<_ n)
                → (xs : Coeffs n)
                → (ys : Coeffs n)
                → (Ρ : Carrier × Vec Carrier n)
@@ -143,7 +144,7 @@ mutual
     ∎
 
   ⊠-inj-hom : ∀ {i k}
-            → (a : ⌊ k ⌋)
+            → (a : Acc _<_ k)
             → (i≤k : i ≤ k)
             → (x : FlatPoly i)
             → (xs : Coeffs k)
@@ -170,4 +171,4 @@ mutual
       → (ys : Poly n)
       → (Ρ : Vec Carrier n)
       → ⟦ xs ⊠ ys ⟧ Ρ ≈ ⟦ xs ⟧ Ρ * ⟦ ys ⟧ Ρ
-⊠-hom = ⊠-step-hom ⌊↓⌋
+⊠-hom = ⊠-step-hom (<′-wellFounded _)

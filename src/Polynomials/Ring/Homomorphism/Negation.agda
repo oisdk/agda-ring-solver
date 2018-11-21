@@ -29,12 +29,12 @@ open import Data.List as List using (_∷_; []; foldr)
 open import Data.Vec as Vec using (Vec; _∷_; [])
 open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
-
-open import Induction.WellFounded.Syntax
+open import Induction.WellFounded
+open import Induction.Nat
 open import Relation.Binary.Lifted
 open Intensional setoid
 
-⊟-step-hom : ∀ {n} (a : ⌊ n ⌋) → (xs : Poly n) → ⟦ ⊟-step a xs ⟧ ≋ -_ ∘ ⟦ xs ⟧
+⊟-step-hom : ∀ {n} (a : Acc _<_ n) → (xs : Poly n) → ⟦ ⊟-step a xs ⟧ ≋ -_ ∘ ⟦ xs ⟧
 ⊟-step-hom a (Κ x  Π i≤n) ρ = -‿homo x
 ⊟-step-hom (acc wf) (Σ xs Π i≤n) ρ′ =
   let (ρ , ρs) = drop-1 i≤n ρ′
@@ -69,4 +69,4 @@ open Intensional setoid
       → (xs : Poly n)
       → (Ρ : Vec Carrier n)
       → ⟦ ⊟ xs ⟧ Ρ ≈ - ⟦ xs ⟧ Ρ
-⊟-hom = ⊟-step-hom ⌊↓⌋
+⊟-hom = ⊟-step-hom (<′-wellFounded _)

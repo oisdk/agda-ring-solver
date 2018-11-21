@@ -55,7 +55,7 @@ mutual
     ≈⟨ ⊞-coeffs-hom xs ys (drop-1 ij≤n Ρ) ⟩
       Σ⟦ xs ⟧ (drop-1 ij≤n Ρ) + Σ⟦ ys ⟧ (drop-1 ij≤n Ρ)
     ∎
-  ⊞-match-hom (i≤n > j≤i-1) (Σ xs) ys Ρ =
+  ⊞-match-hom (gt i≤n j≤i-1) (Σ xs) ys Ρ =
     let (ρ , Ρ′) = drop-1 i≤n Ρ
     in
     begin
@@ -69,7 +69,7 @@ mutual
     ≈⟨ +-comm _ _ ⟩
       Σ⟦ xs ⟧ (drop-1 i≤n Ρ) + ⟦ ys Π (≤-s j≤i-1 ⋈ i≤n) ⟧ Ρ
     ∎
-  ⊞-match-hom (i≤j-1 < j≤n) xs (Σ ys) Ρ =
+  ⊞-match-hom (lt i≤j-1 j≤n) xs (Σ ys) Ρ =
     let (ρ , Ρ′) = drop-1 j≤n Ρ
     in
     begin
