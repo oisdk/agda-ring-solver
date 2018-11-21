@@ -12,81 +12,6 @@ module Polynomials.Ring.Homomorphism.Lemmas
   {r₁ r₂ r₃ r₄}
   (homo : Homomorphism r₁ r₂ r₃ r₄)
   where
-
-
-module _ {ℓ₁ ℓ₂} (setoid : Setoid ℓ₁ ℓ₂) where
-  open Setoid setoid
-  open import Relation.Binary.EqReasoning setoid
-
-  foldr-fusion : ∀ {a b} {A : Set a} {B : Set b}
-               → (h : B → Carrier) {f : A → B → B} {g : A → Carrier → Carrier} (e : B)
-               → (∀ x y z → y ≈ z → g x y ≈ g x z)
-               → (∀ x y → h (f x y) ≈ g x (h y))
-               → ∀ xs → h (foldr f e xs) ≈ foldr g (h e) xs
-  foldr-fusion h {f} {g} e _ fuse [] = refl
-  foldr-fusion h {f} {g} e cong fuse (x ∷ xs) =
-    begin
-      h (f x (foldr f e xs))
-    ≈⟨ fuse x _ ⟩
-      g x (h (foldr f e xs))
-    ≈⟨ cong x _ _ (foldr-fusion h e cong fuse xs) ⟩
-      g x (foldr g (h e) xs)
-    ∎
-
-module AOPA where
-  open import Level
-  open import Data.Product
-  open import Data.List
-
-  _←_ : ∀ {i j k} → Set i → Set j → Set (suc k ⊔ (j ⊔ i))
-  _←_ {i} {j} {k} B A = B → A → Set k
-
-  _←_⊣_ :  ∀ {i j} → Set i → Set j → (k : Level) → Set (suc k ⊔ (j ⊔ i))
-  B  ← A ⊣ k = _←_ {k = k} B A
-
-  ℙ : ∀ {ℓ} → Set ℓ → Set (suc ℓ)
-  ℙ {ℓ} A = A → Set ℓ
-
-  ∈ : ∀ {i} {A : Set i} → (A ← ℙ A)
-  ∈ a s = s a
-
-  _₁∘_ : ∀ {i j k l} {A : Set i} {B : Set j} {C : Set k} → (C ← B ⊣ l) → (A → B) → (C ← A)
-  (R ₁∘ S) c a = R c (S a)
-
-  foldr₁ : {A : Set} → {PB : Set1} → ((A × PB) → PB) → PB → List A → PB
-  foldr₁ f e []      = e
-  foldr₁ f e (a ∷ x) = f (a , foldr₁ f e x)
-
-  Λ :  ∀ {i j} {A : Set i} {B : Set j} → (B ← A) → A → ℙ B
-  Λ R a = λ b → R b a
-
-  infixr 8 _·_
-  infixr 9 _○_ _₁∘_
-
-  _·_ : {A B : Set} → (B ← A) → ℙ A → ℙ B
-  (R · s)  b = ∃ (λ a → (s a × R b a))
-
-  _○_ : ∀ {i j k l m} {A : Set i}{B : Set j}{C : Set k} → (C ← B ⊣ l) → (B ← A ⊣ m) → (C ← A ⊣ (j ⊔ l ⊔ m))
-  (R ○ S) c a = ∃ (λ b → S b a × R c b)
-
-  open import Relation.Binary.PropositionalEquality
-
-  fun : ∀ {i j} {A : Set i} {B : Set j} → (A → B) → (B ← A)
-  fun f b a = f a ≡ b
-
-  idR : ∀ {i} {A : Set i} → A ← A
-  idR = fun id
-
-  infixr 2 _⨉_
-
-  _⨉_ : ∀ {i j k l m n} {A : Set i} {B : Set j} {C : Set k} {D : Set l}
-        → (B ← A ⊣ m) → (D ← C ⊣ n) → ((B × D) ← (A × C))
-  (R ⨉ S) (b , d) (a , c) = (R b a × S d c)
-
-
-  foldR : {A B : Set} → (B ← (A × B)) → ℙ B → (B ← List A)
-  foldR R S = ∈ ₁∘ foldr₁ (Λ (R ○ (idR ⨉ ∈))) S
-
 open Homomorphism homo
 
 open import Polynomials.Ring.Reasoning ring
@@ -99,7 +24,6 @@ open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
 open import Data.Nat.Order.Compare using (compare) public
 open import Level using (_⊔_)
-open import Relation.Binary.Lifted
 
 pow-add : ∀ x i j → x ^ i * x ^ j ≈ x ^ (i ℕ.+ j)
 pow-add x zero j = *-identityˡ (x ^ j)
