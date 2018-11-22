@@ -1,19 +1,21 @@
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --without-K --safe #-}
 
-open import Relation.Nullary using (¬_)
-open import Level using (_⊔_; Lift)
-open import Data.Empty using (⊥)
-open import Data.Unit using (⊤)
-open import Data.List as List using (_∷_; []; List)
-open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Polynomial.Parameters
-open import Polynomial.NormalForm.InjectionIndex
-open import Function using (_∘_)
 
 module Polynomial.NormalForm.Definition
   {a ℓ}
   (coeffs : RawCoeff a ℓ)
   where
+
+open import Polynomial.NormalForm.InjectionIndex
+
+open import Relation.Nullary using (¬_)
+open import Level            using (_⊔_; Lift)
+open import Data.Empty       using (⊥)
+open import Data.Unit        using (⊤)
+open import Data.List        using (_∷_; []; List)
+open import Data.Nat         using (ℕ; suc; zero)
+open import Function         using (_∘_)
 
 infixl 6 _Δ_
 record PowInd {c} (C : Set c) : Set c where
@@ -27,10 +29,12 @@ module _ where
   open PowInd
 
   map-coeff : ∀ {c₁ c₂} {C₁ : Set c₁} {C₂ : Set c₂} → (C₁ → C₂) → PowInd C₁ → PowInd C₂
-  map-coeff f (x Δ i) = f x Δ i
+  coeff (map-coeff f (x Δ _)) = f x
+  pow   (map-coeff _ (_ Δ i)) = i
 
   map-ind : ∀ {c} {C : Set c} → (ℕ → ℕ) → PowInd C → PowInd C
-  map-ind f (x Δ i) = x Δ f i
+  coeff (map-ind f (x Δ _)) = x
+  pow   (map-ind f (_ Δ i)) = f i
 
 open RawCoeff coeffs
 
@@ -41,7 +45,7 @@ mutual
     inductive
     constructor _Π_
     field
-      {i} : ℕ
+      {i}   : ℕ
       flat  : FlatPoly i
       i≤n   : i ≤′ n
 
@@ -84,11 +88,16 @@ mutual
       poly : Poly i
       .{poly≠0} : ¬ Zero poly
 
+  -- This predicate is used (in its negation) to ensure that no
+  -- coefficient is zero, preventing any trailing zeroes.
   Zero : ∀ {n} → Poly n → Set ℓ
   Zero (Κ x       Π _) = Zero-C x
   Zero (Σ []      Π _) = Lift ℓ ⊤
   Zero (Σ (_ ∷ _) Π _) = Lift ℓ ⊥
 
+  -- This predicate is used to ensure that all polynomials are in
+  -- normal form: if a particular level is constant, than it can
+  -- be collapsed into the level below it.
   Norm : ∀ {i} → Coeffs i → Set
   Norm []                  = ⊥
   Norm (_ Δ zero  ∷ [])    = ⊥

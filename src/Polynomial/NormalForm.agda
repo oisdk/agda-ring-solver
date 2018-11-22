@@ -1,3 +1,6 @@
+{-# OPTIONS --without-K --safe #-}
+
+-- Polynomials in sparse Horner normal form.
 open import Polynomial.Parameters
 
 module Polynomial.NormalForm
@@ -6,6 +9,7 @@ module Polynomial.NormalForm
   where
 
 open Homomorphism homo
+
 open import Polynomial.NormalForm.InjectionIndex public
 open import Polynomial.NormalForm.Definition coeffs public
 open import Polynomial.NormalForm.Construction coeffs public

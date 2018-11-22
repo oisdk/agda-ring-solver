@@ -1,19 +1,16 @@
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --without-K --safe #-}
 
-open import Algebra
-open import Algebra.Solver.Ring.AlmostCommutativeRing
-open import Relation.Unary
-open import Data.Nat as ℕ using (ℕ; suc; zero)
-open import Data.Vec as Vec using (Vec; []; _∷_)
-open import Data.List as List using (List; []; _∷_)
-open import Level using (lift)
-open import Data.Product
 open import Polynomial.Parameters
 
 module Polynomial.NormalForm.Semantics
   {r₁ r₂ r₃ r₄}
   (homo : Homomorphism r₁ r₂ r₃ r₄)
   where
+
+open import Data.Nat     using (ℕ; suc; zero)
+open import Data.Vec     using (Vec; []; _∷_)
+open import Data.List    using ([]; _∷_)
+open import Data.Product using (_,_; _×_)
 
 open import Polynomial.NormalForm.InjectionIndex
 open Homomorphism homo

@@ -1,20 +1,6 @@
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --without-K --safe #-}
 
-open import Algebra
-open import Algebra.Solver.Ring.AlmostCommutativeRing
-open import Relation.Binary hiding (Decidable)
-open import Relation.Nullary
-open import Relation.Unary
-open import Level using (_⊔_; Lift; lift; lower)
-open import Data.Empty
-open import Data.Unit using (⊤; tt)
-open import Data.List as List using (_∷_; []; List; foldr)
-open import Data.Vec as Vec using (_∷_; []; Vec)
-open import Data.Nat as ℕ using (ℕ; suc; zero; compare)
-open import Function
-open import Data.Fin as Fin using (Fin)
 open import Polynomial.Parameters
-import Data.Nat.Properties as ℕ-Prop
 
 -- Multivariate polynomials.
 module Polynomial.NormalForm.Operations
@@ -22,24 +8,19 @@ module Polynomial.NormalForm.Operations
   (coeffs : RawCoeff a ℓ)
   where
 
-open import Polynomial.NormalForm.Definition coeffs
-open import Polynomial.NormalForm.Construction coeffs
-open RawCoeff coeffs
-open import Data.Product
+open import Data.Nat as ℕ         using (ℕ; suc; zero; compare)
+open import Data.Nat.Properties   using (z≤′n)
+open import Data.List             using (_∷_; [])
+open import Data.Fin              using (Fin)
+open import Data.Product          using (_,_)
+open import Induction.WellFounded using (Acc; acc)
+open import Induction.Nat         using (<′-wellFounded)
 
 open import Polynomial.NormalForm.InjectionIndex
-----------------------------------------------------------------------
--- Gaps
-----------------------------------------------------------------------
+open import Polynomial.NormalForm.Definition coeffs
+open import Polynomial.NormalForm.Construction coeffs
 
-----------------------------------------------------------------------
--- Definitions
-----------------------------------------------------------------------
-
-
-----------------------------------------------------------------------
--- Arithmetic
-----------------------------------------------------------------------
+open RawCoeff coeffs
 
 ----------------------------------------------------------------------
 -- Addition
@@ -79,8 +60,8 @@ mutual
         → FlatPoly i
         → FlatPoly j
         → Poly n
-  ⊞-match (inj-eq i&j≤n)    (Κ x)  (Κ y)  = Κ (x + y)         Π  i&j≤n
-  ⊞-match (inj-eq i&j≤n)    (Σ xs) (Σ ys) = ⊞-coeffs    xs ys Π↓ i&j≤n
+  ⊞-match (inj-eq i&j≤n)     (Κ x)  (Κ y)  = Κ (x + y)         Π  i&j≤n
+  ⊞-match (inj-eq i&j≤n)     (Σ xs) (Σ ys) = ⊞-coeffs    xs ys Π↓ i&j≤n
   ⊞-match (inj-lt i≤j-1 j≤n)  xs    (Σ ys) = ⊞-inj i≤j-1 xs ys Π↓ j≤n
   ⊞-match (inj-gt i≤n j≤i-1) (Σ xs)  ys    = ⊞-inj j≤i-1 ys xs Π↓ i≤n
 
@@ -90,10 +71,8 @@ mutual
        → Coeffs k
        → Coeffs k
   ⊞-inj i≤k xs [] = xs Π i≤k Δ zero ∷↓ []
-  ⊞-inj i≤k xs (y Π j≤k ≠0 Δ zero ∷ ys) =
-    ⊞-match (inj-compare j≤k i≤k) y xs Δ zero ∷↓ ys
-  ⊞-inj i≤k xs (y Δ suc j ∷ ys) =
-    xs Π i≤k Δ zero ∷↓ y Δ j ∷ ys
+  ⊞-inj i≤k xs (y Π j≤k ≠0 Δ zero ∷ ys) = ⊞-match (inj-compare j≤k i≤k) y xs Δ zero ∷↓ ys
+  ⊞-inj i≤k xs (y Δ suc j ∷ ys) = xs Π i≤k Δ zero ∷↓ y Δ j ∷ ys
 
   ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
   ⊞-coeffs [] ys = ys
@@ -118,9 +97,6 @@ mutual
 ----------------------------------------------------------------------
 -- Negation
 ----------------------------------------------------------------------
-
-open import Induction.WellFounded
-open import Induction.Nat
 
 -- recurse on acc directly
 -- https://github.com/agda/agda/issues/3190#issuecomment-416900716
@@ -188,7 +164,7 @@ _⊠_ = ⊠-step (<′-wellFounded _)
 
 -- The constant polynomial
 κ : ∀ {n} → Carrier → Poly n
-κ x = Κ x Π ℕ-Prop.z≤′n
+κ x = Κ x Π z≤′n
 
 -- A variable
 ι : ∀ {n} → Fin n → Poly n

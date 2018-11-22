@@ -1,22 +1,25 @@
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --without-K --safe #-}
 
-open import Relation.Nullary using (Dec; yes; no)
-open import Level using (lift; lower; _⊔_)
-open import Data.Unit using (tt)
-open import Data.List as List using (_∷_; []; foldr)
-open import Data.Nat as ℕ using (ℕ; suc; zero)
-open import Polynomial.NormalForm.InjectionIndex
 open import Polynomial.Parameters
-open import Function
-open import Data.Product using (_×_; _,_; map₁; curry; uncurry)
-import Data.Nat.Properties as ℕ-Prop
 
 module Polynomial.NormalForm.Construction
   {a ℓ}
   (coeffs : RawCoeff a ℓ)
   where
 
+open import Relation.Nullary         using (Dec; yes; no)
+open import Level                    using (lift; lower; _⊔_)
+open import Data.Unit                using (tt)
+open import Data.List                using (_∷_; []; foldr)
+open import Data.Nat            as ℕ using (ℕ; suc; zero)
+open import Data.Nat.Properties      using (z≤′n)
+open import Data.Product             using (_×_; _,_; map₁; curry; uncurry)
+
+open import Function
+
+open import Polynomial.NormalForm.InjectionIndex
 open import Polynomial.NormalForm.Definition coeffs
+
 open RawCoeff coeffs
 
 ----------------------------------------------------------------------
@@ -52,7 +55,7 @@ _Π↑_ : ∀ {n m} → Poly n → (suc n ≤′ m) → Poly m
 -- NormalForm.sing Π
 infixr 4 _Π↓_
 _Π↓_ : ∀ {i n} → Coeffs i → suc i ≤′ n → Poly n
-[]                       Π↓ i≤n = Κ 0# Π ℕ-Prop.z≤′n
+[]                       Π↓ i≤n = Κ 0# Π z≤′n
 (x ≠0 Δ zero  ∷ [])      Π↓ i≤n = x Π↑ i≤n
 (x₁   Δ zero  ∷ x₂ ∷ xs) Π↓ i≤n = Σ (x₁ Δ zero  ∷ x₂ ∷ xs) Π i≤n
 (x    Δ suc j ∷ xs)      Π↓ i≤n = Σ (x  Δ suc j ∷ xs) Π i≤n

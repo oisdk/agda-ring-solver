@@ -1,4 +1,4 @@
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --without-K --safe #-}
 
 -- Polynomial can be represented as lists of their coefficients,
 -- stored in increasing powers of x:
@@ -248,9 +248,9 @@ inj-compare ≤′-refl ≤′-refl = inj-eq ≤′-refl
 inj-compare ≤′-refl (≤′-step y) = inj-gt ≤′-refl y
 inj-compare (≤′-step x) ≤′-refl = inj-lt x ≤′-refl
 inj-compare (≤′-step x) (≤′-step y) with inj-compare x y
-inj-compare (≤′-step .(≤′-step i≤j-1 ⟨ ≤′-trans ⟩ y)) (≤′-step y)                | inj-lt i≤j-1 .y = inj-lt i≤j-1 (≤′-step y)
-inj-compare (≤′-step x)                (≤′-step .(≤′-step j≤i-1 ⟨ ≤′-trans ⟩ x)) | inj-gt .x j≤i-1 = inj-gt (≤′-step x) j≤i-1
-inj-compare (≤′-step x)                (≤′-step .x)               | inj-eq .x = inj-eq (≤′-step x)
+inj-compare (≤′-step .(≤′-step i≤j-1 ⟨ ≤′-trans ⟩ y)) (≤′-step y) | inj-lt i≤j-1 .y = inj-lt i≤j-1 (≤′-step y)
+inj-compare (≤′-step x) (≤′-step .(≤′-step j≤i-1 ⟨ ≤′-trans ⟩ x)) | inj-gt .x j≤i-1 = inj-gt (≤′-step x) j≤i-1
+inj-compare (≤′-step x) (≤′-step .x) | inj-eq .x = inj-eq (≤′-step x)
 
 open import Data.Fin as Fin using (Fin)
 
