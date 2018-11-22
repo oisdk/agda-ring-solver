@@ -1,5 +1,11 @@
 {-# OPTIONS --without-K --safe #-}
 
+-- Definitions for the types of a polynomial stored in sparse horner
+-- normal form.
+--
+-- These definitions ensure that the polynomial is actually in fully
+-- canonical form, with no trailing zeroes, etc.
+
 open import Polynomial.Parameters
 
 module Polynomial.NormalForm.Definition

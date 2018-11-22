@@ -1,21 +1,15 @@
 module Polynomial.Simple.Reflection where
 
 open import Reflection
-open import Data.Maybe
-open import Polynomial.Expr
-open import Polynomial.Simple.AlmostCommutativeRing
-open import Relation.Nullary
-open import Data.Nat as ℕ using (ℕ; suc; zero)
-import Data.Fin as Fin
-open import Data.List hiding (fromMaybe)
-open import Data.Unit
-open import Data.Maybe
 open import Function
-import Level
-open import Data.Product
-open import Function
+open import Data.Unit using (⊤)
 
 module Internal where
+  open import Polynomial.Simple.Solver renaming (solve to solve′)
+  open import Data.String
+  open import Relation.Nullary using (Dec; yes; no)
+  open import Data.Nat as ℕ using (ℕ; suc; zero)
+  open import Data.List using (List; _∷_; []; foldr)
 
   -- Some patterns to decrease verbosity
   infixr 5 ⟨_⟩∷_ ⟅_⟆∷_
@@ -79,9 +73,6 @@ module Internal where
     {-# CATCHALL #-}
     toExpr i t = constExpr i t
 
-  open import Polynomial.Simple.Solver renaming (solve to solve′)
-
-  open import Data.String
 
   hlams : List String → Term → Term
   hlams vs xs = foldr (λ v vs → lam hidden (abs v vs)) xs vs

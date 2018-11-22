@@ -1,6 +1,9 @@
 {-# OPTIONS --without-K --safe #-}
 
--- Polynomial can be represented as lists of their coefficients,
+----------------------------------------------------------------------
+-- Gaps
+----------------------------------------------------------------------
+-- Polynomials can be represented as lists of their coefficients,
 -- stored in increasing powers of x:
 --
 --   3 + 2x² + 4x⁵ + 2x⁷
@@ -8,11 +11,6 @@
 --   3x⁰ + 0x¹ + 2x² + 0x³ + 0x⁴ + 4x⁵ + 0x⁶ + 2x⁷
 -- ≡⟨ in list notation ⟩
 --   [3,0,2,0,0,4,0,2]
---
--- However, as described in:
---   B. Grégoire and A. Mahboubi, ‘Proving Equalities in a Commutative
---   Ring Done Right in Coq’, in Theorem Proving in Higher Order
---   Logics, Berlin, Heidelberg, 2005, vol. 3603, pp. 98–113.
 --
 -- This approach is wasteful with space. Instead, we will pair each
 -- coefficient with the size of the preceding gap, meaning that the
@@ -41,8 +39,8 @@
 -- proof was _≤_ from Data.Nat:
 --
 -- data _≤_ : Rel ℕ 0ℓ where
---   z≤n : ∀ {n}                 → zero  ≤′ n
---   s≤s : ∀ {m n} (m≤n : m ≤′ n) → suc m ≤′ suc n
+--   z≤n : ∀ {n}                 → zero  ≤ n
+--   s≤s : ∀ {m n} (m≤n : m ≤ n) → suc m ≤ suc n
 --
 -- While this worked, this will actually give you a worse complexity
 -- than the naive encoding without gaps.
@@ -56,7 +54,7 @@
 -- To see why that's a problem, consider the following sequence of
 -- nestings:
 --
---   (5 ≤′ 6), (4 ≤′ 5), (3 ≤′ 4), (1 ≤′ 3), (0 ≤′ 1)
+--   (5 ≤ 6), (4 ≤ 5), (3 ≤ 4), (1 ≤ 3), (0 ≤ 1)
 --
 -- The outer polynomial has 6 variables, but it has a gap to its inner
 -- polynomial of 5, and so on. What we compare in this case is the
@@ -96,8 +94,8 @@
 --
 -- infix 4 _≤_
 -- data _≤_ (m : ℕ) : ℕ → Set where
---   m≤m : m ≤′ m
---   ≤-s : ∀ {n} → (m≤n : m ≤′ n) → m ≤′ suc n
+--   m≤m : m ≤ m
+--   ≤-s : ∀ {n} → (m≤n : m ≤ n) → m ≤ suc n
 --
 -- (This is a rewritten version of _≤′_ from Data.Nat.Base).
 --
@@ -107,15 +105,15 @@
 -- size of the gap (even though it was comparing the length of the
 -- tail):
 
--- data InjectionOrdering : ℕ → ℕ → Set where
---   less    : ∀ {n m} → n ≤′ m → InjectionOrdering n (suc m)
---   greater : ∀ {n m} → m ≤′ n → InjectionOrdering (suc n) m
---   equal   : ∀ {n}           → InjectionOrdering n n
+-- data Ordering : ℕ → ℕ → Set where
+--   less    : ∀ {n m} → n ≤ m → Ordering n (suc m)
+--   greater : ∀ {n m} → m ≤ n → Ordering (suc n) m
+--   equal   : ∀ {n}           → Ordering n n
 
 -- ≤-compare : ∀ {i j n}
---           → (i≤n : i ≤′ n)
---           → (j≤n : j ≤′ n)
---           → InjectionOrdering i j
+--           → (i≤n : i ≤ n)
+--           → (j≤n : j ≤ n)
+--           → Ordering i j
 -- ≤-compare m≤m m≤m = equal
 -- ≤-compare m≤m (≤-s m≤n) = greater m≤n
 -- ≤-compare (≤-s m≤n) m≤m = less m≤n
@@ -135,19 +133,19 @@
 -- basically the following:
 --
 --   ∀ {i j n}
---   → (i≤n : i ≤′ n)
---   → (j≤n : j ≤′ n)
+--   → (i≤n : i ≤ n)
+--   → (j≤n : j ≤ n)
 --   → ∀ xs Ρ
 --   → Σ⟦ xs ⟧ (drop-1 i≤n Ρ) ≈ Σ⟦ xs ⟧ (drop-1 j≤n Ρ)
 --
 -- In effect, if the inequalities are over the same numbers, then
 -- they'll behave the same way when used in evaluation.
 --
--- The above is really just a consequence of ≤′ being irrelevant:
+-- The above is really just a consequence of ≤ being irrelevant:
 --
 --   ∀ {i n}
---   → (x : i ≤′ n)
---   → (y : i ≤′ n)
+--   → (x : i ≤ n)
+--   → (y : i ≤ n)
 --   → x ≡ y
 --
 -- Trying to prove this convinced me that it might not even be possible
@@ -155,16 +153,11 @@
 -- prove things like:
 --
 --   ∀ {i j n}
---   → (i≤j : i ≤′ j)
---   → (j≤n : j ≤′ n)
+--   → (i≤j : i ≤ j)
+--   → (j≤n : j ≤ n)
 --   → (x : FlatPoly i)
 --   → (Ρ : Vec Carrier n)
 --   → ⟦ x Π (i≤j ⟨ ≤′-trans ⟩ j≤n) ⟧ Ρ ≈ ⟦ x Π i≤j ⟧ (drop j≤n Ρ)
---
--- ⟨ ≤′-trans ⟩ is transitivity, defined as:
--- _⟨ ≤′-trans ⟩_ : ∀ {x y z} → x ≤′ y → y ≤′ z → x ≤′ z
--- xs ⟨ ≤′-trans ⟩ m≤m = xs
--- xs ⟨ ≤′-trans ⟩ (≤-s ys) = ≤-s (xs ⟨ ≤′-trans ⟩ ys)
 --
 -- Effectively, I needed to prove that transitivity was a
 -- homomorphism.
@@ -174,51 +167,20 @@
 -- that function provides a proof about its *arguments* whereas the
 -- one I wrote above only provides a proof about the i and j.
 --
--- data InjectionOrdering : Rel ℕ 0ℓ where
---   less    : ∀ m k → InjectionOrdering m (suc (m + k))
---   equal   : ∀ m   → InjectionOrdering m m
---   greater : ∀ m k → InjectionOrdering (suc (m + k)) m
+-- data Ordering : Rel ℕ 0ℓ where
+--   less    : ∀ m k → Ordering m (suc (m + k))
+--   equal   : ∀ m   → Ordering m m
+--   greater : ∀ m k → Ordering (suc (m + k)) m
 --
 -- If I tried to mimick the above as closely as possible, I would also
--- need an analogue to +: of course this was ⟨ ≤′-trans ⟩, so I was going to get
--- my transitivity proof as well as everything else. The result is the
--- following:
--- data InjectionOrdering {n : ℕ} : ∀ {i j}
---                       → (i≤n : i ≤′ n)
---                       → (j≤n : j ≤′ n)
---                       → Set
---                       where
---   _<_ : ∀ {i j-1}
---       → (i≤j-1 : i ≤′ j-1)
---       → (j≤n : suc j-1 ≤′ n)
---       → InjectionOrdering (≤-s i≤j-1 ⟨ ≤′-trans ⟩ j≤n) j≤n
---   _>_ : ∀ {i-1 j}
---       → (i≤n : suc i-1 ≤′ n)
---       → (j≤i-1 : j ≤′ i-1)
---       → InjectionOrdering i≤n (≤-s j≤i-1 ⟨ ≤′-trans ⟩ i≤n)
---   eq : ∀ {i} → (i≤n : i ≤′ n) → InjectionOrdering i≤n i≤n
-
--- _cmp_ : ∀ {i j n}
---     → (x : i ≤′ n)
---     → (y : j ≤′ n)
---     → InjectionOrdering x y
--- m≤m cmp m≤m = eq m≤m
--- m≤m cmp ≤-s y = m≤m > y
--- ≤-s x cmp m≤m = x < m≤m
--- ≤-s x cmp ≤-s y with x cmp y
--- ≤-s .(≤-s i≤j-1 ⟨ ≤′-trans ⟩ y) cmp ≤-s y            | i≤j-1 < .y = i≤j-1 < ≤-s y
--- ≤-s x            cmp ≤-s .(≤-s j≤i-1 ⟨ ≤′-trans ⟩ x) | .x > j≤i-1 = ≤-s x > j≤i-1
--- ≤-s x            cmp ≤-s .x               | eq .x = eq (≤-s x)
-
--- z≤n : ∀ {n} → zero ≤′ n
--- z≤n {zero} = m≤m
--- z≤n {suc n} = ≤-s z≤n
+-- need an analogue to +: of course this was ≤′-trans, so I was going
+-- to get my transitivity proof as well as everything else. The result
+-- is as follows.
 
 module Polynomial.NormalForm.InjectionIndex where
 
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.Nat using (_≤′_; ≤′-refl; ≤′-step; _<′_) public
-open import Relation.Binary
 open import Function
 
 ≤′-trans : ∀ {x y z} → x ≤′ y → y ≤′ z → x ≤′ z

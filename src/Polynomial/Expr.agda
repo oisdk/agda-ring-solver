@@ -1,6 +1,4 @@
-{-
-This module provides the basic expression type for polynomials.
--}
+-- This module provides the basic expression type for polynomials.
 
 module Polynomial.Expr where
 

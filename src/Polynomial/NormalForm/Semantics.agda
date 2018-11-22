@@ -2,6 +2,8 @@
 
 open import Polynomial.Parameters
 
+-- "Evaluating" a polynomial, using Horner's method.
+
 module Polynomial.NormalForm.Semantics
   {r₁ r₂ r₃ r₄}
   (homo : Homomorphism r₁ r₂ r₃ r₄)

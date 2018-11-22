@@ -2,7 +2,6 @@
 
 open import Polynomial.Parameters
 
--- Multivariate polynomials.
 module Polynomial.NormalForm.Operations
   {a ℓ}
   (coeffs : RawCoeff a ℓ)
@@ -138,8 +137,8 @@ mutual
           → Poly n
   ⊠-match _ (inj-eq i&j≤n)        (Κ  x) (Κ  y) = Κ (x * y)                           Π  i&j≤n
   ⊠-match (acc wf) (inj-eq i&j≤n) (Σ xs) (Σ ys) = ⊠-coeffs (wf _ i&j≤n) xs ys         Π↓ i&j≤n
-  ⊠-match (acc wf) (inj-lt i≤j-1 j≤n) xs (Σ ys)  = para (⊠-inj (wf _ j≤n) i≤j-1 xs) ys Π↓ j≤n
-  ⊠-match (acc wf) (inj-gt i≤n j≤i-1) (Σ xs) ys  = para (⊠-inj (wf _ i≤n) j≤i-1 ys) xs Π↓ i≤n
+  ⊠-match (acc wf) (inj-lt i≤j-1 j≤n) xs (Σ ys) = para (⊠-inj (wf _ j≤n) i≤j-1 xs) ys Π↓ j≤n
+  ⊠-match (acc wf) (inj-gt i≤n j≤i-1) (Σ xs) ys = para (⊠-inj (wf _ i≤n) j≤i-1 ys) xs Π↓ i≤n
 
   -- A simple shift-and-add algorithm.
   ⊠-coeffs : ∀ {n} → Acc _<′_ n → Coeffs n → Coeffs n → Coeffs n
