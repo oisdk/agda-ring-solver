@@ -44,7 +44,7 @@ pow-hom : ∀ {n} i
         → ∀ ρ Ρ
         → Σ⟦ xs ⟧ (ρ , Ρ) * ρ ^ i ≈ Σ⟦ xs ⍓ i ⟧ (ρ , Ρ)
 pow-hom i [] ρ Ρ = zeroˡ (ρ ^ i)
-pow-hom i (x Δ j ∷ xs) ρ Ρ = *-assoc _ (ρ ^ j) (ρ ^ i) ︔ *≫ pow-add ρ j i
+pow-hom i (x Δ j ∷ xs) ρ Ρ = *-assoc _ (ρ ^ j) (ρ ^ i) ⊙ *≫ pow-add ρ j i
 
 zero-hom : ∀ {n} (p : Poly n) → Zero p → (Ρ : Vec Carrier n) → ⟦ p ⟧ Ρ ≈ 0#
 zero-hom (Κ x  Π i≤n) p≡0 Ρ = Zero-C⟶Zero-R x p≡0
@@ -64,7 +64,7 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
     Σ⟦ xs ⟧ (ρ , Ρ) * ρ ^ (suc i)
   ≈⟨ sym (*-assoc _ ρ _) ⟩
     Σ⟦ xs ⟧ (ρ , Ρ) * ρ * ρ ^ i
-  ≈⟨ ≪* (sym (+-identityˡ _) ︔ ≪+ sym (zero-hom x p _)) ⟩
+  ≈⟨ ≪* (sym (+-identityˡ _) ⊙ ≪+ sym (zero-hom x p _)) ⟩
     (⟦ x ⟧ Ρ + Σ⟦ xs ⟧ (ρ , Ρ) * ρ) * ρ ^ i
   ∎
 

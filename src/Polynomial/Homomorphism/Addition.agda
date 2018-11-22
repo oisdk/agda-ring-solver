@@ -184,7 +184,7 @@ mutual
     ≈⟨ distribʳ (ρ ^ i) _ _ ⟩
       (x′ + xs′ * ρ) * ρ ^ i + (y′ + ys′ * ρ) * ρ ^ i
     ∎
-  ⊞-zip-hom (ℕ.less i k) x xs y ys (ρ , Ρ) = ⊞-zip-r-step-hom i k y ys x xs (ρ , Ρ) ︔ +-comm _ _
+  ⊞-zip-hom (ℕ.less i k) x xs y ys (ρ , Ρ) = ⊞-zip-r-step-hom i k y ys x xs (ρ , Ρ) ⊙ +-comm _ _
   ⊞-zip-hom (ℕ.greater j k) = ⊞-zip-r-step-hom j k
 
   ⊞-zip-r-step-hom : ∀ {n} j k
@@ -207,7 +207,7 @@ mutual
       (y′ + ((x′ + xs′ * ρ) * ρ ^ k + ys′) * ρ) * ρ ^ j
     ≈⟨ ≪* +≫ distribʳ ρ _ _ ⟩
       (y′ + ((x′ + xs′ * ρ) * ρ ^ k * ρ + ys′ * ρ)) * ρ ^ j
-    ≈⟨ ≪* (sym (+-assoc _ _ _) ︔ ≪+ +-comm _ _ ︔ +-assoc _ _ _) ⟩
+    ≈⟨ ≪* (sym (+-assoc _ _ _) ⊙ ≪+ +-comm _ _ ⊙ +-assoc _ _ _) ⟩
       ((x′ + xs′ * ρ) * ρ ^ k * ρ + (y′ + ys′ * ρ)) * ρ ^ j
     ≈⟨ distribʳ (ρ ^ j) _ _ ⟩
       (x′ + xs′ * ρ) * ρ ^ k * ρ * ρ ^ j + (y′ + ys′ * ρ) * ρ ^ j

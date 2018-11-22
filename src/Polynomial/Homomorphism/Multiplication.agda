@@ -114,8 +114,8 @@ mutual
         x′ * y′ + (x′ * ys′ * ρ + xs′ * (y′ + ys′ * ρ) * ρ)
       ≈⟨ sym (+-assoc _ _ _) ⟩
         (x′ * y′ + x′ * ys′ * ρ) + xs′ * (y′ + ys′ * ρ) * ρ
-      ≈⟨ (+≫ *-assoc _ _ _ ︔ sym (distribˡ _ _ _)) ⟨ +-cong ⟩
-        (*-assoc _ _ _ ︔ *≫ *-comm _ _ ︔ sym (*-assoc _ _ _)) ⟩
+      ≈⟨ (+≫ *-assoc _ _ _ ⊙ sym (distribˡ _ _ _)) ⟨ +-cong ⟩
+        (*-assoc _ _ _ ⊙ *≫ *-comm _ _ ⊙ sym (*-assoc _ _ _)) ⟩
         x′ * (y′ + ys′ * ρ) + xs′ * ρ * (y′ + ys′ * ρ)
       ≈⟨ sym (distribʳ _ _ _) ⟩
         (x′ + xs′ * ρ) * (y′ + ys′ * ρ)
@@ -160,7 +160,7 @@ mutual
       in
       begin
         ⟦ ⊠-match a (inj-compare i≤k j≤k) x y ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ
-      ≈⟨ ⊠-match-hom a (inj-compare i≤k j≤k) x _ Ρ ⟨ +-cong ⟩ (≪* ys≋zs ︔ *-assoc _ _ _) ⟩
+      ≈⟨ ⊠-match-hom a (inj-compare i≤k j≤k) x _ Ρ ⟨ +-cong ⟩ (≪* ys≋zs ⊙ *-assoc _ _ _) ⟩
         x′ * y′ + x′ * (zs′ * ρ)
       ≈⟨ sym (distribˡ x′ _ _ ) ⟩
         x′ * (y′ + zs′ * ρ)

@@ -30,14 +30,6 @@ infixr 1 ≪+_ +≫_ ≪*_ *≫_
 *≫_ = *-cong refl
 
 -- transitivity as an operator
-infixr 0 _︔_
-_︔_ : ∀ {x y z} → x ≈ y → y ≈ z → x ≈ z
-_︔_ = trans
-
--- If a function (a cangruence, for instance) appropriately changes
--- the relation, it can be applied with this combinator. It is
--- useful if both sides of the equation are getting large, and you
--- want to "cancel from both sides" with something.
-infixr 2 _≅⟨_⟩_
-_≅⟨_⟩_ : ∀ w {x y z} → (y ≈ z → w ≈ x) → y IsRelatedTo z → w IsRelatedTo x
-_ ≅⟨ congruence ⟩ relTo y~z = relTo (congruence y~z)
+infixr 0 _⊙_
+_⊙_ : ∀ {x y z} → x ≈ y → y ≈ z → x ≈ z
+_⊙_ = trans
