@@ -47,7 +47,7 @@ x Δ i ∷↓ xs with zero? x
 
 -- Inject a polynomial into a larger polynomoial with more variables
 _Π↑_ : ∀ {n m} → Poly n → (suc n ≤′ m) → Poly m
-(xs Π i≤n) Π↑ n≤m = xs Π (≤′-step i≤n ⋈ n≤m)
+(xs Π i≤n) Π↑ n≤m = xs Π (≤′-step i≤n ⟨ ≤′-trans ⟩ n≤m)
 
 -- NormalForm.sing Π
 infixr 4 _Π↓_

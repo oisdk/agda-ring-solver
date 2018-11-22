@@ -159,12 +159,12 @@
 --   → (j≤n : j ≤′ n)
 --   → (x : FlatPoly i)
 --   → (Ρ : Vec Carrier n)
---   → ⟦ x Π (i≤j ⋈ j≤n) ⟧ Ρ ≈ ⟦ x Π i≤j ⟧ (drop j≤n Ρ)
+--   → ⟦ x Π (i≤j ⟨ ≤′-trans ⟩ j≤n) ⟧ Ρ ≈ ⟦ x Π i≤j ⟧ (drop j≤n Ρ)
 --
--- ⋈ is transitivity, defined as:
--- _⋈_ : ∀ {x y z} → x ≤′ y → y ≤′ z → x ≤′ z
--- xs ⋈ m≤m = xs
--- xs ⋈ (≤-s ys) = ≤-s (xs ⋈ ys)
+-- ⟨ ≤′-trans ⟩ is transitivity, defined as:
+-- _⟨ ≤′-trans ⟩_ : ∀ {x y z} → x ≤′ y → y ≤′ z → x ≤′ z
+-- xs ⟨ ≤′-trans ⟩ m≤m = xs
+-- xs ⟨ ≤′-trans ⟩ (≤-s ys) = ≤-s (xs ⟨ ≤′-trans ⟩ ys)
 --
 -- Effectively, I needed to prove that transitivity was a
 -- homomorphism.
@@ -180,7 +180,7 @@
 --   greater : ∀ m k → Ordering (suc (m + k)) m
 --
 -- If I tried to mimick the above as closely as possible, I would also
--- need an analogue to +: of course this was ⋈, so I was going to get
+-- need an analogue to +: of course this was ⟨ ≤′-trans ⟩, so I was going to get
 -- my transitivity proof as well as everything else. The result is the
 -- following:
 -- data Ordering {n : ℕ} : ∀ {i j}
@@ -191,11 +191,11 @@
 --   _<_ : ∀ {i j-1}
 --       → (i≤j-1 : i ≤′ j-1)
 --       → (j≤n : suc j-1 ≤′ n)
---       → Ordering (≤-s i≤j-1 ⋈ j≤n) j≤n
+--       → Ordering (≤-s i≤j-1 ⟨ ≤′-trans ⟩ j≤n) j≤n
 --   _>_ : ∀ {i-1 j}
 --       → (i≤n : suc i-1 ≤′ n)
 --       → (j≤i-1 : j ≤′ i-1)
---       → Ordering i≤n (≤-s j≤i-1 ⋈ i≤n)
+--       → Ordering i≤n (≤-s j≤i-1 ⟨ ≤′-trans ⟩ i≤n)
 --   eq : ∀ {i} → (i≤n : i ≤′ n) → Ordering i≤n i≤n
 
 -- _cmp_ : ∀ {i j n}
@@ -206,8 +206,8 @@
 -- m≤m cmp ≤-s y = m≤m > y
 -- ≤-s x cmp m≤m = x < m≤m
 -- ≤-s x cmp ≤-s y with x cmp y
--- ≤-s .(≤-s i≤j-1 ⋈ y) cmp ≤-s y            | i≤j-1 < .y = i≤j-1 < ≤-s y
--- ≤-s x            cmp ≤-s .(≤-s j≤i-1 ⋈ x) | .x > j≤i-1 = ≤-s x > j≤i-1
+-- ≤-s .(≤-s i≤j-1 ⟨ ≤′-trans ⟩ y) cmp ≤-s y            | i≤j-1 < .y = i≤j-1 < ≤-s y
+-- ≤-s x            cmp ≤-s .(≤-s j≤i-1 ⟨ ≤′-trans ⟩ x) | .x > j≤i-1 = ≤-s x > j≤i-1
 -- ≤-s x            cmp ≤-s .x               | eq .x = eq (≤-s x)
 
 -- z≤n : ∀ {n} → zero ≤′ n
@@ -219,11 +219,11 @@ module Polynomial.NormalForm.InjectionIndex where
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.Nat using (_≤′_; ≤′-refl; ≤′-step; _<′_) public
 open import Relation.Binary
+open import Function
 
-infixl 6 _⋈_
-_⋈_ : ∀ {x y z} → x ≤′ y → y ≤′ z → x ≤′ z
-xs ⋈ ≤′-refl = xs
-xs ⋈ (≤′-step ys) = ≤′-step (xs ⋈ ys)
+≤′-trans : ∀ {x y z} → x ≤′ y → y ≤′ z → x ≤′ z
+≤′-trans xs ≤′-refl = xs
+≤′-trans xs (≤′-step ys) = ≤′-step (≤′-trans xs ys)
 
 data Ordering {n : ℕ} : ∀ {i j}
                       → (i≤n : i ≤′ n)
@@ -233,11 +233,11 @@ data Ordering {n : ℕ} : ∀ {i j}
   lt : ∀ {i j-1}
      → (i≤j-1 : i ≤′ j-1)
      → (j≤n : suc j-1 ≤′ n)
-     → Ordering (≤′-step i≤j-1 ⋈ j≤n) j≤n
+     → Ordering (≤′-step i≤j-1 ⟨ ≤′-trans ⟩ j≤n) j≤n
   gt : ∀ {i-1 j}
      → (i≤n : suc i-1 ≤′ n)
      → (j≤i-1 : j ≤′ i-1)
-     → Ordering i≤n (≤′-step j≤i-1 ⋈ i≤n)
+     → Ordering i≤n (≤′-step j≤i-1 ⟨ ≤′-trans ⟩ i≤n)
   eq : ∀ {i} → (i≤n : i ≤′ n) → Ordering i≤n i≤n
 
 _cmp_ : ∀ {i j n}
@@ -248,8 +248,8 @@ _cmp_ : ∀ {i j n}
 ≤′-refl cmp ≤′-step y = gt ≤′-refl y
 ≤′-step x cmp ≤′-refl = lt x ≤′-refl
 ≤′-step x cmp ≤′-step y with x cmp y
-≤′-step .(≤′-step i≤j-1 ⋈ y) cmp ≤′-step y                | lt i≤j-1 .y = lt i≤j-1 (≤′-step y)
-≤′-step x                cmp ≤′-step .(≤′-step j≤i-1 ⋈ x) | gt .x j≤i-1 = gt (≤′-step x) j≤i-1
+≤′-step .(≤′-step i≤j-1 ⟨ ≤′-trans ⟩ y) cmp ≤′-step y                | lt i≤j-1 .y = lt i≤j-1 (≤′-step y)
+≤′-step x                cmp ≤′-step .(≤′-step j≤i-1 ⟨ ≤′-trans ⟩ x) | gt .x j≤i-1 = gt (≤′-step x) j≤i-1
 ≤′-step x                cmp ≤′-step .x               | eq .x = eq (≤′-step x)
 
 open import Data.Fin as Fin using (Fin)

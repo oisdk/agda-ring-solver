@@ -76,7 +76,7 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
          → (si≤n : suc i ≤′ n)
          → (sn≤m : suc n ≤′ m)
          → ∀ ρ
-         → Σ⟦ xs ⟧ (drop-1 (≤′-step si≤n ⋈ sn≤m) ρ)
+         → Σ⟦ xs ⟧ (drop-1 (≤′-step si≤n ⟨ ≤′-trans ⟩ sn≤m) ρ)
          ≈ Σ⟦ xs ⟧ (drop-1 si≤n (proj₂ (drop-1 sn≤m ρ)))
 Σ-Π↑-hom xs si≤n ≤′-refl (_ ∷ _) = refl
 Σ-Π↑-hom xs si≤n (≤′-step sn≤m) (_ ∷ ρ) = Σ-Π↑-hom xs si≤n sn≤m ρ
@@ -89,15 +89,15 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
 Π↑-hom (Κ x  Π i≤sn) _ _ = refl
 Π↑-hom (Σ xs Π i≤sn) = Σ-Π↑-hom xs i≤sn
 
-⋈-hom : ∀ {i j-1 n}
+trans-join-hom : ∀ {i j-1 n}
       → (i≤j-1 : i ≤′ j-1)
       → (j≤n   : suc j-1 ≤′ n)
       → (x : FlatPoly i)
       → ∀ ρ
-      → ⟦ x Π i≤j-1 ⟧ (proj₂ (drop-1 j≤n ρ)) ≈ ⟦ x Π (≤′-step i≤j-1 ⋈ j≤n) ⟧ ρ
-⋈-hom i≤j-1 j≤n (Κ x) _ = refl
-⋈-hom i≤j-1 ≤′-refl (Σ x) (_ ∷ _) = refl
-⋈-hom i≤j-1 (≤′-step j≤n) (Σ x {xn}) (_ ∷ ρ) = ⋈-hom i≤j-1 j≤n (Σ x {xn}) ρ
+      → ⟦ x Π i≤j-1 ⟧ (proj₂ (drop-1 j≤n ρ)) ≈ ⟦ x Π (≤′-step i≤j-1 ⟨ ≤′-trans ⟩ j≤n) ⟧ ρ
+trans-join-hom i≤j-1 j≤n (Κ x) _ = refl
+trans-join-hom i≤j-1 ≤′-refl (Σ x) (_ ∷ _) = refl
+trans-join-hom i≤j-1 (≤′-step j≤n) (Σ x {xn}) (_ ∷ ρ) = trans-join-hom i≤j-1 j≤n (Σ x {xn}) ρ
 
 Π↓-hom : ∀ {n m}
        → (xs : Coeffs n)
