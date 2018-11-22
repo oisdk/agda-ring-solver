@@ -23,8 +23,13 @@ infixr 1 ≪+_ +≫_ ≪*_ *≫_
 
 *≫_ : ∀ {x y₁ y₂} → y₁ ≈ y₂ → x * y₁ ≈ x * y₂
 *≫_ = *-cong refl
+{-# INLINE ≪*_ #-}
+{-# INLINE ≪+_ #-}
+{-# INLINE *≫_ #-}
+{-# INLINE +≫_ #-}
 
 -- transitivity as an operator
 infixr 0 _⊙_
 _⊙_ : ∀ {x y z} → x ≈ y → y ≈ z → x ≈ z
 _⊙_ = trans
+{-# INLINE _⊙_ #-}
