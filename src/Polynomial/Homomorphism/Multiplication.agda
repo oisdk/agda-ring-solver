@@ -1,37 +1,27 @@
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --without-K --safe #-}
 
-open import Algebra
-open import Relation.Binary hiding (Decidable)
-open import Relation.Unary
-open import Algebra.Solver.Ring.AlmostCommutativeRing
 open import Polynomial.Parameters
 
-----------------------------------------------------------------------
--- Homomorphism
-----------------------------------------------------------------------
 module Polynomial.Homomorphism.Multiplication
   {r₁ r₂ r₃ r₄}
   (homo : Homomorphism r₁ r₂ r₃ r₄)
   where
 
+open import Data.Nat as ℕ         using (ℕ; suc; zero)
+open import Data.Product          using (_×_; _,_; proj₁; proj₂)
+open import Data.List             using (_∷_; [])
+open import Data.Vec              using (Vec)
+open import Induction.WellFounded using (Acc; acc)
+open import Induction.Nat         using (<′-wellFounded)
+
+open import Function
+
 open import Polynomial.Homomorphism.Lemmas homo
 open import Polynomial.Homomorphism.Addition homo
+open import Polynomial.NormalForm homo
+
 open Homomorphism homo
 open import Polynomial.Reasoning ring
-open import Polynomial.NormalForm homo
-open import Relation.Nullary
-open import Data.Nat as ℕ using (ℕ; suc; zero)
-open import Data.Product hiding (Σ)
-import Data.Nat.Properties as ℕ-≡
-import Relation.Binary.PropositionalEquality as ≡
-open import Function
-open import Data.List as List using (List; _∷_; []; foldr)
-open import Data.Vec as Vec using (Vec; _∷_; [])
-open import Level using (Lift; lower; lift)
-open import Data.Fin as Fin using (Fin)
-open import Induction.WellFounded
-open import Induction.Nat
-
 
 mutual
   ⊠-step-hom : ∀ {n}

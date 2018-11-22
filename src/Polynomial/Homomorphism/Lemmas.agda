@@ -1,28 +1,26 @@
 {-# OPTIONS --without-K #-}
 
-open import Algebra
-open import Relation.Binary hiding (Decidable)
-open import Relation.Unary
-open import Algebra.Solver.Ring.AlmostCommutativeRing
 open import Polynomial.Parameters
-open import Data.List as List using (_∷_; []; foldr; List)
-open import Function
 
 module Polynomial.Homomorphism.Lemmas
   {r₁ r₂ r₃ r₄}
   (homo : Homomorphism r₁ r₂ r₃ r₄)
   where
-open Homomorphism homo
 
+open import Data.List                                  using (_∷_; [])
+open import Relation.Nullary                           using (Dec; yes; no)
+open import Data.Nat as ℕ                              using (ℕ; suc; zero; compare)
+open import Data.Vec as Vec                            using (Vec; _∷_)
+open import Level                                      using (lift)
+open import Data.Fin                                   using (Fin)
+open import Relation.Binary.PropositionalEquality as ≡ using (_≡_)
+open import Data.Product                               using (_,_; proj₁; proj₂)
+
+open import Function
+
+open Homomorphism homo
 open import Polynomial.Reasoning ring
 open import Polynomial.NormalForm homo
-open import Relation.Nullary
-open import Data.Nat as ℕ using (ℕ; suc; zero; compare)
-open import Data.Product hiding (Σ)
-open import Data.Vec as Vec using (Vec; _∷_; [])
-open import Level using (Lift; lower; lift)
-open import Data.Fin as Fin using (Fin)
-open import Level using (_⊔_)
 
 pow-add : ∀ x i j → x ^ i * x ^ j ≈ x ^ (i ℕ.+ j)
 pow-add x zero j = *-identityˡ (x ^ j)
@@ -67,9 +65,6 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
   ≈⟨ ≪* (sym (+-identityˡ _) ⊙ ≪+ sym (zero-hom x p _)) ⟩
     (⟦ x ⟧ Ρ + Σ⟦ xs ⟧ (ρ , Ρ) * ρ) * ρ ^ i
   ∎
-
--- norm-cons-hom : ∀ {n} x ρ (Ρ : Vec Carrier n) → Σ⟦ norm-cons x ⟧ (ρ , Ρ) ≈ (ρ , Ρ) ⟦∷⟧ x
--- norm-cons-hom (x Δ i , xs) ρ Ρ = ∷↓-hom x i xs ρ Ρ
 
 Σ-Π↑-hom : ∀ {i n m}
          → (xs : Coeffs i)
@@ -124,7 +119,6 @@ trans-join-hom i≤j-1 (≤′-step j≤n) (Σ x {xn}) (_ ∷ ρ) = trans-join-h
     Σ⟦ _≠0 x {x≠0} Δ 0 ∷ [] ⟧ (ρ , Ρ′)
   ∎
 
-open import Relation.Binary.PropositionalEquality as ≡ using (_≡_)
 
 drop-1⇒lookup : ∀ {n}
               → (i : Fin n)
@@ -132,16 +126,6 @@ drop-1⇒lookup : ∀ {n}
               → proj₁ (drop-1 (Fin⇒≤ i) Ρ) ≡ Vec.lookup i Ρ
 drop-1⇒lookup Fin.zero (ρ ∷ Ρ) = ≡.refl
 drop-1⇒lookup (Fin.suc i) (ρ ∷ Ρ) = drop-1⇒lookup i Ρ
-
-foldR : ∀ {a b p} {A : Set a} {B : Set b} (_R_ : B → List A → Set p)
-           → {f : A → B → B}
-           → {b : B}
-           → (∀ y {ys zs} → ys R zs → f y ys R (y ∷ zs))
-           → b R []
-           → ∀ xs
-           → foldr f b xs R xs
-foldR _ f b [] = b
-foldR P f b (x ∷ xs) = f x (foldR P f b xs)
 
 poly-foldR : ∀ {n} ρ ρs
         → ([f] : Fold n)
@@ -167,29 +151,3 @@ poly-foldR ρ Ρ f e dist step base (x ≠0 Δ i ∷ xs) =
   ≈⟨ dist _ (ρ ^ i) ⟩
     e ((x , xs) ⟦∷⟧ (ρ , Ρ) * ρ ^ i)
   ∎
-
--- NOTES:
---
--- Useful laws:
---
--- * Third Homomorphism Theorem
---    If a function can be expressed as both foldl f₁ e and foldr f₂
---    e, then there is an associative f with unit e where
---    foldl f e == foldr f e == h
---    J. Gibbons. The Third Homomorphism Theorem. J. Functional Prog., Vol 6, No 4, 657–665, 1996.
---
--- * foldr-fusion
---    If g a ∘ h ≡ h ∘ f a
---    then
---    h ∘ foldr f z ≡ foldr g (h z)
---
--- * First duality
---    foldr ∙ b ≡ foldl ∙ b
---   (when ∙ is associative)
---
--- * Second duality:
---    foldr ⊕ e ≡ foldl ⊗ e
---    when
---    a ⊕ (b ⊗ c) ≡ (a ⊕ b) ⊗ c
---    a ⊕ e ≡ e ⊗ a
-
