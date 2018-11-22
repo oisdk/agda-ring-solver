@@ -31,10 +31,8 @@ open import Level using (Lift; lower; lift)
 open import Data.Fin as Fin using (Fin)
 open import Induction.WellFounded
 open import Induction.Nat
-open import Relation.Binary.Lifted
-open Intensional setoid
 
-⊟-step-hom : ∀ {n} (a : Acc _<′_ n) → (xs : Poly n) → ⟦ ⊟-step a xs ⟧ ≋ -_ ∘ ⟦ xs ⟧
+⊟-step-hom : ∀ {n} (a : Acc _<′_ n) → (xs : Poly n) → ∀ ρ → ⟦ ⊟-step a xs ⟧ ρ ≈ - (⟦ xs ⟧ ρ)
 ⊟-step-hom a (Κ x  Π i≤n) ρ = -‿homo x
 ⊟-step-hom (acc wf) (Σ xs Π i≤n) ρ′ =
   let (ρ , ρs) = drop-1 i≤n ρ′
