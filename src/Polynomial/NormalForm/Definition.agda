@@ -7,10 +7,10 @@ open import Data.Unit using (⊤)
 open import Data.List as List using (_∷_; []; List)
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Polynomial.Parameters
-open import Polynomial.Normal.InjectionIndex
+open import Polynomial.NormalForm.InjectionIndex
 open import Function using (_∘_)
 
-module Polynomial.Normal.Definition
+module Polynomial.NormalForm.Definition
   {a ℓ}
   (coeffs : RawCoeff a ℓ)
   where

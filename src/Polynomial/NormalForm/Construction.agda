@@ -5,17 +5,17 @@ open import Level using (lift; lower; _⊔_)
 open import Data.Unit using (tt)
 open import Data.List as List using (_∷_; []; foldr)
 open import Data.Nat as ℕ using (ℕ; suc; zero)
-open import Polynomial.Normal.InjectionIndex
+open import Polynomial.NormalForm.InjectionIndex
 open import Polynomial.Parameters
 open import Function
 open import Data.Product using (_×_; _,_; map₁; curry; uncurry)
 
-module Polynomial.Normal.Construction
+module Polynomial.NormalForm.Construction
   {a ℓ}
   (coeffs : RawCoeff a ℓ)
   where
 
-open import Polynomial.Normal.Definition coeffs
+open import Polynomial.NormalForm.Definition coeffs
 open RawCoeff coeffs
 
 ----------------------------------------------------------------------
@@ -48,7 +48,7 @@ x Δ i ∷↓ xs with zero? x
 _Π↑_ : ∀ {n m} → Poly n → (suc n ≤′ m) → Poly m
 (xs Π i≤n) Π↑ n≤m = xs Π (≤′-step i≤n ⋈ n≤m)
 
--- Normalising Π
+-- NormalForm.sing Π
 infixr 4 _Π↓_
 _Π↓_ : ∀ {i n} → Coeffs i → suc i ≤′ n → Poly n
 []                       Π↓ i≤n = Κ 0# Π z≤n

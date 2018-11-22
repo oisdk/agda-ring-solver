@@ -15,7 +15,7 @@ module Polynomial.Homomorphism.Lemmas
 open Homomorphism homo
 
 open import Polynomial.Reasoning ring
-open import Polynomial.Normal homo
+open import Polynomial.NormalForm homo
 open import Relation.Nullary
 open import Data.Nat as ℕ using (ℕ; suc; zero; compare)
 open import Data.Product hiding (Σ)

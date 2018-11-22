@@ -1,6 +1,6 @@
 {-# OPTIONS --without-K #-}
 
-module Polynomial.Nat.Examples where
+module Examples where
 
 open import Polynomial.Simple.AlmostCommutativeRing
 open import Polynomial.Simple.Reflection

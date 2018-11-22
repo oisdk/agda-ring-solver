@@ -24,8 +24,8 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
     ; Zero-C = 0# ≈_
     ; zero-c? = 0# ≟_
     }
-  open import Polynomial.Normal.Definition rawCoeff
-  open import Polynomial.Normal.Operations rawCoeff
+  open import Polynomial.NormalForm.Definition rawCoeff
+  open import Polynomial.NormalForm.Operations rawCoeff
 
   norm : ∀ {n} → Expr Carrier n → Poly n
   norm = go
@@ -60,7 +60,7 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
   ⟦_⇓⟧ : ∀ {n} → Expr Carrier n → Vec Carrier n → Carrier
   ⟦ expr ⇓⟧ = ⟦ norm expr ⟧ₚ where
 
-    open import Polynomial.Normal.Semantics homo
+    open import Polynomial.NormalForm.Semantics homo
       renaming (⟦_⟧ to ⟦_⟧ₚ)
 
   correct : ∀ {n} (expr : Expr Carrier n) ρ → ⟦ expr ⇓⟧ ρ ≈ ⟦ expr ⟧ ρ

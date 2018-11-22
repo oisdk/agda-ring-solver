@@ -10,14 +10,14 @@ open import Level using (lift)
 open import Data.Product
 open import Polynomial.Parameters
 
-module Polynomial.Normal.Semantics
+module Polynomial.NormalForm.Semantics
   {r₁ r₂ r₃ r₄}
   (homo : Homomorphism r₁ r₂ r₃ r₄)
   where
 
-open import Polynomial.Normal.InjectionIndex
+open import Polynomial.NormalForm.InjectionIndex
 open Homomorphism homo
-open import Polynomial.Normal.Definition coeffs
+open import Polynomial.NormalForm.Definition coeffs
 
 -- Exponentiation
 infixr 8 _^_

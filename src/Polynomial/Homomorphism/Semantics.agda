@@ -15,7 +15,7 @@ module Polynomial.Homomorphism.Semantics
   where
 
 open import Polynomial.Homomorphism.Lemmas homo
-open import Polynomial.Normal homo
+open import Polynomial.NormalForm homo
 open Homomorphism homo
 open import Polynomial.Reasoning ring
 

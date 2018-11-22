@@ -16,7 +16,7 @@ module Polynomial.Homomorphism.Addition
 
 open Homomorphism homo
 open import Polynomial.Homomorphism.Lemmas homo
-open import Polynomial.Normal homo
+open import Polynomial.NormalForm homo
 
 open import Polynomial.Reasoning ring
 open import Relation.Nullary

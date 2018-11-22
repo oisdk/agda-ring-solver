@@ -24,9 +24,9 @@ open import Polynomial.Expr public
 ⟦ x ⊗ y ⟧ ρ = ⟦ x ⟧ ρ * ⟦ y ⟧ ρ
 ⟦ ⊝ x ⟧ ρ = - ⟦ x ⟧ ρ
 
-open import Polynomial.Normal.Definition coeffs
+open import Polynomial.NormalForm.Definition coeffs
   using (Poly)
-open import Polynomial.Normal.Operations coeffs
+open import Polynomial.NormalForm.Operations coeffs
   using (_⊞_; _⊠_; ⊟_; κ; ι)
 
 norm : ∀ {n} → Expr Raw.Carrier n → Poly n
@@ -36,7 +36,7 @@ norm (x ⊕ y) = norm x ⊞ norm y
 norm (x ⊗ y) = norm x ⊠ norm y
 norm (⊝ x) = ⊟ norm x
 
-open import Polynomial.Normal.Semantics homo
+open import Polynomial.NormalForm.Semantics homo
   renaming (⟦_⟧ to ⟦_⟧ₚ)
 
 ⟦_⇓⟧ : ∀ {n} → Expr Raw.Carrier n → Vec Carrier n → Carrier

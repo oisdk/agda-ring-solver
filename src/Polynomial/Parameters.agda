@@ -1,11 +1,13 @@
 {-# OPTIONS --without-K #-}
 
+-- This module packages up all the stuff that's passed to the other
+-- modules in a convenient form.
+module Polynomial.Parameters where
+
 open import Algebra
 open import Relation.Unary
 open import Level
 open import Algebra.Solver.Ring.AlmostCommutativeRing
-
-module Polynomial.Parameters where
 
 -- This record stores all the stuff we need for the coefficients:
 --
