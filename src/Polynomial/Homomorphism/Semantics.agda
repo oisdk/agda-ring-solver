@@ -1,30 +1,24 @@
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --without-K --safe #-}
 
-open import Algebra
-open import Relation.Binary hiding (Decidable)
-open import Relation.Unary
-open import Algebra.Solver.Ring.AlmostCommutativeRing
 open import Polynomial.Parameters
 
-----------------------------------------------------------------------
--- Homomorphism
-----------------------------------------------------------------------
 module Polynomial.Homomorphism.Semantics
   {r₁ r₂ r₃ r₄}
   (homo : Homomorphism r₁ r₂ r₃ r₄)
   where
 
+
+open import Data.Product    using (_,_)
+open import Data.List       using ([])
+open import Data.Vec as Vec using (Vec)
+open import Data.Fin        using (Fin)
+
+open import Function
+
 open import Polynomial.Homomorphism.Lemmas homo
 open import Polynomial.NormalForm homo
 open Homomorphism homo
 open import Polynomial.Reasoning ring
-
-open import Data.Product hiding (Σ)
-open import Function
-open import Data.List as List using (_∷_; [])
-open import Data.Vec as Vec using (Vec; _∷_; [])
-open import Level using (Lift; lower; lift)
-open import Data.Fin as Fin using (Fin)
 
 κ-hom : ∀ {n}
       → (x : Raw.Carrier)

@@ -2,9 +2,6 @@
 
 open import Polynomial.Parameters
 
-----------------------------------------------------------------------
--- Homomorphism
-----------------------------------------------------------------------
 module Polynomial.Homomorphism
   {r₁ r₂ r₃ r₄}
   (homo : Homomorphism r₁ r₂ r₃ r₄)
