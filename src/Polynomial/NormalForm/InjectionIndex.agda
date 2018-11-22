@@ -252,10 +252,6 @@ _cmp_ : ∀ {i j n}
 ≤′-step x                cmp ≤′-step .(≤′-step j≤i-1 ⋈ x) | gt .x j≤i-1 = gt (≤′-step x) j≤i-1
 ≤′-step x                cmp ≤′-step .x               | eq .x = eq (≤′-step x)
 
-z≤n : ∀ {n} → zero ≤′ n
-z≤n {zero} = ≤′-refl
-z≤n {suc n} = ≤′-step z≤n
-
 open import Data.Fin as Fin using (Fin)
 
 space : ∀ {n} → Fin n → ℕ

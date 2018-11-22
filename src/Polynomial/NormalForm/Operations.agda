@@ -14,6 +14,7 @@ open import Data.Nat as ℕ using (ℕ; suc; zero; compare)
 open import Function
 open import Data.Fin as Fin using (Fin)
 open import Polynomial.Parameters
+import Data.Nat.Properties as ℕ-Prop
 
 -- Multivariate polynomials.
 module Polynomial.NormalForm.Operations
@@ -187,7 +188,7 @@ _⊠_ = ⊠-step (<′-wellFounded _)
 
 -- The constant polynomial
 κ : ∀ {n} → Carrier → Poly n
-κ x = Κ x Π z≤n
+κ x = Κ x Π ℕ-Prop.z≤′n
 
 -- A variable
 ι : ∀ {n} → Fin n → Poly n
