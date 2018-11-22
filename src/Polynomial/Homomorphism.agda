@@ -1,9 +1,5 @@
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --without-K --safe #-}
 
-open import Algebra
-open import Relation.Binary hiding (Decidable)
-open import Relation.Unary
-open import Algebra.Solver.Ring.AlmostCommutativeRing
 open import Polynomial.Parameters
 
 ----------------------------------------------------------------------

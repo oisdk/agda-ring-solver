@@ -1,34 +1,26 @@
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --without-K --safe #-}
 
-open import Algebra
-open import Relation.Binary hiding (Decidable)
-open import Relation.Unary
-open import Algebra.Solver.Ring.AlmostCommutativeRing
 open import Polynomial.Parameters
 
-----------------------------------------------------------------------
--- Homomorphism
-----------------------------------------------------------------------
 module Polynomial.Homomorphism.Addition
   {r₁ r₂ r₃ r₄}
   (homo : Homomorphism r₁ r₂ r₃ r₄)
   where
 
+open import Function
+
+open import Data.Nat as ℕ using (ℕ; suc; zero; compare)
+open import Data.Product  using (_,_; _×_; proj₂)
+open import Data.List     using (_∷_; [])
+open import Data.Vec      using (Vec)
+
+import Data.Nat.Properties as ℕ-Prop
+import Relation.Binary.PropositionalEquality as ≡
+
 open Homomorphism homo
 open import Polynomial.Homomorphism.Lemmas homo
 open import Polynomial.NormalForm homo
-
 open import Polynomial.Reasoning ring
-open import Relation.Nullary
-open import Data.Nat as ℕ using (ℕ; suc; zero; compare)
-open import Data.Product hiding (Σ)
-import Data.Nat.Properties as ℕ-≡
-import Relation.Binary.PropositionalEquality as ≡
-open import Function
-open import Data.List as List using (_∷_; [])
-open import Data.Vec as Vec using (Vec; _∷_; [])
-open import Level using (Lift; lower; lift)
-open import Data.Fin as Fin using (Fin)
 
 mutual
   ⊞-hom : ∀ {n}
@@ -221,7 +213,7 @@ mutual
                     ρ ^ k * (ρ * ρ ^ j)
                   ≈⟨ pow-add ρ k _ ⟩
                     ρ ^ (k ℕ.+ suc j)
-                  ≡⟨ ≡.cong (ρ ^_) (ℕ-≡.+-comm k (suc j)) ⟩
+                  ≡⟨ ≡.cong (ρ ^_) (ℕ-Prop.+-comm k (suc j)) ⟩
                     ρ ^ suc (j ℕ.+ k)
                   ∎ ⟩
              (x′ + xs′ * ρ) * ρ ^ suc (j ℕ.+ k)

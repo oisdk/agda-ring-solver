@@ -1,8 +1,5 @@
 {-# OPTIONS --without-K --safe #-}
 
-open import Algebra
-open import Relation.Binary
-open import Algebra.FunctionProperties
 open import Algebra.Solver.Ring.AlmostCommutativeRing
 
 -- Some specialised tools for equaltional reasoning.
@@ -12,8 +9,6 @@ module Polynomial.Reasoning
   where
 
 open AlmostCommutativeRing ring
-import Relation.Binary.PropositionalEquality as ≡
-open import Relation.Nullary
 open import Relation.Binary.EqReasoning setoid public
 
 infixr 1 ≪+_ +≫_ ≪*_ *≫_

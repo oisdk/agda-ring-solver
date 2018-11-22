@@ -1,9 +1,5 @@
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --without-K --safe #-}
 
-open import Algebra
-open import Relation.Binary hiding (Decidable)
-open import Relation.Unary
-open import Algebra.Solver.Ring.AlmostCommutativeRing
 open import Polynomial.Parameters
 
 module Polynomial.Solver
@@ -11,11 +7,11 @@ module Polynomial.Solver
   (homo : Homomorphism r₁ r₂ r₃ r₄)
   where
 
-open Homomorphism homo
-open import Data.Fin as Fin using (Fin)
-open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.Vec as Vec using (Vec)
 open import Polynomial.Expr public
+open import Algebra.Solver.Ring.AlmostCommutativeRing
+
+open Homomorphism homo
 
 ⟦_⟧ : ∀ {n} → Expr Raw.Carrier n → Vec Carrier n → Carrier
 ⟦ Κ x ⟧ ρ = _-Raw-AlmostCommutative⟶_.⟦_⟧ morphism x
