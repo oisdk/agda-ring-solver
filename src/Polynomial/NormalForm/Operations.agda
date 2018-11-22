@@ -70,19 +70,19 @@ mutual
 
   infixl 6 _⊞_
   _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
-  (xs Π i≤n) ⊞ (ys Π j≤n) = ⊞-match (i≤n cmp j≤n) xs ys
+  (xs Π i≤n) ⊞ (ys Π j≤n) = ⊞-match (inj-compare i≤n j≤n) xs ys
 
   ⊞-match : ∀ {i j n}
         → {i≤n : i ≤′ n}
         → {j≤n : j ≤′ n}
-        → Ordering i≤n j≤n
+        → InjectionOrdering i≤n j≤n
         → FlatPoly i
         → FlatPoly j
         → Poly n
-  ⊞-match (eq i&j≤n)    (Κ x)  (Κ y)  = Κ (x + y)         Π  i&j≤n
-  ⊞-match (eq i&j≤n)    (Σ xs) (Σ ys) = ⊞-coeffs    xs ys Π↓ i&j≤n
-  ⊞-match (lt i≤j-1 j≤n)  xs    (Σ ys) = ⊞-inj i≤j-1 xs ys Π↓ j≤n
-  ⊞-match (gt i≤n j≤i-1) (Σ xs)  ys    = ⊞-inj j≤i-1 ys xs Π↓ i≤n
+  ⊞-match (inj-eq i&j≤n)    (Κ x)  (Κ y)  = Κ (x + y)         Π  i&j≤n
+  ⊞-match (inj-eq i&j≤n)    (Σ xs) (Σ ys) = ⊞-coeffs    xs ys Π↓ i&j≤n
+  ⊞-match (inj-lt i≤j-1 j≤n)  xs    (Σ ys) = ⊞-inj i≤j-1 xs ys Π↓ j≤n
+  ⊞-match (inj-gt i≤n j≤i-1) (Σ xs)  ys    = ⊞-inj j≤i-1 ys xs Π↓ i≤n
 
   ⊞-inj : ∀ {i k}
        → (i ≤′ k)
@@ -91,7 +91,7 @@ mutual
        → Coeffs k
   ⊞-inj i≤k xs [] = xs Π i≤k Δ zero ∷↓ []
   ⊞-inj i≤k xs (y Π j≤k ≠0 Δ zero ∷ ys) =
-    ⊞-match (j≤k cmp i≤k) y xs Δ zero ∷↓ ys
+    ⊞-match (inj-compare j≤k i≤k) y xs Δ zero ∷↓ ys
   ⊞-inj i≤k xs (y Δ suc j ∷ ys) =
     xs Π i≤k Δ zero ∷↓ y Δ j ∷ ys
 
@@ -142,7 +142,7 @@ mutual
 ----------------------------------------------------------------------
 mutual
   ⊠-step : ∀ {n} → Acc _<′_ n → Poly n → Poly n → Poly n
-  ⊠-step a (xs Π i≤n) (ys Π j≤n) = ⊠-match a (i≤n cmp j≤n) xs ys
+  ⊠-step a (xs Π i≤n) (ys Π j≤n) = ⊠-match a (inj-compare i≤n j≤n) xs ys
 
   ⊠-inj : ∀ {i k}
         → Acc _<′_ k
@@ -150,20 +150,20 @@ mutual
         → FlatPoly i
         → Fold k
   ⊠-inj a i≤k x (y Π j≤k , ys) =
-    ⊠-match a (i≤k cmp j≤k) x y , ys
+    ⊠-match a (inj-compare i≤k j≤k) x y , ys
 
   ⊠-match : ∀ {i j n}
           → Acc _<′_ n
           → {i≤n : i ≤′ n}
           → {j≤n : j ≤′ n}
-          → Ordering i≤n j≤n
+          → InjectionOrdering i≤n j≤n
           → FlatPoly i
           → FlatPoly j
           → Poly n
-  ⊠-match _ (eq i&j≤n)        (Κ  x) (Κ  y) = Κ (x * y)                           Π  i&j≤n
-  ⊠-match (acc wf) (eq i&j≤n) (Σ xs) (Σ ys) = ⊠-coeffs (wf _ i&j≤n) xs ys         Π↓ i&j≤n
-  ⊠-match (acc wf) (lt i≤j-1 j≤n) xs (Σ ys)  = para (⊠-inj (wf _ j≤n) i≤j-1 xs) ys Π↓ j≤n
-  ⊠-match (acc wf) (gt i≤n j≤i-1) (Σ xs) ys  = para (⊠-inj (wf _ i≤n) j≤i-1 ys) xs Π↓ i≤n
+  ⊠-match _ (inj-eq i&j≤n)        (Κ  x) (Κ  y) = Κ (x * y)                           Π  i&j≤n
+  ⊠-match (acc wf) (inj-eq i&j≤n) (Σ xs) (Σ ys) = ⊠-coeffs (wf _ i&j≤n) xs ys         Π↓ i&j≤n
+  ⊠-match (acc wf) (inj-lt i≤j-1 j≤n) xs (Σ ys)  = para (⊠-inj (wf _ j≤n) i≤j-1 xs) ys Π↓ j≤n
+  ⊠-match (acc wf) (inj-gt i≤n j≤i-1) (Σ xs) ys  = para (⊠-inj (wf _ i≤n) j≤i-1 ys) xs Π↓ i≤n
 
   -- A simple shift-and-add algorithm.
   ⊠-coeffs : ∀ {n} → Acc _<′_ n → Coeffs n → Coeffs n → Coeffs n

@@ -107,15 +107,15 @@
 -- size of the gap (even though it was comparing the length of the
 -- tail):
 
--- data Ordering : ℕ → ℕ → Set where
---   less    : ∀ {n m} → n ≤′ m → Ordering n (suc m)
---   greater : ∀ {n m} → m ≤′ n → Ordering (suc n) m
---   equal   : ∀ {n}           → Ordering n n
+-- data InjectionOrdering : ℕ → ℕ → Set where
+--   less    : ∀ {n m} → n ≤′ m → InjectionOrdering n (suc m)
+--   greater : ∀ {n m} → m ≤′ n → InjectionOrdering (suc n) m
+--   equal   : ∀ {n}           → InjectionOrdering n n
 
 -- ≤-compare : ∀ {i j n}
 --           → (i≤n : i ≤′ n)
 --           → (j≤n : j ≤′ n)
---           → Ordering i j
+--           → InjectionOrdering i j
 -- ≤-compare m≤m m≤m = equal
 -- ≤-compare m≤m (≤-s m≤n) = greater m≤n
 -- ≤-compare (≤-s m≤n) m≤m = less m≤n
@@ -174,16 +174,16 @@
 -- that function provides a proof about its *arguments* whereas the
 -- one I wrote above only provides a proof about the i and j.
 --
--- data Ordering : Rel ℕ 0ℓ where
---   less    : ∀ m k → Ordering m (suc (m + k))
---   equal   : ∀ m   → Ordering m m
---   greater : ∀ m k → Ordering (suc (m + k)) m
+-- data InjectionOrdering : Rel ℕ 0ℓ where
+--   less    : ∀ m k → InjectionOrdering m (suc (m + k))
+--   equal   : ∀ m   → InjectionOrdering m m
+--   greater : ∀ m k → InjectionOrdering (suc (m + k)) m
 --
 -- If I tried to mimick the above as closely as possible, I would also
 -- need an analogue to +: of course this was ⟨ ≤′-trans ⟩, so I was going to get
 -- my transitivity proof as well as everything else. The result is the
 -- following:
--- data Ordering {n : ℕ} : ∀ {i j}
+-- data InjectionOrdering {n : ℕ} : ∀ {i j}
 --                       → (i≤n : i ≤′ n)
 --                       → (j≤n : j ≤′ n)
 --                       → Set
@@ -191,17 +191,17 @@
 --   _<_ : ∀ {i j-1}
 --       → (i≤j-1 : i ≤′ j-1)
 --       → (j≤n : suc j-1 ≤′ n)
---       → Ordering (≤-s i≤j-1 ⟨ ≤′-trans ⟩ j≤n) j≤n
+--       → InjectionOrdering (≤-s i≤j-1 ⟨ ≤′-trans ⟩ j≤n) j≤n
 --   _>_ : ∀ {i-1 j}
 --       → (i≤n : suc i-1 ≤′ n)
 --       → (j≤i-1 : j ≤′ i-1)
---       → Ordering i≤n (≤-s j≤i-1 ⟨ ≤′-trans ⟩ i≤n)
---   eq : ∀ {i} → (i≤n : i ≤′ n) → Ordering i≤n i≤n
+--       → InjectionOrdering i≤n (≤-s j≤i-1 ⟨ ≤′-trans ⟩ i≤n)
+--   eq : ∀ {i} → (i≤n : i ≤′ n) → InjectionOrdering i≤n i≤n
 
 -- _cmp_ : ∀ {i j n}
 --     → (x : i ≤′ n)
 --     → (y : j ≤′ n)
---     → Ordering x y
+--     → InjectionOrdering x y
 -- m≤m cmp m≤m = eq m≤m
 -- m≤m cmp ≤-s y = m≤m > y
 -- ≤-s x cmp m≤m = x < m≤m
@@ -225,32 +225,32 @@ open import Function
 ≤′-trans xs ≤′-refl = xs
 ≤′-trans xs (≤′-step ys) = ≤′-step (≤′-trans xs ys)
 
-data Ordering {n : ℕ} : ∀ {i j}
+data InjectionOrdering {n : ℕ} : ∀ {i j}
                       → (i≤n : i ≤′ n)
                       → (j≤n : j ≤′ n)
                       → Set
                       where
-  lt : ∀ {i j-1}
+  inj-lt : ∀ {i j-1}
      → (i≤j-1 : i ≤′ j-1)
      → (j≤n : suc j-1 ≤′ n)
-     → Ordering (≤′-step i≤j-1 ⟨ ≤′-trans ⟩ j≤n) j≤n
-  gt : ∀ {i-1 j}
+     → InjectionOrdering (≤′-step i≤j-1 ⟨ ≤′-trans ⟩ j≤n) j≤n
+  inj-gt : ∀ {i-1 j}
      → (i≤n : suc i-1 ≤′ n)
      → (j≤i-1 : j ≤′ i-1)
-     → Ordering i≤n (≤′-step j≤i-1 ⟨ ≤′-trans ⟩ i≤n)
-  eq : ∀ {i} → (i≤n : i ≤′ n) → Ordering i≤n i≤n
+     → InjectionOrdering i≤n (≤′-step j≤i-1 ⟨ ≤′-trans ⟩ i≤n)
+  inj-eq : ∀ {i} → (i≤n : i ≤′ n) → InjectionOrdering i≤n i≤n
 
-_cmp_ : ∀ {i j n}
+inj-compare : ∀ {i j n}
     → (x : i ≤′ n)
     → (y : j ≤′ n)
-    → Ordering x y
-≤′-refl cmp ≤′-refl = eq ≤′-refl
-≤′-refl cmp ≤′-step y = gt ≤′-refl y
-≤′-step x cmp ≤′-refl = lt x ≤′-refl
-≤′-step x cmp ≤′-step y with x cmp y
-≤′-step .(≤′-step i≤j-1 ⟨ ≤′-trans ⟩ y) cmp ≤′-step y                | lt i≤j-1 .y = lt i≤j-1 (≤′-step y)
-≤′-step x                cmp ≤′-step .(≤′-step j≤i-1 ⟨ ≤′-trans ⟩ x) | gt .x j≤i-1 = gt (≤′-step x) j≤i-1
-≤′-step x                cmp ≤′-step .x               | eq .x = eq (≤′-step x)
+    → InjectionOrdering x y
+inj-compare ≤′-refl ≤′-refl = inj-eq ≤′-refl
+inj-compare ≤′-refl (≤′-step y) = inj-gt ≤′-refl y
+inj-compare (≤′-step x) ≤′-refl = inj-lt x ≤′-refl
+inj-compare (≤′-step x) (≤′-step y) with inj-compare x y
+inj-compare (≤′-step .(≤′-step i≤j-1 ⟨ ≤′-trans ⟩ y)) (≤′-step y)                | inj-lt i≤j-1 .y = inj-lt i≤j-1 (≤′-step y)
+inj-compare (≤′-step x)                (≤′-step .(≤′-step j≤i-1 ⟨ ≤′-trans ⟩ x)) | inj-gt .x j≤i-1 = inj-gt (≤′-step x) j≤i-1
+inj-compare (≤′-step x)                (≤′-step .x)               | inj-eq .x = inj-eq (≤′-step x)
 
 open import Data.Fin as Fin using (Fin)
 

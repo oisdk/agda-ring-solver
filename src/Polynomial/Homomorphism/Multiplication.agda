@@ -39,18 +39,18 @@ mutual
              → (xs ys : Poly n)
              → ∀ ρ
              → ⟦ ⊠-step a xs ys ⟧ ρ ≈ ⟦ xs ⟧ ρ * ⟦ ys ⟧ ρ
-  ⊠-step-hom a (xs Π i≤n) (ys Π j≤n) = ⊠-match-hom a (i≤n cmp j≤n) xs ys
+  ⊠-step-hom a (xs Π i≤n) (ys Π j≤n) = ⊠-match-hom a (inj-compare i≤n j≤n) xs ys
 
   ⊠-match-hom : ∀ {i j n}
               → (a : Acc _<′_ n)
               → {i≤n : i ≤′ n}
               → {j≤n : j ≤′ n}
-              → (ord : Ordering i≤n j≤n)
+              → (ord : InjectionOrdering i≤n j≤n)
               → (xs : FlatPoly i)
               → (ys : FlatPoly j)
               → (Ρ : Vec Carrier n)
               → ⟦ ⊠-match a ord xs ys ⟧ Ρ ≈ ⟦ xs Π i≤n ⟧ Ρ * ⟦ ys Π j≤n ⟧ Ρ
-  ⊠-match-hom (acc wf) (lt i≤j-1 j≤n) xs (Σ ys) Ρ =
+  ⊠-match-hom (acc wf) (inj-lt i≤j-1 j≤n) xs (Σ ys) Ρ =
     let (ρ , Ρ′) = drop-1 j≤n Ρ
     in
     begin
@@ -62,7 +62,7 @@ mutual
     ≈⟨ ≪* trans-join-hom i≤j-1 j≤n xs Ρ ⟩
       ⟦ xs Π (≤′-step i≤j-1 ⟨ ≤′-trans ⟩ j≤n) ⟧ Ρ * Σ⟦ ys ⟧ (drop-1 j≤n Ρ)
     ∎
-  ⊠-match-hom (acc wf) (gt i≤n j≤i-1) (Σ xs) ys Ρ =
+  ⊠-match-hom (acc wf) (inj-gt i≤n j≤i-1) (Σ xs) ys Ρ =
     let (ρ , Ρ′) = drop-1 i≤n Ρ
     in
     begin
@@ -76,8 +76,8 @@ mutual
     ≈⟨ *-comm _ _ ⟩
       Σ⟦ xs ⟧ (drop-1 i≤n Ρ) * ⟦ ys Π (≤′-step j≤i-1 ⟨ ≤′-trans ⟩ i≤n) ⟧ Ρ
     ∎
-  ⊠-match-hom (acc _) (eq ij≤n) (Κ x) (Κ y) Ρ = *-homo x y
-  ⊠-match-hom (acc wf) (eq ij≤n) (Σ xs) (Σ ys) Ρ =
+  ⊠-match-hom (acc _) (inj-eq ij≤n) (Κ x) (Κ y) Ρ = *-homo x y
+  ⊠-match-hom (acc wf) (inj-eq ij≤n) (Σ xs) (Σ ys) Ρ =
     begin
       ⟦ ⊠-coeffs (wf _ ij≤n) xs ys Π↓ ij≤n ⟧ Ρ
     ≈⟨ Π↓-hom (⊠-coeffs (wf _ ij≤n) xs ys) ij≤n Ρ ⟩
@@ -159,8 +159,8 @@ mutual
           zs′ = Σ⟦ zs ⟧ (ρ , Ρ)
       in
       begin
-        ⟦ ⊠-match a (i≤k cmp j≤k) x y ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ
-      ≈⟨ ⊠-match-hom a (i≤k cmp j≤k) x _ Ρ ⟨ +-cong ⟩ (≪* ys≋zs ︔ *-assoc _ _ _) ⟩
+        ⟦ ⊠-match a (inj-compare i≤k j≤k) x y ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ
+      ≈⟨ ⊠-match-hom a (inj-compare i≤k j≤k) x _ Ρ ⟨ +-cong ⟩ (≪* ys≋zs ︔ *-assoc _ _ _) ⟩
         x′ * y′ + x′ * (zs′ * ρ)
       ≈⟨ sym (distribˡ x′ _ _ ) ⟩
         x′ * (y′ + zs′ * ρ)

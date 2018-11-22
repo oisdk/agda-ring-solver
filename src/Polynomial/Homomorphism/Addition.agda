@@ -36,18 +36,18 @@ mutual
         → (ys : Poly n)
         → (Ρ : Vec Carrier n)
         → ⟦ xs ⊞ ys ⟧ Ρ ≈ ⟦ xs ⟧ Ρ + ⟦ ys ⟧ Ρ
-  ⊞-hom (xs Π i≤n) (ys Π j≤n) = ⊞-match-hom (i≤n cmp j≤n) xs ys
+  ⊞-hom (xs Π i≤n) (ys Π j≤n) = ⊞-match-hom (inj-compare i≤n j≤n) xs ys
 
   ⊞-match-hom : ∀ {i j n}
               → {i≤n : i ≤′ n}
               → {j≤n : j ≤′ n}
-              → (i-cmp-j : Ordering i≤n j≤n)
+              → (i-cmp-j : InjectionOrdering i≤n j≤n)
               → (xs : FlatPoly i)
               → (ys : FlatPoly j)
               → (Ρ : Vec Carrier n)
               → ⟦ ⊞-match i-cmp-j xs ys ⟧ Ρ ≈ ⟦ xs Π i≤n ⟧ Ρ + ⟦ ys Π j≤n ⟧ Ρ
-  ⊞-match-hom (eq ij≤n) (Κ x) (Κ y) Ρ = +-homo x y
-  ⊞-match-hom (eq ij≤n) (Σ xs) (Σ ys) Ρ =
+  ⊞-match-hom (inj-eq ij≤n) (Κ x) (Κ y) Ρ = +-homo x y
+  ⊞-match-hom (inj-eq ij≤n) (Σ xs) (Σ ys) Ρ =
     begin
       ⟦ ⊞-coeffs xs ys Π↓ ij≤n ⟧ Ρ
     ≈⟨ Π↓-hom (⊞-coeffs xs ys) ij≤n Ρ ⟩
@@ -55,7 +55,7 @@ mutual
     ≈⟨ ⊞-coeffs-hom xs ys (drop-1 ij≤n Ρ) ⟩
       Σ⟦ xs ⟧ (drop-1 ij≤n Ρ) + Σ⟦ ys ⟧ (drop-1 ij≤n Ρ)
     ∎
-  ⊞-match-hom (gt i≤n j≤i-1) (Σ xs) ys Ρ =
+  ⊞-match-hom (inj-gt i≤n j≤i-1) (Σ xs) ys Ρ =
     let (ρ , Ρ′) = drop-1 i≤n Ρ
     in
     begin
@@ -69,7 +69,7 @@ mutual
     ≈⟨ +-comm _ _ ⟩
       Σ⟦ xs ⟧ (drop-1 i≤n Ρ) + ⟦ ys Π (≤′-step j≤i-1 ⟨ ≤′-trans ⟩ i≤n) ⟧ Ρ
     ∎
-  ⊞-match-hom (lt i≤j-1 j≤n) xs (Σ ys) Ρ =
+  ⊞-match-hom (inj-lt i≤j-1 j≤n) xs (Σ ys) Ρ =
     let (ρ , Ρ′) = drop-1 j≤n Ρ
     in
     begin
@@ -101,10 +101,10 @@ mutual
     ∎
   ⊞-inj-hom i≤k xs (y Π j≤k ≠0 Δ 0 ∷ ys) ρ Ρ =
     begin
-      Σ⟦ ⊞-match (j≤k cmp i≤k) y xs Δ 0 ∷↓ ys ⟧ (ρ , Ρ)
-    ≈⟨ ∷↓-hom (⊞-match (j≤k cmp i≤k) y xs) 0 ys ρ Ρ ⟩
-      (⟦ ⊞-match (j≤k cmp i≤k) y xs ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ) * ρ ^ 0
-    ≈⟨ ≪* ≪+ ⊞-match-hom (j≤k cmp i≤k) y xs Ρ ⟩
+      Σ⟦ ⊞-match (inj-compare j≤k i≤k) y xs Δ 0 ∷↓ ys ⟧ (ρ , Ρ)
+    ≈⟨ ∷↓-hom (⊞-match (inj-compare j≤k i≤k) y xs) 0 ys ρ Ρ ⟩
+      (⟦ ⊞-match (inj-compare j≤k i≤k) y xs ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ) * ρ ^ 0
+    ≈⟨ ≪* ≪+ ⊞-match-hom (inj-compare j≤k i≤k) y xs Ρ ⟩
       (⟦ y Π j≤k ⟧ Ρ + ⟦ xs Π i≤k ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ) * ρ ^ 0
     ≈⟨ ≪* ≪+ +-comm _ _ ⟩
       (⟦ xs Π i≤k ⟧ Ρ + ⟦ y Π j≤k ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ) * ρ) * ρ ^ 0
