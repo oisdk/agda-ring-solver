@@ -1,4 +1,4 @@
-open import Polynomial.Normal.Parameters
+open import Polynomial.Parameters
 
 module Polynomial.Normal
   {r₁ r₂ r₃ r₄}

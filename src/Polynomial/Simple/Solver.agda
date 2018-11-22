@@ -4,7 +4,7 @@ open import Polynomial.Expr public
 open import Polynomial.Simple.AlmostCommutativeRing public
 open import Data.Vec
 open import Algebra.Solver.Ring.AlmostCommutativeRing using (-raw-almostCommutative⟶)
-open import Polynomial.Normal.Parameters
+open import Polynomial.Parameters
 open import Function
 
 open import Data.Vec.N-ary

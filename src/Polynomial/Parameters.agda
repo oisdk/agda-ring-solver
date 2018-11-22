@@ -5,7 +5,7 @@ open import Relation.Unary
 open import Level
 open import Algebra.Solver.Ring.AlmostCommutativeRing
 
-module Polynomial.Normal.Parameters where
+module Polynomial.Parameters where
 
 -- This record stores all the stuff we need for the coefficients:
 --

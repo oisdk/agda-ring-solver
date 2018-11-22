@@ -4,7 +4,7 @@ open import Algebra
 open import Relation.Binary hiding (Decidable)
 open import Relation.Unary
 open import Algebra.Solver.Ring.AlmostCommutativeRing
-open import Polynomial.Normal.Parameters
+open import Polynomial.Parameters
 
 module Polynomial.Solver
   {r₁ r₂ r₃ r₄}

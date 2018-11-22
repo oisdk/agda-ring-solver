@@ -13,7 +13,7 @@ open import Data.Vec as Vec using (_∷_; []; Vec)
 open import Data.Nat as ℕ using (ℕ; suc; zero; compare)
 open import Function
 open import Data.Fin as Fin using (Fin)
-open import Polynomial.Normal.Parameters
+open import Polynomial.Parameters
 
 -- Multivariate polynomials.
 module Polynomial.Normal.Operations

@@ -8,7 +8,7 @@ open import Data.Vec as Vec using (Vec; []; _∷_)
 open import Data.List as List using (List; []; _∷_)
 open import Level using (lift)
 open import Data.Product
-open import Polynomial.Normal.Parameters
+open import Polynomial.Parameters
 
 module Polynomial.Normal.Semantics
   {r₁ r₂ r₃ r₄}
