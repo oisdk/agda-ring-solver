@@ -113,7 +113,7 @@ mutual
 mutual
   ⊠-step : ∀ {i n} → Acc _<′_ n → FlatPoly i → i ≤′ n → Poly n → Poly n
   ⊠-step a (Κ x) _ = ⊠-Κ a x
-  ⊠-step a (Σ xs) i≤n = ⊠-Σ a xs i≤n
+  ⊠-step a (Σ xs) = ⊠-Σ a xs
 
   ⊠-Κ : ∀ {n} → Acc _<′_ n → Carrier → Poly n → Poly n
   ⊠-Κ _ x (Κ y  Π i≤n) = Κ (x * y) Π i≤n
