@@ -140,10 +140,10 @@ poly-foldR : ∀ {n} ρ ρs
         → (f : Carrier → Carrier)
         → (∀ x y → f x * y ≈ f (x * y))
         → (∀ y {ys} zs → Σ⟦ ys ⟧ (ρ , ρs) ≈ f (Σ⟦ zs ⟧ (ρ , ρs)) → [f] (y , ys) ⟦∷⟧ (ρ , ρs) ≈ f ((y , zs) ⟦∷⟧ (ρ , ρs)) )
-        → (0# ≈ f 0#)
+        → (f 0# ≈ 0#)
         → ∀ xs
         → Σ⟦ para [f] xs ⟧ (ρ , ρs) ≈ f (Σ⟦ xs ⟧ (ρ , ρs))
-poly-foldR ρ Ρ f e dist step base [] = base
+poly-foldR ρ Ρ f e dist step base [] = sym base
 poly-foldR ρ Ρ f e dist step base (x ≠0 Δ i ∷ xs) =
   let ys = para f xs
       y,zs = f (x , ys)
@@ -160,16 +160,16 @@ poly-foldR ρ Ρ f e dist step base (x ≠0 Δ i ∷ xs) =
     e ((x , xs) ⟦∷⟧ (ρ , Ρ) * ρ ^ i)
   ∎
 
-poly-mapR : ∀ {n} ρ ρs
+poly-mapR : ∀ {n} ρ Ρ
           → ([f] : Poly n → Poly n)
           → (f : Carrier → Carrier)
           → (∀ x y → f x * y ≈ f (x * y))
           → (∀ x y → f (x + y) ≈ f x + f y)
-          → (∀ y → ⟦ [f] y ⟧ ρs ≈ f (⟦ y ⟧ ρs) )
-          → (0# ≈ f 0#)
+          → (∀ y → ⟦ [f] y ⟧ Ρ ≈ f (⟦ y ⟧ Ρ) )
+          → (f 0# ≈ 0#)
           → ∀ xs
-          → Σ⟦ poly-map [f] xs ⟧ (ρ , ρs) ≈ f (Σ⟦ xs ⟧ (ρ , ρs))
-poly-mapR ρ ρs [f] f *-dist +-dist step′ base = poly-foldR ρ ρs (map₁ [f]) f *-dist step base
+          → Σ⟦ poly-map [f] xs ⟧ (ρ , Ρ) ≈ f (Σ⟦ xs ⟧ (ρ , Ρ))
+poly-mapR ρ ρs [f] f *-dist +-dist step′ base xs = poly-foldR ρ ρs (map₁ [f]) f *-dist step base xs
   where
   step = λ y {ys} zs ys≋zs →
     begin
