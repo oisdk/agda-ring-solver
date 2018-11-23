@@ -1,3 +1,5 @@
+{-# OPTIONS -v profile:100 #-}
+
 module Examples where
 
 open import Polynomial.Simple.AlmostCommutativeRing
@@ -11,5 +13,5 @@ NatRing = fromCommutativeSemiring *-+-commutativeSemiring ℕ._≟_
 
 open AlmostCommutativeRing NatRing
 
-lemma : ∀ w x y z → (w * 10) + (y + x + z) * 10 ≈ 10 * (z + x + y) + (10 * w)
+lemma : ∀ w x y z → (w * 100) + (y + x + z) * 100 ≈ 100 * (z + x + y) + (100 * w)
 lemma = solve NatRing

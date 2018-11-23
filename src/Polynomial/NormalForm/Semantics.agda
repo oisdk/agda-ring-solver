@@ -12,7 +12,7 @@ module Polynomial.NormalForm.Semantics
 open import Data.Nat     using (ℕ; suc; zero)
 open import Data.Vec     using (Vec; []; _∷_)
 open import Data.List    using ([]; _∷_)
-open import Data.Product using (_,_; _×_)
+open import Data.Pair.NonDependent using (_,_; _×_)
 
 open import Polynomial.NormalForm.InjectionIndex
 open Homomorphism homo

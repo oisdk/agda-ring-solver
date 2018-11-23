@@ -14,7 +14,7 @@ open import Data.Vec as Vec                            using (Vec; _∷_)
 open import Level                                      using (lift)
 open import Data.Fin                                   using (Fin)
 open import Relation.Binary.PropositionalEquality as ≡ using (_≡_)
-open import Data.Product                               using (_,_; proj₁; proj₂)
+open import Data.Pair.NonDependent                               using (_,_; proj₁; proj₂)
 
 open import Function
 

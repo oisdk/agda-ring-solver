@@ -7,13 +7,13 @@ module Polynomial.NormalForm.Operations
   (coeffs : RawCoeff a ℓ)
   where
 
-open import Data.Nat as ℕ         using (ℕ; suc; zero; compare)
-open import Data.Nat.Properties   using (z≤′n)
-open import Data.List             using (_∷_; [])
-open import Data.Fin              using (Fin)
-open import Data.Product          using (_,_)
-open import Induction.WellFounded using (Acc; acc)
-open import Induction.Nat         using (<′-wellFounded)
+open import Data.Nat as ℕ          using (ℕ; suc; zero; compare)
+open import Data.Nat.Properties    using (z≤′n)
+open import Data.List              using (_∷_; [])
+open import Data.Fin               using (Fin)
+open import Data.Pair.NonDependent using (_,_)
+open import Induction.WellFounded  using (Acc; acc)
+open import Induction.Nat          using (<′-wellFounded)
 
 open import Polynomial.NormalForm.InjectionIndex
 open import Polynomial.NormalForm.Definition coeffs

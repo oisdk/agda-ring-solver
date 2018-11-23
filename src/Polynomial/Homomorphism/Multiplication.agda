@@ -8,7 +8,7 @@ module Polynomial.Homomorphism.Multiplication
   where
 
 open import Data.Nat as ℕ         using (ℕ; suc; zero)
-open import Data.Product          using (_×_; _,_; proj₁; proj₂)
+open import Data.Pair.NonDependent          using (_×_; _,_; proj₁; proj₂)
 open import Data.List             using (_∷_; [])
 open import Data.Vec              using (Vec)
 open import Induction.WellFounded using (Acc; acc)
