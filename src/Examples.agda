@@ -1,5 +1,3 @@
-{-# OPTIONS -v profile:100 #-}
-
 module Examples where
 
 open import Polynomial.Simple.AlmostCommutativeRing

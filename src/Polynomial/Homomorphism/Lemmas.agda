@@ -84,6 +84,15 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
 Π↑-hom (Κ x  Π i≤sn) _ _ = refl
 Π↑-hom (Σ xs Π i≤sn) = Σ-Π↑-hom xs i≤sn
 
+trans-join-coeffs-hom : ∀ {i j-1 n}
+                      → (i≤j-1 : suc i ≤′ j-1)
+                      → (j≤n   : suc j-1 ≤′ n)
+                      → (xs : Coeffs i)
+                      → ∀ ρ
+                      → Σ⟦ xs ⟧ (drop-1 i≤j-1 (proj₂ (drop-1 j≤n ρ))) ≈ Σ⟦ xs ⟧ (drop-1 (≤′-step i≤j-1 ⟨ ≤′-trans ⟩ j≤n) ρ)
+trans-join-coeffs-hom i<j-1 ≤′-refl xs (_ ∷ _) = refl
+trans-join-coeffs-hom i<j-1 (≤′-step j<n) xs (_ ∷ ρ) = trans-join-coeffs-hom i<j-1 j<n xs ρ
+
 trans-join-hom : ∀ {i j-1 n}
       → (i≤j-1 : i ≤′ j-1)
       → (j≤n   : suc j-1 ≤′ n)
@@ -91,8 +100,7 @@ trans-join-hom : ∀ {i j-1 n}
       → ∀ ρ
       → ⟦ x Π i≤j-1 ⟧ (proj₂ (drop-1 j≤n ρ)) ≈ ⟦ x Π (≤′-step i≤j-1 ⟨ ≤′-trans ⟩ j≤n) ⟧ ρ
 trans-join-hom i≤j-1 j≤n (Κ x) _ = refl
-trans-join-hom i≤j-1 ≤′-refl (Σ x) (_ ∷ _) = refl
-trans-join-hom i≤j-1 (≤′-step j≤n) (Σ x {xn}) (_ ∷ ρ) = trans-join-hom i≤j-1 j≤n (Σ x {xn}) ρ
+trans-join-hom i≤j-1 j≤n (Σ x) = trans-join-coeffs-hom i≤j-1 j≤n x
 
 Π↓-hom : ∀ {n m}
        → (xs : Coeffs n)
