@@ -1,4 +1,4 @@
-{-# OPTIONS --without-K --safe #-}
+{-# OPTIONS --without-K #-}
 
 open import Polynomial.Parameters
 
@@ -115,59 +115,57 @@ mutual
 ----------------------------------------------------------------------
 -- Multiplication
 ----------------------------------------------------------------------
+{-# TERMINATING #-}
 mutual
-  ⊠-step : ∀ {i n} → Acc _<′_ n → FlatPoly i → i ≤′ n → Poly n → Poly n
-  ⊠-step a (Κ x) _ = ⊠-Κ a x
-  ⊠-step a (Σ xs) i≤n = ⊠-Σ a xs i≤n
+  ⊠-step : ∀ {i n} → FlatPoly i → i ≤′ n → Poly n → Poly n
+  ⊠-step (Κ x) _ = ⊠-Κ x
+  ⊠-step (Σ xs) = ⊠-Σ xs
 
-  ⊠-Κ : ∀ {n} → Acc _<′_ n → Carrier → Poly n → Poly n
-  ⊠-Κ _ x (Κ y  Π i≤n) = Κ (x * y) Π i≤n
-  ⊠-Κ (acc wf) x (Σ xs Π i≤n) = ⊠-Κ-inj (wf _ i≤n) x xs Π↓ i≤n
+  ⊠-Κ : ∀ {n} → Carrier → Poly n → Poly n
+  ⊠-Κ x (Κ y  Π i≤n) = Κ (x * y) Π i≤n
+  ⊠-Κ x (Σ xs Π i≤n) = ⊠-Κ-inj x xs Π↓ i≤n
 
-  ⊠-Σ : ∀ {i n} → Acc _<′_ n → Coeffs i → i <′ n → Poly n → Poly n
-  ⊠-Σ a xs i≤n (Σ ys Π j≤n) = ⊠-match a (inj-compare i≤n j≤n) xs ys
-  ⊠-Σ (acc wf) xs i≤n (Κ y Π _) = ⊠-Κ-inj (wf _ i≤n) y xs Π↓ i≤n
+  ⊠-Σ : ∀ {i n} → Coeffs i → i <′ n → Poly n → Poly n
+  ⊠-Σ xs i≤n (Σ ys Π j≤n) = ⊠-match (inj-compare i≤n j≤n) xs ys
+  ⊠-Σ xs i≤n (Κ y Π _) = ⊠-Κ-inj y xs Π↓ i≤n
 
-  ⊠-Κ-inj : ∀ {i}  → Acc _<′_ i → Carrier → Coeffs i → Coeffs i
-  ⊠-Κ-inj a x xs = para (map₁ (⊠-Κ a x)) xs
+  ⊠-Κ-inj : ∀ {i}  → Carrier → Coeffs i → Coeffs i
+  ⊠-Κ-inj x xs = para (map₁ (⊠-Κ x)) xs
 
   ⊠-Σ-inj : ∀ {i k}
-          → Acc _<′_ k
           → i <′ k
           → Coeffs i
           → Poly k
           → Poly k
-  ⊠-Σ-inj a i≤k x (Σ y Π j≤k) = ⊠-match a (inj-compare i≤k j≤k) x y
-  ⊠-Σ-inj (acc wf) i≤k x (Κ y Π j≤k) = ⊠-Κ-inj (wf _ i≤k) y x Π↓ i≤k
+  ⊠-Σ-inj i≤k x (Σ y Π j≤k) = ⊠-match (inj-compare i≤k j≤k) x y
+  ⊠-Σ-inj i≤k x (Κ y Π j≤k) = ⊠-Κ-inj y x Π↓ i≤k
 
   ⊠-match : ∀ {i j n}
-          → Acc _<′_ n
           → {i≤n : i <′ n}
           → {j≤n : j <′ n}
           → InjectionOrdering i≤n j≤n
           → Coeffs i
           → Coeffs j
           → Poly n
-  ⊠-match (acc wf) (inj-eq i&j≤n)     xs ys = ⊠-coeffs (wf _ i&j≤n) xs ys                  Π↓ i&j≤n
-  ⊠-match (acc wf) (inj-lt i≤j-1 j≤n) xs ys = para (map₁ (⊠-Σ-inj (wf _ j≤n) i≤j-1 xs)) ys Π↓ j≤n
-  ⊠-match (acc wf) (inj-gt i≤n j≤i-1) xs ys = para (map₁ (⊠-Σ-inj (wf _ i≤n) j≤i-1 ys)) xs Π↓ i≤n
+  ⊠-match (inj-eq i&j≤n)     xs ys = ⊠-coeffs xs ys                  Π↓ i&j≤n
+  ⊠-match (inj-lt i≤j-1 j≤n) xs ys = para (map₁ (⊠-Σ-inj i≤j-1 xs)) ys Π↓ j≤n
+  ⊠-match (inj-gt i≤n j≤i-1) xs ys = para (map₁ (⊠-Σ-inj j≤i-1 ys)) xs Π↓ i≤n
 
   -- A simple shift-and-add algorithm.
-  ⊠-coeffs : ∀ {n} → Acc _<′_ n → Coeffs n → Coeffs n → Coeffs n
-  ⊠-coeffs _ _ [] = []
-  ⊠-coeffs a xs (y ≠0 Δ j ∷ ys) = para (⊠-cons a y ys) xs ⍓ j
+  ⊠-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
+  ⊠-coeffs _ [] = []
+  ⊠-coeffs xs (y ≠0 Δ j ∷ ys) = para (⊠-cons y ys) xs ⍓ j
 
   ⊠-cons : ∀ {n}
-         → Acc _<′_ n
          → Poly n
          → Coeffs n
          → Fold n
-  ⊠-cons a y ys (x Π j≤n , xs) =
-    ⊠-step a x j≤n y , ⊞-coeffs (para (map₁ (⊠-step a x j≤n)) ys) xs
+  ⊠-cons y ys (x Π j≤n , xs) =
+    ⊠-step x j≤n y , ⊞-coeffs (para (map₁ (⊠-step x j≤n)) ys) xs
 
 infixl 7 _⊠_
 _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
-_⊠_ (x Π i≤n) = ⊠-step (<′-wellFounded _) x i≤n
+_⊠_ (x Π i≤n) = ⊠-step x i≤n
 
 ----------------------------------------------------------------------
 -- Constants and Variables
