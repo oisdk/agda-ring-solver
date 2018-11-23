@@ -100,14 +100,9 @@ mutual
 -- recurse on acc directly
 -- https://github.com/agda/agda/issues/3190#issuecomment-416900716
 
-mutual
-  ⊟-step : ∀ {n} → Acc _<′_ n → Poly n → Poly n
-  ⊟-step _        (Κ x  Π i≤n) = Κ (- x) Π i≤n
-  ⊟-step (acc wf) (Σ xs Π i≤n) =
-    para (⊟-cons (wf _ i≤n)) xs Π↓ i≤n
-
-  ⊟-cons : ∀ {n} → Acc _<′_ n → Fold n
-  ⊟-cons ac (x , xs) = ⊟-step ac x , xs
+⊟-step : ∀ {n} → Acc _<′_ n → Poly n → Poly n
+⊟-step _        (Κ x  Π i≤n) = Κ (- x) Π i≤n
+⊟-step (acc wf) (Σ xs Π i≤n) = poly-map (⊟-step (wf _ i≤n)) xs Π↓ i≤n
 
 ⊟_ : ∀ {n} → Poly n → Poly n
 ⊟_ = ⊟-step (<′-wellFounded _)
@@ -129,7 +124,7 @@ mutual
   ⊠-Σ (acc wf) xs i≤n (Κ y Π _) = ⊠-Κ-inj (wf _ i≤n) y xs Π↓ i≤n
 
   ⊠-Κ-inj : ∀ {i}  → Acc _<′_ i → Carrier → Coeffs i → Coeffs i
-  ⊠-Κ-inj a x xs = para (map₁ (⊠-Κ a x)) xs
+  ⊠-Κ-inj a x = poly-map (⊠-Κ a x)
 
   ⊠-Σ-inj : ∀ {i k}
           → Acc _<′_ k
@@ -148,9 +143,9 @@ mutual
           → Coeffs i
           → Coeffs j
           → Poly n
-  ⊠-match (acc wf) (inj-eq i&j≤n)     xs ys = ⊠-coeffs (wf _ i&j≤n) xs ys                  Π↓ i&j≤n
-  ⊠-match (acc wf) (inj-lt i≤j-1 j≤n) xs ys = para (map₁ (⊠-Σ-inj (wf _ j≤n) i≤j-1 xs)) ys Π↓ j≤n
-  ⊠-match (acc wf) (inj-gt i≤n j≤i-1) xs ys = para (map₁ (⊠-Σ-inj (wf _ i≤n) j≤i-1 ys)) xs Π↓ i≤n
+  ⊠-match (acc wf) (inj-eq i&j≤n)     xs ys = ⊠-coeffs (wf _ i&j≤n) xs ys               Π↓ i&j≤n
+  ⊠-match (acc wf) (inj-lt i≤j-1 j≤n) xs ys = poly-map (⊠-Σ-inj (wf _ j≤n) i≤j-1 xs) ys Π↓ j≤n
+  ⊠-match (acc wf) (inj-gt i≤n j≤i-1) xs ys = poly-map (⊠-Σ-inj (wf _ i≤n) j≤i-1 ys) xs Π↓ i≤n
 
   -- A simple shift-and-add algorithm.
   ⊠-coeffs : ∀ {n} → Acc _<′_ n → Coeffs n → Coeffs n → Coeffs n
@@ -163,7 +158,7 @@ mutual
          → Coeffs n
          → Fold n
   ⊠-cons a y ys (x Π j≤n , xs) =
-    ⊠-step a x j≤n y , ⊞-coeffs (para (map₁ (⊠-step a x j≤n)) ys) xs
+    ⊠-step a x j≤n y , ⊞-coeffs (poly-map (⊠-step a x j≤n) ys) xs
 
 infixl 7 _⊠_
 _⊠_ : ∀ {n} → Poly n → Poly n → Poly n

@@ -69,3 +69,5 @@ Fold i = PolyF i → PolyF i
 para : ∀ {i} → Fold i → Coeffs i → Coeffs i
 para f = foldr (λ { (x ≠0 Δ i) → uncurry (_∷↓_ ∘ (_Δ i)) ∘ curry f x}) []
 
+poly-map : ∀ {i} → (Poly i → Poly i) → Coeffs i → Coeffs i
+poly-map f = para (map₁ f)

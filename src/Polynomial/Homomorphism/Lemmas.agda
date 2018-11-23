@@ -14,7 +14,7 @@ open import Data.Vec as Vec                            using (Vec; _∷_)
 open import Level                                      using (lift)
 open import Data.Fin                                   using (Fin)
 open import Relation.Binary.PropositionalEquality as ≡ using (_≡_)
-open import Data.Pair.NonDependent                               using (_,_; proj₁; proj₂)
+open import Data.Pair.NonDependent                     using (_,_; proj₁; proj₂; map₁)
 
 open import Function
 
@@ -159,3 +159,25 @@ poly-foldR ρ Ρ f e dist step base (x ≠0 Δ i ∷ xs) =
   ≈⟨ dist _ (ρ ^ i) ⟩
     e ((x , xs) ⟦∷⟧ (ρ , Ρ) * ρ ^ i)
   ∎
+
+poly-mapR : ∀ {n} ρ ρs
+          → ([f] : Poly n → Poly n)
+          → (f : Carrier → Carrier)
+          → (∀ x y → f x * y ≈ f (x * y))
+          → (∀ x y → f (x + y) ≈ f x + f y)
+          → (∀ y → ⟦ [f] y ⟧ ρs ≈ f (⟦ y ⟧ ρs) )
+          → (0# ≈ f 0#)
+          → ∀ xs
+          → Σ⟦ poly-map [f] xs ⟧ (ρ , ρs) ≈ f (Σ⟦ xs ⟧ (ρ , ρs))
+poly-mapR ρ ρs [f] f *-dist +-dist step′ base = poly-foldR ρ ρs (map₁ [f]) f *-dist step base
+  where
+  step = λ y {ys} zs ys≋zs →
+    begin
+      map₁ [f] (y , ys) ⟦∷⟧ (ρ , ρs)
+    ≡⟨⟩
+      ⟦ [f] y ⟧ ρs + Σ⟦ ys ⟧ (ρ , ρs) * ρ
+    ≈⟨ step′ y ⟨ +-cong ⟩ (≪* ys≋zs ⊙ (*-dist _ ρ)) ⟩
+      f (⟦ y ⟧ ρs) + f (Σ⟦ zs ⟧ (ρ , ρs) * ρ)
+    ≈⟨ sym (+-dist _ _) ⟩
+      f ((y , zs) ⟦∷⟧ (ρ , ρs))
+    ∎
