@@ -12,13 +12,7 @@ open import Polynomial.Expr public
 open import Algebra.Solver.Ring.AlmostCommutativeRing
 
 open Homomorphism homo
-
-⟦_⟧ : ∀ {n} → Expr Raw.Carrier n → Vec Carrier n → Carrier
-⟦ Κ x ⟧ ρ = _-Raw-AlmostCommutative⟶_.⟦_⟧ morphism x
-⟦ Ι x ⟧ ρ = Vec.lookup x ρ
-⟦ x ⊕ y ⟧ ρ = ⟦ x ⟧ ρ + ⟦ y ⟧ ρ
-⟦ x ⊗ y ⟧ ρ = ⟦ x ⟧ ρ * ⟦ y ⟧ ρ
-⟦ ⊝ x ⟧ ρ = - ⟦ x ⟧ ρ
+open Eval homo
 
 open import Polynomial.NormalForm.Definition coeffs
   using (Poly)
@@ -42,12 +36,11 @@ import Polynomial.Homomorphism homo
   as Hom
 open import Function
 
-abstract
-  correct : ∀ {n} (e : Expr Raw.Carrier n) ρ → ⟦ e ⇓⟧ ρ ≈ ⟦ e ⟧ ρ
-  correct (Κ x) ρ = Hom.κ-hom x ρ
-  correct (Ι x) ρ = Hom.ι-hom x ρ
-  correct (x ⊕ y) ρ = Hom.⊞-hom (norm x) (norm y) ρ ⟨ trans ⟩ (correct x ρ ⟨ +-cong ⟩ correct y ρ)
-  correct (x ⊗ y) ρ = Hom.⊠-hom (norm x) (norm y) ρ ⟨ trans ⟩ (correct x ρ ⟨ *-cong ⟩ correct y ρ)
-  correct (⊝ x) ρ = Hom.⊟-hom (norm x) ρ ⟨ trans ⟩ -‿cong (correct x ρ)
+correct : ∀ {n} (e : Expr Raw.Carrier n) ρ → ⟦ e ⇓⟧ ρ ≈ ⟦ e ⟧ ρ
+correct (Κ x) ρ = Hom.κ-hom x ρ
+correct (Ι x) ρ = Hom.ι-hom x ρ
+correct (x ⊕ y) ρ = Hom.⊞-hom (norm x) (norm y) ρ ⟨ trans ⟩ (correct x ρ ⟨ +-cong ⟩ correct y ρ)
+correct (x ⊗ y) ρ = Hom.⊠-hom (norm x) (norm y) ρ ⟨ trans ⟩ (correct x ρ ⟨ *-cong ⟩ correct y ρ)
+correct (⊝ x) ρ = Hom.⊟-hom (norm x) ρ ⟨ trans ⟩ -‿cong (correct x ρ)
 
 open import Relation.Binary.Reflection setoid Ι ⟦_⟧ ⟦_⇓⟧ correct public
