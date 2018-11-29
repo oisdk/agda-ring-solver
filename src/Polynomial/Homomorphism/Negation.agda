@@ -7,7 +7,7 @@ module Polynomial.Homomorphism.Negation
   (homo : Homomorphism r₁ r₂ r₃ r₄)
   where
 
-open import Data.Pair.NonDependent          using (_,_)
+open import Data.Product          using (_,_)
 open import Data.Vec              using (Vec)
 open import Induction.WellFounded using (Acc; acc)
 open import Induction.Nat         using (<′-wellFounded)

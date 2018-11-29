@@ -8,7 +8,7 @@ module Polynomial.Homomorphism.Semantics
   where
 
 
-open import Data.Pair.NonDependent    using (_,_)
+open import Data.Product    using (_,_)
 open import Data.List       using ([])
 open import Data.Vec as Vec using (Vec)
 open import Data.Fin        using (Fin)

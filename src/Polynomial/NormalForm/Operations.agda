@@ -11,7 +11,7 @@ open import Data.Nat as ℕ          using (ℕ; suc; zero; compare)
 open import Data.Nat.Properties    using (z≤′n)
 open import Data.List              using (_∷_; [])
 open import Data.Fin               using (Fin)
-open import Data.Pair.NonDependent using (_,_; map₁)
+open import Data.Product           using (_,_; map₁)
 open import Induction.WellFounded  using (Acc; acc)
 open import Induction.Nat          using (<′-wellFounded)
 

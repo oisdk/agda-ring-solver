@@ -10,7 +10,7 @@ module Polynomial.Homomorphism.Addition
 open import Function
 
 open import Data.Nat as ℕ using (ℕ; suc; zero; compare)
-open import Data.Pair.NonDependent  using (_,_; _×_; proj₂)
+open import Data.Product  using (_,_; _×_; proj₂)
 open import Data.List     using (_∷_; [])
 open import Data.Vec      using (Vec)
 
