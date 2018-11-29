@@ -181,11 +181,8 @@ module Polynomial.NormalForm.InjectionIndex where
 
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.Nat using (_≤′_; ≤′-refl; ≤′-step; _<′_) public
+open import Data.Nat.Properties using (≤′-trans) public
 open import Function
-
-≤′-trans : ∀ {x y z} → x ≤′ y → y ≤′ z → x ≤′ z
-≤′-trans xs ≤′-refl = xs
-≤′-trans xs (≤′-step ys) = ≤′-step (≤′-trans xs ys)
 
 data InjectionOrdering {n : ℕ} : ∀ {i j}
                       → (i≤n : i ≤′ n)
