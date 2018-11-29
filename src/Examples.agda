@@ -11,5 +11,5 @@ NatRing = fromCommutativeSemiring *-+-commutativeSemiring ℕ._≟_
 
 open AlmostCommutativeRing NatRing
 
-lemma : ∀ w x y z → (w * 1000) + (y + x + z) * 1000 ≈ 1000 * (z + x + y) + (1000 * w)
+lemma : ∀ w x y z → (w * 100000) + (y + x + z) * 1000 ≈ 1000 * (z + x + y) + (100000 * w)
 lemma = solve NatRing
