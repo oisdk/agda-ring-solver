@@ -14,7 +14,7 @@ open import Data.Vec as Vec                            using (Vec; _∷_)
 open import Level                                      using (lift)
 open import Data.Fin                                   using (Fin)
 open import Relation.Binary.PropositionalEquality as ≡ using (_≡_)
-open import Data.Product                               using (_,_; proj₁; proj₂)
+open import Data.Pair.NonDependent                     using (_,_; proj₁; proj₂; map₁)
 
 open import Function
 
@@ -84,6 +84,15 @@ zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
 Π↑-hom (Κ x  Π i≤sn) _ _ = refl
 Π↑-hom (Σ xs Π i≤sn) = Σ-Π↑-hom xs i≤sn
 
+trans-join-coeffs-hom : ∀ {i j-1 n}
+                      → (i≤j-1 : suc i ≤′ j-1)
+                      → (j≤n   : suc j-1 ≤′ n)
+                      → (xs : Coeffs i)
+                      → ∀ ρ
+                      → Σ⟦ xs ⟧ (drop-1 i≤j-1 (proj₂ (drop-1 j≤n ρ))) ≈ Σ⟦ xs ⟧ (drop-1 (≤′-step i≤j-1 ⟨ ≤′-trans ⟩ j≤n) ρ)
+trans-join-coeffs-hom i<j-1 ≤′-refl xs (_ ∷ _) = refl
+trans-join-coeffs-hom i<j-1 (≤′-step j<n) xs (_ ∷ ρ) = trans-join-coeffs-hom i<j-1 j<n xs ρ
+
 trans-join-hom : ∀ {i j-1 n}
       → (i≤j-1 : i ≤′ j-1)
       → (j≤n   : suc j-1 ≤′ n)
@@ -91,8 +100,7 @@ trans-join-hom : ∀ {i j-1 n}
       → ∀ ρ
       → ⟦ x Π i≤j-1 ⟧ (proj₂ (drop-1 j≤n ρ)) ≈ ⟦ x Π (≤′-step i≤j-1 ⟨ ≤′-trans ⟩ j≤n) ⟧ ρ
 trans-join-hom i≤j-1 j≤n (Κ x) _ = refl
-trans-join-hom i≤j-1 ≤′-refl (Σ x) (_ ∷ _) = refl
-trans-join-hom i≤j-1 (≤′-step j≤n) (Σ x {xn}) (_ ∷ ρ) = trans-join-hom i≤j-1 j≤n (Σ x {xn}) ρ
+trans-join-hom i≤j-1 j≤n (Σ x) = trans-join-coeffs-hom i≤j-1 j≤n x
 
 Π↓-hom : ∀ {n m}
        → (xs : Coeffs n)
@@ -132,10 +140,10 @@ poly-foldR : ∀ {n} ρ ρs
         → (f : Carrier → Carrier)
         → (∀ x y → f x * y ≈ f (x * y))
         → (∀ y {ys} zs → Σ⟦ ys ⟧ (ρ , ρs) ≈ f (Σ⟦ zs ⟧ (ρ , ρs)) → [f] (y , ys) ⟦∷⟧ (ρ , ρs) ≈ f ((y , zs) ⟦∷⟧ (ρ , ρs)) )
-        → (0# ≈ f 0#)
+        → (f 0# ≈ 0#)
         → ∀ xs
         → Σ⟦ para [f] xs ⟧ (ρ , ρs) ≈ f (Σ⟦ xs ⟧ (ρ , ρs))
-poly-foldR ρ Ρ f e dist step base [] = base
+poly-foldR ρ Ρ f e dist step base [] = sym base
 poly-foldR ρ Ρ f e dist step base (x ≠0 Δ i ∷ xs) =
   let ys = para f xs
       y,zs = f (x , ys)
@@ -151,3 +159,25 @@ poly-foldR ρ Ρ f e dist step base (x ≠0 Δ i ∷ xs) =
   ≈⟨ dist _ (ρ ^ i) ⟩
     e ((x , xs) ⟦∷⟧ (ρ , Ρ) * ρ ^ i)
   ∎
+
+poly-mapR : ∀ {n} ρ Ρ
+          → ([f] : Poly n → Poly n)
+          → (f : Carrier → Carrier)
+          → (∀ x y → f x * y ≈ f (x * y))
+          → (∀ x y → f (x + y) ≈ f x + f y)
+          → (∀ y → ⟦ [f] y ⟧ Ρ ≈ f (⟦ y ⟧ Ρ) )
+          → (f 0# ≈ 0#)
+          → ∀ xs
+          → Σ⟦ poly-map [f] xs ⟧ (ρ , Ρ) ≈ f (Σ⟦ xs ⟧ (ρ , Ρ))
+poly-mapR ρ ρs [f] f *-dist +-dist step′ base xs = poly-foldR ρ ρs (map₁ [f]) f *-dist step base xs
+  where
+  step = λ y {ys} zs ys≋zs →
+    begin
+      map₁ [f] (y , ys) ⟦∷⟧ (ρ , ρs)
+    ≡⟨⟩
+      ⟦ [f] y ⟧ ρs + Σ⟦ ys ⟧ (ρ , ρs) * ρ
+    ≈⟨ step′ y ⟨ +-cong ⟩ (≪* ys≋zs ⊙ (*-dist _ ρ)) ⟩
+      f (⟦ y ⟧ ρs) + f (Σ⟦ zs ⟧ (ρ , ρs) * ρ)
+    ≈⟨ sym (+-dist _ _) ⟩
+      f ((y , zs) ⟦∷⟧ (ρ , ρs))
+    ∎

@@ -12,13 +12,7 @@ open import Polynomial.Expr public
 open import Algebra.Solver.Ring.AlmostCommutativeRing
 
 open Homomorphism homo
-
-⟦_⟧ : ∀ {n} → Expr Raw.Carrier n → Vec Carrier n → Carrier
-⟦ Κ x ⟧ ρ = _-Raw-AlmostCommutative⟶_.⟦_⟧ morphism x
-⟦ Ι x ⟧ ρ = Vec.lookup x ρ
-⟦ x ⊕ y ⟧ ρ = ⟦ x ⟧ ρ + ⟦ y ⟧ ρ
-⟦ x ⊗ y ⟧ ρ = ⟦ x ⟧ ρ * ⟦ y ⟧ ρ
-⟦ ⊝ x ⟧ ρ = - ⟦ x ⟧ ρ
+open Eval homo
 
 open import Polynomial.NormalForm.Definition coeffs
   using (Poly)

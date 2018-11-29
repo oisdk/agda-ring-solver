@@ -13,7 +13,7 @@ open import Data.Unit                using (tt)
 open import Data.List                using (_∷_; []; foldr)
 open import Data.Nat            as ℕ using (ℕ; suc; zero)
 open import Data.Nat.Properties      using (z≤′n)
-open import Data.Product             using (_×_; _,_; map₁; curry; uncurry)
+open import Data.Pair.NonDependent   using (_×_; _,_; map₁; curry; uncurry)
 
 open import Function
 
@@ -69,3 +69,5 @@ Fold i = PolyF i → PolyF i
 para : ∀ {i} → Fold i → Coeffs i → Coeffs i
 para f = foldr (λ { (x ≠0 Δ i) → uncurry (_∷↓_ ∘ (_Δ i)) ∘ curry f x}) []
 
+poly-map : ∀ {i} → (Poly i → Poly i) → Coeffs i → Coeffs i
+poly-map f = para (map₁ f)

@@ -31,17 +31,6 @@ record PowInd {c} (C : Set c) : Set c where
     coeff : C
     pow   : ℕ
 
-module _ where
-  open PowInd
-
-  map-coeff : ∀ {c₁ c₂} {C₁ : Set c₁} {C₂ : Set c₂} → (C₁ → C₂) → PowInd C₁ → PowInd C₂
-  coeff (map-coeff f (x Δ _)) = f x
-  pow   (map-coeff _ (_ Δ i)) = i
-
-  map-ind : ∀ {c} {C : Set c} → (ℕ → ℕ) → PowInd C → PowInd C
-  coeff (map-ind f (x Δ _)) = x
-  pow   (map-ind f (_ Δ i)) = f i
-
 open RawCoeff coeffs
 
 mutual
@@ -51,9 +40,9 @@ mutual
     inductive
     constructor _Π_
     field
-      {i}   : ℕ
-      flat  : FlatPoly i
-      i≤n   : i ≤′ n
+      {i}  : ℕ
+      flat : FlatPoly i
+      i≤n  : i ≤′ n
 
   -- Possible alternative:
   -- infixl 6 _Σ_

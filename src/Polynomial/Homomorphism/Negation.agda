@@ -7,7 +7,7 @@ module Polynomial.Homomorphism.Negation
   (homo : Homomorphism r₁ r₂ r₃ r₄)
   where
 
-open import Data.Product          using (_,_)
+open import Data.Pair.NonDependent          using (_,_)
 open import Data.Vec              using (Vec)
 open import Induction.WellFounded using (Acc; acc)
 open import Induction.Nat         using (<′-wellFounded)
@@ -33,20 +33,12 @@ open import Polynomial.NormalForm homo
         ≈⟨ -‿cong (zeroˡ 0#) ⟩
           - 0#
         ∎
-      neg-step = λ x {ys} zs ys≋zs →
-        begin
-          ⟦ ⊟-step (wf _ i≤n) x ⟧ ρs + Σ⟦ ys ⟧ (ρ , ρs) * ρ
-        ≈⟨ ⊟-step-hom (wf _ i≤n) x ρs ⟨ +-cong ⟩ (≪* ys≋zs) ⟩
-          - ⟦ x ⟧ ρs + - Σ⟦ zs ⟧ (ρ , ρs) * ρ
-        ≈⟨ (+≫ -‿*-distribˡ _ _)  ⟨ trans ⟩ -‿+-comm _ _ ⟩
-          - (⟦ x ⟧ ρs + Σ⟦ zs ⟧ (ρ , ρs) * ρ)
-        ∎
   in
   begin
-    ⟦ para (⊟-cons (wf _ i≤n)) xs Π↓ i≤n ⟧ ρ′
-  ≈⟨ Π↓-hom (para (⊟-cons _) xs) i≤n ρ′ ⟩
-    Σ⟦ para (⊟-cons _) xs ⟧ (ρ , ρs)
-  ≈⟨ poly-foldR ρ ρs (⊟-cons (wf _ i≤n)) -_ -‿*-distribˡ neg-step neg-zero xs ⟩
+    ⟦ poly-map (⊟-step (wf _ i≤n)) xs Π↓ i≤n ⟧ ρ′
+  ≈⟨ Π↓-hom (poly-map (⊟-step _) xs) i≤n ρ′ ⟩
+    Σ⟦ poly-map (⊟-step _) xs ⟧ (ρ , ρs)
+  ≈⟨ poly-mapR ρ ρs (⊟-step (wf _ i≤n)) -_ -‿*-distribˡ (λ x y → sym (-‿+-comm x y)) (flip (⊟-step-hom (wf _ i≤n)) ρs) (sym neg-zero ) xs ⟩
     - Σ⟦ xs ⟧ (ρ , ρs)
   ∎
 

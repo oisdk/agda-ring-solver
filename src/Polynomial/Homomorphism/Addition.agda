@@ -10,12 +10,13 @@ module Polynomial.Homomorphism.Addition
 open import Function
 
 open import Data.Nat as ℕ using (ℕ; suc; zero; compare)
-open import Data.Product  using (_,_; _×_; proj₂)
+open import Data.Pair.NonDependent  using (_,_; _×_; proj₂)
 open import Data.List     using (_∷_; [])
 open import Data.Vec      using (Vec)
 
 import Data.Nat.Properties as ℕ-Prop
 import Relation.Binary.PropositionalEquality as ≡
+import Relation.Binary.PropositionalEquality.TrustMe as TrustMe
 
 open Homomorphism homo
 open import Polynomial.Homomorphism.Lemmas homo
@@ -213,7 +214,7 @@ mutual
                     ρ ^ k * (ρ * ρ ^ j)
                   ≈⟨ pow-add ρ k _ ⟩
                     ρ ^ (k ℕ.+ suc j)
-                  ≡⟨ ≡.cong (ρ ^_) (ℕ-Prop.+-comm k (suc j)) ⟩
+                  ≡⟨ TrustMe.erase (≡.cong (ρ ^_) (ℕ-Prop.+-comm k (suc j))) ⟩
                     ρ ^ suc (j ℕ.+ k)
                   ∎ ⟩
              (x′ + xs′ * ρ) * ρ ^ suc (j ℕ.+ k)
@@ -228,4 +229,4 @@ mutual
              → (Ρ : Carrier × Vec Carrier n)
              → Σ⟦ ⊞-zip-r x i xs ys ⟧ (Ρ) ≈ Σ⟦ x Δ i ∷ xs ⟧ ( Ρ) + Σ⟦ ys ⟧ ( Ρ)
   ⊞-zip-r-hom i x xs [] (ρ , Ρ) = sym (+-identityʳ _)
-  ⊞-zip-r-hom i x xs ((y Δ j) ∷ ys) = ⊞-zip-hom (compare i j) x xs y ys
+  ⊞-zip-r-hom i x xs ((y Δ j) ∷ ys) = ⊞-zip-hom (ℕ.compare i j) x xs y ys
