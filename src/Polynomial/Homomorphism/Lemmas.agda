@@ -15,6 +15,8 @@ open import Level                                      using (lift)
 open import Data.Fin                                   using (Fin)
 open import Relation.Binary.PropositionalEquality as ≡ using (_≡_)
 open import Data.Product                               using (_,_; proj₁; proj₂; map₁)
+open import Data.Empty                                 using (⊥-elim)
+open import Data.Maybe                                 using (nothing; just)
 
 open import Function
 
@@ -45,9 +47,11 @@ pow-hom i [] ρ Ρ = zeroˡ (ρ ^ i)
 pow-hom i (x Δ j ∷ xs) ρ Ρ = *-assoc _ (ρ ^ j) (ρ ^ i) ⊙ *≫ pow-add ρ j i
 
 zero-hom : ∀ {n} (p : Poly n) → Zero p → (Ρ : Vec Carrier n) → ⟦ p ⟧ Ρ ≈ 0#
-zero-hom (Κ x  Π i≤n) p≡0 Ρ = Zero-C⟶Zero-R x p≡0
-zero-hom (Σ (_ ∷ _) Π i≤n) (lift ())
+zero-hom (Σ (_ ∷ _) Π i≤n) ()
 zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
+zero-hom (Κ x  Π i≤n) p≡0 Ρ with RawCoeff.zero-c? coeffs x
+zero-hom (Κ x  Π i≤n) p≡0 Ρ | nothing = ⊥-elim p≡0
+zero-hom (Κ x  Π i≤n) p≡0 Ρ | just prf = Zero-C⟶Zero-R x prf
 
 ∷↓-hom : ∀ {n}
        → (x : Poly n)

@@ -14,6 +14,7 @@ open import Data.List                using (_∷_; []; foldr)
 open import Data.Nat            as ℕ using (ℕ; suc; zero)
 open import Data.Nat.Properties      using (z≤′n)
 open import Data.Product             using (_×_; _,_; map₁; curry; uncurry)
+open import Data.Maybe               using (just; nothing)
 
 open import Function
 
@@ -31,9 +32,11 @@ open RawCoeff coeffs
 
 -- Decision procedure for Zero
 zero? : ∀ {n} → (p : Poly n) → Dec (Zero p)
-zero? (Κ x       Π _) = zero-c? x
-zero? (Σ []      Π _) = yes (lift tt)
-zero? (Σ (_ ∷ _) Π _) = no lower
+zero? (Σ []      Π _) = yes tt
+zero? (Σ (_ ∷ _) Π _) = no id
+zero? (Κ x       Π _) with zero-c? x
+zero? (Κ x       Π _) | just _ = yes tt
+zero? (Κ x       Π _) | nothing = no id
 
 -- Exponentiate the first variable of a polynomial
 infixr 8 _⍓_
@@ -46,7 +49,6 @@ _∷↓_ : ∀ {n} → PowInd (Poly n) → Coeffs n → Coeffs n
 x Δ i ∷↓ xs with zero? x
 ... | yes p = xs ⍓ suc i
 ... | no ¬p = _≠0 x {¬p} Δ i ∷ xs
-
 
 -- Inject a polynomial into a larger polynomoial with more variables
 _Π↑_ : ∀ {n m} → Poly n → (suc n ≤′ m) → Poly m

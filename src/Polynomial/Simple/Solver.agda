@@ -6,8 +6,10 @@ open import Data.Vec
 open import Algebra.Solver.Ring.AlmostCommutativeRing using (-raw-almostCommutative⟶)
 open import Polynomial.Parameters
 open import Function
+open import Data.Maybe
 
 open import Data.Vec.N-ary
+
 
 module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
   open AlmostCommutativeRing ring
@@ -22,7 +24,7 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
   rawCoeff = record
     { coeffs = rawRing
     ; Zero-C = 0# ≈_
-    ; zero-c? = 0# ≟_
+    ; zero-c? = decToMaybe ∘ (0# ≟_)
     }
   open import Polynomial.NormalForm.Definition rawCoeff
   open import Polynomial.NormalForm.Operations rawCoeff

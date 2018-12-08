@@ -22,6 +22,7 @@ open import Data.Unit        using (⊤)
 open import Data.List        using (_∷_; []; List)
 open import Data.Nat         using (ℕ; suc; zero)
 open import Function         using (_∘_)
+open import Data.Maybe       using (Maybe; just; nothing)
 
 infixl 6 _Δ_
 record PowInd {c} (C : Set c) : Set c where
@@ -81,14 +82,18 @@ mutual
     constructor _≠0
     field
       poly : Poly i
-      .{poly≠0} : ¬ Zero poly
+      .{poly≠0} : ¬ (Zero poly)
+
+  IsJust : ∀ {a} {A : Set a} → Maybe A → Set
+  IsJust nothing = ⊥
+  IsJust (just _) = ⊤
 
   -- This predicate is used (in its negation) to ensure that no
   -- coefficient is zero, preventing any trailing zeroes.
-  Zero : ∀ {n} → Poly n → Set ℓ
-  Zero (Κ x       Π _) = Zero-C x
-  Zero (Σ []      Π _) = Lift ℓ ⊤
-  Zero (Σ (_ ∷ _) Π _) = Lift ℓ ⊥
+  Zero : ∀ {n} → Poly n → Set
+  Zero (Κ x       Π _) = IsJust (zero-c? x)
+  Zero (Σ []      Π _) = ⊤
+  Zero (Σ (_ ∷ _) Π _) = ⊥
 
   -- This predicate is used to ensure that all polynomials are in
   -- normal form: if a particular level is constant, than it can

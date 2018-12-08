@@ -8,6 +8,7 @@ open import Algebra
 open import Relation.Unary
 open import Level
 open import Algebra.Solver.Ring.AlmostCommutativeRing
+open import Data.Maybe
 
 -- This record stores all the stuff we need for the coefficients:
 --
@@ -19,7 +20,7 @@ record RawCoeff ℓ₁ ℓ₂ : Set (suc (ℓ₁ ⊔ ℓ₂)) where
   field
     coeffs  : RawRing ℓ₁
     Zero-C  : Pred (RawRing.Carrier coeffs) ℓ₂
-    zero-c? : Decidable Zero-C
+    zero-c? : (x : RawRing.Carrier coeffs) → Maybe (Zero-C x)
 
   open RawRing coeffs public
 
