@@ -2,7 +2,7 @@ module Polynomial.Simple.Solver where
 
 open import Polynomial.Expr public
 open import Polynomial.Simple.AlmostCommutativeRing public
-open import Data.Vec
+open import Data.Vec hiding (_⊛_)
 open import Algebra.Solver.Ring.AlmostCommutativeRing using (-raw-almostCommutative⟶)
 open import Polynomial.Parameters
 open import Function
@@ -19,6 +19,7 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
   ⟦ x ⊕ y ⟧ ρ = ⟦ x ⟧ ρ + ⟦ y ⟧ ρ
   ⟦ x ⊗ y ⟧ ρ = ⟦ x ⟧ ρ * ⟦ y ⟧ ρ
   ⟦ ⊝ x ⟧ ρ = - ⟦ x ⟧ ρ
+  ⟦ x ⊛ i ⟧ ρ = ⟦ x ⟧ ρ ^ i
 
   rawCoeff : RawCoeff ℓ₁ ℓ₂
   rawCoeff = record
@@ -38,6 +39,7 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
     go (x ⊕ y) = go x ⊞ go y
     go (x ⊗ y) = go x ⊠ go y
     go (⊝ x) = ⊟ go x
+    go (x ⊛ i) = go x ⊡ i
 
   import Algebra.Solver.Ring.AlmostCommutativeRing as UnDec
 
@@ -76,6 +78,7 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
     go (x ⊕ y) ρ = ⊞-hom (norm x) (norm y) ρ ⟨ trans ⟩ (go x ρ ⟨ +-cong ⟩ go y ρ)
     go (x ⊗ y) ρ = ⊠-hom (norm x) (norm y) ρ ⟨ trans ⟩ (go x ρ ⟨ *-cong ⟩ go y ρ)
     go (⊝ x) ρ = ⊟-hom (norm x) ρ ⟨ trans ⟩ -‿cong (go x ρ)
+    go (x ⊛ i) ρ = ⊡-hom (norm x) i ρ ⟨ trans ⟩ pow-cong i (go x ρ)
 
   open import Relation.Binary.Reflection setoid Ι ⟦_⟧ ⟦_⇓⟧ correct public
 

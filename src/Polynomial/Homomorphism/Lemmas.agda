@@ -24,6 +24,8 @@ open Homomorphism homo
 open import Polynomial.Reasoning ring
 open import Polynomial.NormalForm homo
 
+open import Polynomial.Exponentiation rawRing
+
 pow-add : ∀ x i j → x ^ i * x ^ j ≈ x ^ (i ℕ.+ j)
 pow-add x zero j = *-identityˡ (x ^ j)
 pow-add x (suc i) j =
@@ -45,6 +47,36 @@ pow-hom : ∀ {n} i
         → Σ⟦ xs ⟧ (ρ , Ρ) * ρ ^ i ≈ Σ⟦ xs ⍓ i ⟧ (ρ , Ρ)
 pow-hom i [] ρ Ρ = zeroˡ (ρ ^ i)
 pow-hom i (x Δ j ∷ xs) ρ Ρ = *-assoc _ (ρ ^ j) (ρ ^ i) ⊙ *≫ pow-add ρ j i
+
+pow-distrib : ∀ x y i
+            → (x * y) ^ i ≈ x ^ i * y ^ i
+pow-distrib x y ℕ.zero = sym (*-identityˡ _)
+pow-distrib x y (suc i) =
+  begin
+    (x * y) * ((x * y) ^ i)
+  ≈⟨ *≫ pow-distrib x y i ⟩
+    (x * y) * (x ^ i * y ^ i)
+  ≈⟨ *-assoc _ _ _ ⟨ trans ⟩ (*≫ *-comm _ _) ⟩
+    x * ((x ^ i * y ^ i) * y)
+  ≈⟨  (*≫ *-assoc _ _ _) ⟨ trans ⟩ sym (*-assoc _ _ _) ⟨ trans ⟩ (*≫ *-comm _ _) ⟩
+    (x * x ^ i) * (y * y ^ i)
+  ∎
+
+pow-mult : ∀ x i j
+         → (x ^ i) ^ j ≈ x ^ (j ℕ.* i)
+pow-mult x i ℕ.zero = refl
+pow-mult x i (suc j) =
+  begin
+    x ^ i * ((x ^ i) ^ j)
+  ≈⟨ *≫ pow-mult x i j ⟩
+    x ^ i * (x ^ (j ℕ.* i))
+  ≈⟨ pow-add x i _ ⟩
+    x ^ (i ℕ.+ j ℕ.* i)
+  ∎
+
+pow-cong : ∀ {x y} i → x ≈ y → x ^ i ≈ y ^ i
+pow-cong ℕ.zero x≈y = refl
+pow-cong (suc i) x≈y = x≈y ⟨ *-cong ⟩ pow-cong i x≈y
 
 zero-hom : ∀ {n} (p : Poly n) → Zero p → (Ρ : Vec Carrier n) → ⟦ p ⟧ Ρ ≈ 0#
 zero-hom (Σ (_ ∷ _) Π i≤n) ()

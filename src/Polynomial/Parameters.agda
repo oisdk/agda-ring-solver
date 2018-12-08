@@ -37,4 +37,3 @@ record Homomorphism ℓ₁ ℓ₂ ℓ₃ ℓ₄ : Set (suc (ℓ₁ ⊔ ℓ₂ �
   open AlmostCommutativeRing ring public
   field
     Zero-C⟶Zero-R : ∀ x → Raw.Zero-C x → ⟦ x ⟧ᵣ ≈ 0#
-

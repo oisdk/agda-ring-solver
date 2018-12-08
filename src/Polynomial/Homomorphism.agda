@@ -14,3 +14,5 @@ open import Polynomial.Homomorphism.Addition       homo using (⊞-hom) public
 open import Polynomial.Homomorphism.Multiplication homo using (⊠-hom) public
 open import Polynomial.Homomorphism.Negation       homo using (⊟-hom) public
 open import Polynomial.Homomorphism.Semantics      homo using (κ-hom; ι-hom) public
+open import Polynomial.Homomorphism.Exponentiation homo using (⊡-hom) public
+open import Polynomial.Homomorphism.Lemmas         homo using (pow-cong) public

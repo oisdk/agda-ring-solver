@@ -103,3 +103,4 @@ mutual
   Norm (_ Δ zero  ∷ [])    = ⊥
   Norm (_ Δ zero  ∷ _ ∷ _) = ⊤
   Norm (_ Δ suc _ ∷ _)     = ⊤
+open NonZero public

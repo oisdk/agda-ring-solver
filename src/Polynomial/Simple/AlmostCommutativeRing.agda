@@ -21,12 +21,15 @@ record IsAlmostCommutativeRing
 
   open IsCommutativeSemiring isCommutativeSemiring public
 
+import Polynomial.Exponentiation as Exp
+
 record AlmostCommutativeRing c ℓ : Set (suc (c ⊔ ℓ)) where
   infix  8 -_
   infixl 7 _*_
   infixl 6 _+_
   infix  4 _≈_
   infix  4 _≟_
+  infixr 8 _^_
   field
     Carrier                 : Set c
     _≈_                     : Rel Carrier ℓ
@@ -40,6 +43,7 @@ record AlmostCommutativeRing c ℓ : Set (suc (c ⊔ ℓ)) where
       IsAlmostCommutativeRing _≈_ _+_ _*_ -_ 0# 1#
 
   open IsAlmostCommutativeRing isAlmostCommutativeRing hiding (refl) public
+  open import Data.Nat as ℕ using (ℕ)
 
   commutativeSemiring : CommutativeSemiring _ _
   commutativeSemiring =
@@ -59,6 +63,9 @@ record AlmostCommutativeRing c ℓ : Set (suc (c ⊔ ℓ)) where
     ; 0#  = 0#
     ; 1#  = 1#
     }
+
+  _^_ : Carrier → ℕ → Carrier
+  _^_ = Exp._^_ rawRing
 
   refl : ∀ {x} → x ≈ x
   refl = IsAlmostCommutativeRing.refl isAlmostCommutativeRing

@@ -23,6 +23,8 @@ open import Polynomial.NormalForm homo
 open Homomorphism homo
 open import Polynomial.Reasoning ring
 
+open import Polynomial.Exponentiation rawRing
+
 mutual
   ⊠-step-hom : ∀ {i n}
              → (a : Acc _<′_ n)

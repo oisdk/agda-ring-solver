@@ -48,6 +48,11 @@ module Internal where
     getUnOp i nm (x ∷ xs) = getUnOp i nm xs
     getUnOp _ _ _ = unknown
 
+    getExp : ℕ → List (Arg Term) → Term
+    getExp i (⟨ x ⟩∷ ⟨ y ⟩∷ []) = quote _⊛_ ⟨ con ⟩ ⟅ i ⋯⟆∷ ⟨ toExpr i x ⟩∷ ⟨ y ⟩∷ []
+    getExp i (x ∷ xs) = getExp i xs
+    getExp _ _ = unknown
+
     -- When trying to figure out the shape of an expression, one of
     -- the difficult tasks is recognizing where constants in the
     -- underlying ring are used. If we were only dealing with ℕ, we
@@ -64,6 +69,8 @@ module Internal where
     ... | yes p = getBinOp i (quote _⊕_) xs
     ... | no _ with f ≟-Name quote AlmostCommutativeRing._*_
     ... | yes p = getBinOp i (quote _⊗_) xs
+    ... | no _ with f ≟-Name quote AlmostCommutativeRing._^_
+    ... | yes p = getExp i xs
     ... | no _ with f ≟-Name quote AlmostCommutativeRing.-_
     ... | yes p = getUnOp i (quote ⊝_) xs
     ... | no _ = constExpr i t

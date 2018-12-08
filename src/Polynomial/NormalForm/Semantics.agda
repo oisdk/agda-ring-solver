@@ -18,11 +18,7 @@ open import Polynomial.NormalForm.InjectionIndex
 open Homomorphism homo
 open import Polynomial.NormalForm.Definition coeffs
 
--- Exponentiation
-infixr 8 _^_
-_^_ : Carrier → ℕ → Carrier
-x ^ zero = 1#
-x ^ suc n = x * x ^ n
+open import Polynomial.Exponentiation rawRing
 
 drop : ∀ {i n} → i ≤′ n → Vec Carrier n → Vec Carrier i
 drop ≤′-refl Ρ = Ρ

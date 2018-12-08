@@ -20,6 +20,8 @@ open import Polynomial.NormalForm homo
 open Homomorphism homo
 open import Polynomial.Reasoning ring
 
+open import Polynomial.Exponentiation rawRing
+
 κ-hom : ∀ {n}
       → (x : Raw.Carrier)
       → (Ρ : Vec Carrier n)

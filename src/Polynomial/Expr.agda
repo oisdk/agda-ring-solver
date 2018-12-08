@@ -9,17 +9,20 @@ open import Data.Fin using (Fin)
 
 infixl 6 _⊕_
 infixl 7 _⊗_
+infixr 8 _⊛_
 data Expr  {ℓ} (A : Set ℓ) (n : ℕ) : Set ℓ where
   Κ   : A → Expr A n
   Ι   : Fin n → Expr A n
   _⊕_ : Expr A n → Expr A n → Expr A n
   _⊗_ : Expr A n → Expr A n → Expr A n
+  _⊛_ : Expr A n → ℕ → Expr A n
   ⊝_  : Expr A n → Expr A n
 
 open import Polynomial.Parameters
 
 module Eval {r₁ r₂ r₃ r₄} (homo : Homomorphism r₁ r₂ r₃ r₄) where
   open Homomorphism homo
+  open import Polynomial.Exponentiation rawRing
 
   open import Data.Vec as Vec using (Vec)
 
@@ -29,3 +32,4 @@ module Eval {r₁ r₂ r₃ r₄} (homo : Homomorphism r₁ r₂ r₃ r₄) wher
   ⟦ x ⊕ y ⟧ ρ = ⟦ x ⟧ ρ + ⟦ y ⟧ ρ
   ⟦ x ⊗ y ⟧ ρ = ⟦ x ⟧ ρ * ⟦ y ⟧ ρ
   ⟦ ⊝ x ⟧ ρ = - ⟦ x ⟧ ρ
+  ⟦ x ⊛ i ⟧ ρ = ⟦ x ⟧ ρ ^ i

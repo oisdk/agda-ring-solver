@@ -23,6 +23,8 @@ open import Polynomial.Homomorphism.Lemmas homo
 open import Polynomial.NormalForm homo
 open import Polynomial.Reasoning ring
 
+open import Polynomial.Exponentiation rawRing
+
 mutual
   ⊞-hom : ∀ {n}
         → (xs : Poly n)
