@@ -1,5 +1,6 @@
 module Examples where
 
+-- ~ 5 seconds
 module New where
   open import Polynomial.Simple.AlmostCommutativeRing
   open import Polynomial.Simple.Reflection
@@ -12,14 +13,15 @@ module New where
 
   open AlmostCommutativeRing NatRing
 
-  lemma : ∀ x y → (x ^ 100) * (y ^ 100) ≈ (y ^ 100) * (x ^ 100)
+  lemma : ∀ x y → (x ^ 400) * (y ^ 400) ≈ (y ^ 400) * (x ^ 400)
   lemma = solve NatRing
 
-module Old where
-  open import Relation.Binary.PropositionalEquality
-  open import Data.Nat
-  open import Data.Nat.Solver using (module +-*-Solver)
-  open +-*-Solver
+-- ~ 30 seconds
+-- module Old where
+--   open import Relation.Binary.PropositionalEquality
+--   open import Data.Nat
+--   open import Data.Nat.Solver using (module +-*-Solver)
+--   open +-*-Solver
 
-  lemma : ∀ x y → (x ^ 100) * (y ^ 100) ≡ (y ^ 100) * (x ^ 100)
-  lemma = solve 2 (λ x y → ((x :^ 100) :* (y :^ 100)) := ((y :^ 100) :* (x :^ 100))) refl
+--   lemma : ∀ x y → (x ^ 400) * (y ^ 400) ≡ (y ^ 400) * (x ^ 400)
+--   lemma = solve 2 (λ x y → ((x :^ 400) :* (y :^ 400)) := ((y :^ 400) :* (x :^ 400))) refl
