@@ -31,6 +31,7 @@ record PowInd {c} (C : Set c) : Set c where
   field
     coeff : C
     pow   : ℕ
+open PowInd public
 
 open RawCoeff coeffs
 
@@ -104,3 +105,4 @@ mutual
   Norm (_ Δ zero  ∷ _ ∷ _) = ⊤
   Norm (_ Δ suc _ ∷ _)     = ⊤
 open NonZero public
+open Poly public

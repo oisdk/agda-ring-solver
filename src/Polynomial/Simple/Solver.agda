@@ -7,7 +7,7 @@ open import Algebra.Solver.Ring.AlmostCommutativeRing using (-raw-almostCommutat
 open import Polynomial.Parameters
 open import Function
 open import Data.Maybe
-
+open import Relation.Unary.WeaklyDecidable
 open import Data.Vec.N-ary
 
 
@@ -25,7 +25,7 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
   rawCoeff = record
     { coeffs = rawRing
     ; Zero-C = 0# ≈_
-    ; zero-c? = decToMaybe ∘ (0# ≟_)
+    ; zero-c? = dec⟶weaklyDec (0# ≟_)
     }
   open import Polynomial.NormalForm.Definition rawCoeff
   open import Polynomial.NormalForm.Operations rawCoeff
@@ -58,7 +58,7 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
     { coeffs = rawCoeff
     ; ring = complex
     ; morphism = UnDec.-raw-almostCommutative⟶ complex
-    ; Zero-C⟶Zero-R = λ x z → sym z
+    ; Zero-C⟶Zero-R = id
     }
 
   ⟦_⇓⟧ : ∀ {n} → Expr Carrier n → Vec Carrier n → Carrier

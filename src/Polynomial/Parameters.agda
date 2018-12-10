@@ -4,8 +4,10 @@
 -- modules in a convenient form.
 module Polynomial.Parameters where
 
+open import Function
 open import Algebra
 open import Relation.Unary
+open import Relation.Unary.WeaklyDecidable
 open import Level
 open import Algebra.Solver.Ring.AlmostCommutativeRing
 open import Data.Maybe
@@ -20,7 +22,7 @@ record RawCoeff ℓ₁ ℓ₂ : Set (suc (ℓ₁ ⊔ ℓ₂)) where
   field
     coeffs  : RawRing ℓ₁
     Zero-C  : Pred (RawRing.Carrier coeffs) ℓ₂
-    zero-c? : (x : RawRing.Carrier coeffs) → Maybe (Zero-C x)
+    zero-c? : WeaklyDecidable Zero-C
 
   open RawRing coeffs public
 
@@ -36,4 +38,4 @@ record Homomorphism ℓ₁ ℓ₂ ℓ₃ ℓ₄ : Set (suc (ℓ₁ ⊔ ℓ₂ �
   open _-Raw-AlmostCommutative⟶_ morphism renaming (⟦_⟧ to ⟦_⟧ᵣ) public
   open AlmostCommutativeRing ring public
   field
-    Zero-C⟶Zero-R : ∀ x → Raw.Zero-C x → ⟦ x ⟧ᵣ ≈ 0#
+    Zero-C⟶Zero-R : ∀[ Raw.Zero-C ⇒ (0# ≈_) ∘ ⟦_⟧ᵣ ]

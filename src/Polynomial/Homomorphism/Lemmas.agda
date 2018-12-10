@@ -78,12 +78,12 @@ pow-cong : ∀ {x y} i → x ≈ y → x ^ i ≈ y ^ i
 pow-cong ℕ.zero x≈y = refl
 pow-cong (suc i) x≈y = x≈y ⟨ *-cong ⟩ pow-cong i x≈y
 
-zero-hom : ∀ {n} (p : Poly n) → Zero p → (Ρ : Vec Carrier n) → ⟦ p ⟧ Ρ ≈ 0#
+zero-hom : ∀ {n} (p : Poly n) → Zero p → (Ρ : Vec Carrier n) → 0# ≈ ⟦ p ⟧ Ρ
 zero-hom (Σ (_ ∷ _) Π i≤n) ()
 zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
 zero-hom (Κ x  Π i≤n) p≡0 Ρ with RawCoeff.zero-c? coeffs x
 zero-hom (Κ x  Π i≤n) p≡0 Ρ | nothing = ⊥-elim p≡0
-zero-hom (Κ x  Π i≤n) p≡0 Ρ | just prf = Zero-C⟶Zero-R x prf
+zero-hom (Κ x  Π i≤n) p≡0 Ρ | just prf = Zero-C⟶Zero-R prf
 
 ∷↓-hom : ∀ {n}
        → (x : Poly n)
@@ -98,7 +98,7 @@ zero-hom (Κ x  Π i≤n) p≡0 Ρ | just prf = Zero-C⟶Zero-R x prf
     Σ⟦ xs ⟧ (ρ , Ρ) * ρ ^ (suc i)
   ≈⟨ sym (*-assoc _ ρ _) ⟩
     Σ⟦ xs ⟧ (ρ , Ρ) * ρ * ρ ^ i
-  ≈⟨ ≪* (sym (+-identityˡ _) ⊙ ≪+ sym (zero-hom x p _)) ⟩
+  ≈⟨ ≪* (sym (+-identityˡ _) ⊙ ≪+ (zero-hom x p _)) ⟩
     (⟦ x ⟧ Ρ + Σ⟦ xs ⟧ (ρ , Ρ) * ρ) * ρ ^ i
   ∎
 

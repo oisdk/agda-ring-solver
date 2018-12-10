@@ -25,14 +25,16 @@ open import Polynomial.Reasoning ring
 
 open import Polynomial.Exponentiation rawRing
 
+open import Relation.Unary
+open import Reader
+
 mutual
   ⊠-step-hom : ∀ {i n}
              → (a : Acc _<′_ n)
              → (xs : FlatPoly i)
              → (i≤n : i ≤′ n)
              → (ys : Poly n)
-             → ∀ ρ
-             → ⟦ ⊠-step a xs i≤n ys ⟧ ρ ≈ ⟦ xs Π i≤n ⟧ ρ * ⟦ ys ⟧ ρ
+             → Π[ ⦇ ⟦ ⊠-step a xs i≤n ys ⟧ ≈ ⦇ ⟦ xs Π i≤n ⟧ * ⟦ ys ⟧ ⦈ ⦈ ]
   ⊠-step-hom a (Κ x) i≤n = ⊠-Κ-hom a x
   ⊠-step-hom a (Σ xs) i≤n = ⊠-Σ-hom a xs i≤n
 
@@ -169,8 +171,7 @@ mutual
                → (a : Acc _<′_ n)
                → (xs : Coeffs n)
                → (ys : Coeffs n)
-               → (Ρ : Carrier × Vec Carrier n)
-               → Σ⟦ ⊠-coeffs a xs ys ⟧ Ρ ≈ Σ⟦ xs ⟧ Ρ * Σ⟦ ys ⟧ Ρ
+               → Π[ ⦇ Σ⟦ ⊠-coeffs a xs ys ⟧ ≈ ⦇ Σ⟦ xs ⟧ * Σ⟦ ys ⟧ ⦈ ⦈ ]
   ⊠-coeffs-hom _ xs [] Ρ = sym (zeroʳ _)
   ⊠-coeffs-hom a xs (y ≠0 Δ j ∷ ys) (ρ , Ρ) =
     let xs′ = Σ⟦ xs ⟧ (ρ , Ρ)
@@ -226,6 +227,5 @@ mutual
 ⊠-hom : ∀ {n}
       → (xs : Poly n)
       → (ys : Poly n)
-      → (Ρ : Vec Carrier n)
-      → ⟦ xs ⊠ ys ⟧ Ρ ≈ ⟦ xs ⟧ Ρ * ⟦ ys ⟧ Ρ
+      → Π[ ⦇ ⟦ xs ⊠ ys ⟧ ≈ ⦇ ⟦ xs ⟧ * ⟦ ys ⟧ ⦈ ⦈ ]
 ⊠-hom (xs Π i≤n) = ⊠-step-hom (<′-wellFounded _) xs i≤n
