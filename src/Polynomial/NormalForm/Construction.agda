@@ -32,11 +32,9 @@ open RawCoeff coeffs
 
 -- Decision procedure for Zero
 zero? : ∀ {n} → (p : Poly n) → Dec (Zero p)
-zero? (Σ []      Π _) = yes tt
-zero? (Σ (_ ∷ _) Π _) = no id
-zero? (Κ x       Π _) with zero-c? x
-zero? (Κ x       Π _) | just _ = yes tt
-zero? (Κ x       Π _) | nothing = no id
+zero? (Σ []      Π _) = yes (lift tt)
+zero? (Σ (_ ∷ _) Π _) = no lower
+zero? (Κ x       Π _) = zero-c? x
 
 -- Exponentiate the first variable of a polynomial
 infixr 8 _⍓_

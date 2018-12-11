@@ -83,18 +83,14 @@ mutual
     constructor _≠0
     field
       poly : Poly i
-      .{poly≠0} : ¬ (Zero poly)
-
-  IsJust : ∀ {a} {A : Set a} → Maybe A → Set
-  IsJust nothing = ⊥
-  IsJust (just _) = ⊤
+      .{poly≠0} : ¬ Zero poly
 
   -- This predicate is used (in its negation) to ensure that no
   -- coefficient is zero, preventing any trailing zeroes.
-  Zero : ∀ {n} → Poly n → Set
-  Zero (Κ x       Π _) = IsJust (zero-c? x)
-  Zero (Σ []      Π _) = ⊤
-  Zero (Σ (_ ∷ _) Π _) = ⊥
+  Zero : ∀ {n} → Poly n → Set ℓ
+  Zero (Κ x       Π _) = Zero-C x
+  Zero (Σ []      Π _) = Lift _ ⊤
+  Zero (Σ (_ ∷ _) Π _) = Lift _ ⊥
 
   -- This predicate is used to ensure that all polynomials are in
   -- normal form: if a particular level is constant, than it can

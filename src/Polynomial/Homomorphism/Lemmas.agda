@@ -82,8 +82,8 @@ zero-hom : ∀ {n} (p : Poly n) → Zero p → (Ρ : Vec Carrier n) → 0# ≈ �
 zero-hom (Σ (_ ∷ _) Π i≤n) ()
 zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
 zero-hom (Κ x  Π i≤n) p≡0 Ρ with RawCoeff.zero-c? coeffs x
-zero-hom (Κ x  Π i≤n) p≡0 Ρ | nothing = ⊥-elim p≡0
-zero-hom (Κ x  Π i≤n) p≡0 Ρ | just prf = Zero-C⟶Zero-R prf
+zero-hom (Κ x  Π i≤n) p≡0 Ρ | no ¬p = ⊥-elim (¬p p≡0)
+zero-hom (Κ x  Π i≤n) p≡0 Ρ | yes p = Zero-C⟶Zero-R p
 
 ∷↓-hom : ∀ {n}
        → (x : Poly n)

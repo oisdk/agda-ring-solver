@@ -7,7 +7,6 @@ module Polynomial.Parameters where
 open import Function
 open import Algebra
 open import Relation.Unary
-open import Relation.Unary.WeaklyDecidable
 open import Level
 open import Algebra.Solver.Ring.AlmostCommutativeRing
 open import Data.Maybe
@@ -22,7 +21,7 @@ record RawCoeff ℓ₁ ℓ₂ : Set (suc (ℓ₁ ⊔ ℓ₂)) where
   field
     coeffs  : RawRing ℓ₁
     Zero-C  : Pred (RawRing.Carrier coeffs) ℓ₂
-    zero-c? : WeaklyDecidable Zero-C
+    zero-c? : Decidable Zero-C
 
   open RawRing coeffs public
 
