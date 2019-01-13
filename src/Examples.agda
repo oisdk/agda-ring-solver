@@ -18,7 +18,7 @@ lemma = solve tracedRing
 open import Data.List
 open import Data.String
 
-example : List String
+example : List _
 example = showProof (lemma 1 2)
 
 -- ~ 30 seconds
