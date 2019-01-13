@@ -1,20 +1,25 @@
 module Examples where
 
--- ~ 5 seconds
-module New where
-  open import Polynomial.Simple.AlmostCommutativeRing
-  open import Polynomial.Simple.Reflection
-  open import Data.Nat as ℕ using (ℕ; suc; zero)
-  open import Data.Nat.Properties
-  open import Level using (0ℓ)
+open import Polynomial.Simple.AlmostCommutativeRing
+open import Polynomial.Simple.Reflection
+open import Data.Nat as ℕ using (ℕ; suc; zero)
+open import Data.Nat.Properties
+open import Level using (0ℓ)
 
-  NatRing : AlmostCommutativeRing 0ℓ 0ℓ
-  NatRing = fromCommutativeSemiring *-+-commutativeSemiring ℕ._≟_
+NatRing : AlmostCommutativeRing 0ℓ 0ℓ
+NatRing = fromCommutativeSemiring *-+-commutativeSemiring ℕ._≟_
+open import Relation.Traced NatRing
 
-  open AlmostCommutativeRing NatRing
+open AlmostCommutativeRing tracedRing
 
-  lemma : ∀ x y → (x ^ 400) * (y ^ 400) ≈ (y ^ 400) * (x ^ 400)
-  lemma = solve NatRing
+lemma : ∀ x y → x + y ≈ y + x
+lemma = solve tracedRing
+
+open import Data.List
+open import Data.String
+
+example : List String
+example = showProof (lemma 1 2)
 
 -- ~ 30 seconds
 -- module Old where
