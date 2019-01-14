@@ -45,6 +45,62 @@ decTrace x y with base ._≟_ x y
 decTrace x y | yes p = yes (return (inj₁ (p ~? [refl] x)))
 decTrace x y | no ¬p = no (¬p ∘ gfold id (base ._≈_) (trans base ∘ [ id , sym base ] ∘ Data.Sum.map proof proof) (refl base))
 
+open import Data.Bool using (Bool; false; true ; _∧_; _∨_)
+decBinOp : BinOp → BinOp → Bool
+decBinOp [+] [+] = true
+decBinOp [*] [*] = true
+decBinOp [^] [^] = true
+decBinOp _ _ = false
+
+decStep : (x y : Step) → Bool
+decStep ([sym] x) ([sym] y) = decStep x y
+decStep ([cong] x x₁ x₂) ([cong] y y₁ y₂) = decStep x y ∧ decBinOp x₁ y₁ ∧ decStep x₂ y₂
+decStep ([-cong] x) ([-cong] y) = decStep x y
+decStep ([assoc] x x₁ x₂ x₃) ([assoc] y y₁ y₂ y₃) with decBinOp x y | base ._≟_ x₁ y₁ | base ._≟_ x₂ y₂ | base ._≟_ x₃ y₃
+decStep ([assoc] x x₁ x₂ x₃) ([assoc] y y₁ y₂ y₃) | true | yes _ | yes _ | yes _ = true
+decStep ([assoc] x x₁ x₂ x₃) ([assoc] y y₁ y₂ y₃) | res | a | b | c = false
+decStep ([ident] x x₁) ([ident] y y₁) with decBinOp x y | base ._≟_ x₁ y₁
+decStep ([ident] x x₁) ([ident] y y₁) | true | yes _ = true
+decStep ([ident] x x₁) ([ident] y y₁) | res | a = false
+decStep ([comm] x x₁ x₂) ([comm] y y₁ y₂) with decBinOp x y | base ._≟_ x₁ y₁ | base ._≟_ x₂ y₂
+decStep ([comm] x x₁ x₂) ([comm] y y₁ y₂) | true | yes _ | yes _ = true
+decStep ([comm] x x₁ x₂) ([comm] y y₁ y₂) | res | a | b = false
+decStep ([zero] x) ([zero] y) with base ._≟_ x y
+decStep ([zero] x) ([zero] y) | yes p = true
+decStep ([zero] x) ([zero] y) | no ¬p = false
+decStep ([distrib] x x₁ x₂) ([distrib] y y₁ y₂) with base ._≟_ x y | base ._≟_ x₁ y₁ | base ._≟_ x₂ y₂
+decStep ([distrib] x x₁ x₂) ([distrib] y y₁ y₂) | yes _ | yes _ | yes _ = true
+decStep ([distrib] x x₁ x₂) ([distrib] y y₁ y₂) | a | b | c = false
+decStep ([-distrib] x x₁) ([-distrib] y y₁) with base ._≟_ x y | base ._≟_ x₁ y₁
+decStep ([-distrib] x x₁) ([-distrib] y y₁) | yes a | yes b = true
+decStep ([-distrib] x x₁) ([-distrib] y y₁) | a | b = false
+decStep ([-+comm] x x₁) ([-+comm] y y₁) with base ._≟_ x y | base ._≟_ x₁ y₁
+decStep ([-+comm] x x₁) ([-+comm] y y₁) | yes p | yes _ = true
+decStep ([-+comm] x x₁) ([-+comm] y y₁) | _ | _ = false
+decStep ([refl] x) ([refl] y) with base ._≟_ x y
+decStep ([refl] x) ([refl] y) | yes p = true
+decStep ([refl] x) ([refl] y) | no ¬p = false
+decStep _ _ = false
+
+interesting : Step → Bool
+interesting ([sym] x) = interesting x
+interesting ([cong] x x₁ x₂) = interesting x ∨ interesting x₂
+interesting ([-cong] x) = interesting x
+interesting ([refl] x) = false
+interesting ([assoc] x x₁ x₂ x₃) = false
+interesting ([ident] x x₁) = false
+interesting ([zero] x) = false
+interesting ([distrib] x x₁ x₂) = true
+interesting ([-distrib] x x₁) = false
+interesting ([-+comm] x x₁) = false
+interesting ([comm] [+] x₁ x₂) with base ._≟_ x₁ (base .0#) | base ._≟_ x₂ (base .0#)
+interesting ([comm] [+] x₁ x₂) | no _ | no _ = true
+interesting ([comm] [+] x₁ x₂) | a | b = false
+interesting ([comm] [*] x₁ x₂) with base ._≟_ x₁ (base .1#) | base ._≟_ x₂ (base .1#)
+interesting ([comm] [*] x₁ x₂) | no _ | no _ = true
+interesting ([comm] [*] x₁ x₂) | a | b = false
+interesting ([comm] [^] x₁ x₂) = true
+
 neg-cong : ∀ {x y} → x ≈ⁱ y → -_ base x ≈ⁱ -_ base y
 neg-cong (prf ~? reason) = -‿cong base prf ~? ( [-cong] reason)
 
@@ -105,9 +161,25 @@ tracedRing = record
     }
   }
 
-open import Data.List
+open import Data.List as List
+
+showProof′ : ∀ {x y} → EqClosure _≈ⁱ_ x y → List Step
+showProof′ ε = []
+showProof′ (inj₁ x ◅ xs) = why x ∷ showProof′ xs
+showProof′ (inj₂ y ◅ xs) = why y ∷ showProof′ xs
+
+
+compressProof : List Step → List Step
+compressProof [] = []
+compressProof (x ∷ xs) = go [] x xs
+  where
+  go : List Step → Step → List Step → List Step
+  go ys y [] = List.reverse (y ∷ ys)
+  go ys y (x ∷ xs) with decStep y x
+  go ys y (x ∷ xs) | false = go (y ∷ ys) x xs
+  go [] y (x ∷ []) | true = []
+  go [] y (x ∷ x₁ ∷ xs) | true = go [] x₁ xs
+  go (x₁ ∷ ys) y (x ∷ xs) | true = go ys x₁ xs
 
 showProof : ∀ {x y} → EqClosure _≈ⁱ_ x y → List Step
-showProof ε = []
-showProof (inj₁ x ◅ xs) = why x ∷ showProof xs
-showProof (inj₂ y ◅ xs) = why y ∷ showProof xs
+showProof = List.boolFilter interesting ∘ compressProof ∘ showProof′

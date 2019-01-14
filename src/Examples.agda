@@ -8,18 +8,22 @@ open import Level using (0ℓ)
 
 NatRing : AlmostCommutativeRing 0ℓ 0ℓ
 NatRing = fromCommutativeSemiring *-+-commutativeSemiring ℕ._≟_
-open import Relation.Traced NatRing
+open import Relation.Traced
 
-open AlmostCommutativeRing tracedRing
+rng : _
+rng = tracedRing NatRing
 
-lemma : ∀ x y → x + y ≈ y + x
-lemma = solve tracedRing
+open AlmostCommutativeRing rng
+
+
+lemma : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x
+lemma = solve rng
 
 open import Data.List
 open import Data.String
 
 example : List _
-example = showProof (lemma 1 2)
+example = showProof NatRing (lemma 10 20)
 
 -- ~ 30 seconds
 -- module Old where
