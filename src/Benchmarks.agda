@@ -9,7 +9,7 @@ module Old where
   import Data.Vec as Vec
 
   example : ℕ → ℕ → ℕ
-  example x y = ⟦ (var Fin.zero :+ var (Fin.suc Fin.zero)) :^ 2 ⟧ (x Vec.∷ y Vec.∷ Vec.[])
+  example x y = ⟦ (var Fin.zero :+ var (Fin.suc Fin.zero)) :^ 10 ⟧ (x Vec.∷ y Vec.∷ Vec.[])
 
 module New where
   open import Data.Nat as ℕ using (ℕ; suc; zero)
@@ -57,7 +57,7 @@ module New where
   import Data.Vec as Vec
 
   example : ℕ → ℕ → ℕ
-  example x y = ⟦ (ι Fin.zero ⊞ ι (Fin.suc Fin.zero)) ⊡ 2 ⟧ (x Vec.∷ y Vec.∷ Vec.[])
+  example x y = ⟦ (ι Fin.zero ⊞ ι (Fin.suc Fin.zero)) ⊡ 10 ⟧ (x Vec.∷ y Vec.∷ Vec.[])
 
 open import Data.Nat.Show
 open import IO.Primitive using (IO; putStrLn)
