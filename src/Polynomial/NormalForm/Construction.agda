@@ -10,7 +10,8 @@ module Polynomial.NormalForm.Construction
 open import Relation.Nullary         using (Dec; yes; no)
 open import Level                    using (lift; lower; _⊔_)
 open import Data.Unit                using (tt)
-open import Data.List                using (_∷_; []; foldr)
+open import Data.List                using (_∷_; []; List)
+open import FastFoldr
 open import Data.Nat            as ℕ using (ℕ; suc; zero)
 open import Data.Nat.Properties      using (z≤′n)
 open import Data.Product             using (_×_; _,_; map₁; curry; uncurry)
@@ -48,6 +49,7 @@ _∷↓_ : ∀ {n} → PowInd (Poly n) → Coeffs n → Coeffs n
 x Δ i ∷↓ xs with zero? x
 ... | yes p = xs ⍓ suc i
 ... | no ¬p = _≠0 x {¬p} Δ i ∷ xs
+{-# INLINE _∷↓_ #-}
 
 -- Inject a polynomial into a larger polynomoial with more variables
 _Π↑_ : ∀ {n m} → Poly n → (suc n ≤′ m) → Poly m
@@ -72,5 +74,5 @@ para f = foldr (λ { (x ≠0 Δ i) → uncurry (_∷↓_ ∘ (_Δ i)) ∘ curry 
 {-# INLINE para #-}
 
 poly-map : ∀ {i} → (Poly i → Poly i) → Coeffs i → Coeffs i
-poly-map f = para (map₁ f)
+poly-map f = para (λ { (x , y) → (f x , y)})
 {-# INLINE poly-map #-}

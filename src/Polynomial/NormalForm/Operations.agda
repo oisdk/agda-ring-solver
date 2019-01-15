@@ -93,11 +93,11 @@ _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
 
 ⊞-zip (ℕ.less    i k) x xs y ys = x Δ i ∷ ⊞-zip-r y k ys xs
 ⊞-zip (ℕ.greater j k) x xs y ys = y Δ j ∷ ⊞-zip-r x k xs ys
-⊞-zip (ℕ.equal   i  ) (x ≠0) xs (y ≠0) ys =
-  (x ⊞ y) Δ i ∷↓ ⊞-coeffs xs ys
+⊞-zip (ℕ.equal   i  ) x xs y ys = (x .poly ⊞ y .poly) Δ i ∷↓ ⊞-coeffs xs ys
+{-# INLINE ⊞-zip #-}
 
 ⊞-zip-r x i xs [] = x Δ i ∷ xs
-⊞-zip-r x i xs (y Δ j ∷ ys) = ⊞-zip (compare i j) x xs y ys
+⊞-zip-r x i xs (y ∷ ys) = ⊞-zip (compare i (y .pow)) x xs (y .coeff) ys
 
 ----------------------------------------------------------------------
 -- Negation
@@ -150,8 +150,11 @@ _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
 
 ⊠-step a (Κ x) _ = ⊠-Κ a x
 ⊠-step a (Σ xs) = ⊠-Σ a xs
-⊠-Κ _ x (Κ y  Π i≤n) = Κ (x * y) Π i≤n
+
+⊠-Κ (acc _ ) x (Κ y  Π i≤n) = Κ (x * y) Π i≤n
 ⊠-Κ (acc wf) x (Σ xs Π i≤n) = ⊠-Κ-inj (wf _ i≤n) x xs Π↓ i≤n
+{-# INLINE ⊠-Κ #-}
+
 ⊠-Σ a xs i≤n (Σ ys Π j≤n) = ⊠-match a (inj-compare i≤n j≤n) xs ys
 ⊠-Σ (acc wf) xs i≤n (Κ y Π _) = ⊠-Κ-inj (wf _ i≤n) y xs Π↓ i≤n
 ⊠-Κ-inj a x = poly-map (⊠-Κ a x)

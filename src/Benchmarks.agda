@@ -1,24 +1,36 @@
 module Benchmarks where
 
 open import Data.Nat as ℕ using (ℕ; suc; zero)
+open import Data.Fin as Fin using (Fin)
+open import Data.Fin.Literals as FinLit
+open import Data.Nat.Literals as NatLit
+open import Agda.Builtin.FromNat using (Number)
+
+instance
+  finLit : ∀ {n} → Number (Fin n)
+  finLit = FinLit.number _
+
+instance
+  natLit : Number ℕ
+  natLit = NatLit.number
 
 d : ℕ
-d = 6
+d = 50
 
--- module Old where
---   open import Data.Nat.Properties using (*-+-commutativeSemiring)
---   open import Algebra.Solver.Ring.AlmostCommutativeRing
---   open import Algebra.Solver.Ring.Simple (fromCommutativeSemiring *-+-commutativeSemiring) ℕ._≟_
---   import Data.Fin as Fin
---   import Data.Vec as Vec
+module Old where
+  open import Data.Nat.Properties using (*-+-commutativeSemiring)
+  open import Algebra.Solver.Ring.AlmostCommutativeRing
+  open import Algebra.Solver.Ring.Simple (fromCommutativeSemiring *-+-commutativeSemiring) ℕ._≟_
+  open import Data.Vec as Vec using (_∷_; [])
 
---   example : ℕ → ℕ → ℕ → ℕ
---   example x y z = ⟦ ((var Fin.zero :^ d) :+ (var (Fin.suc Fin.zero) :^ d) :+ (var (Fin.suc (Fin.suc Fin.zero)) :^ d)) :^ 2 ⟧ (x Vec.∷ y Vec.∷ z Vec.∷ Vec.[])
+  example : ℕ → ℕ → ℕ → ℕ → ℕ → ℕ
+  example v w x y z = ⟦ ((var 0) :+ (var 1) :+ (var 2) :+ (var 3) :+ (var 4)) :^ d ⟧↓ (v ∷ w ∷ x ∷ y ∷ z ∷ [])
 
 module New where
   open import Polynomial.Simple.AlmostCommutativeRing
   open import Polynomial.Parameters
   open import Data.Nat.Properties using (*-+-commutativeSemiring)
+  open import Data.Vec as Vec using (_∷_; [])
 
   NatRing : AlmostCommutativeRing _ _
   NatRing = fromCommutativeSemiring *-+-commutativeSemiring ℕ._≟_
@@ -59,12 +71,10 @@ module New where
   import Data.Fin as Fin
   import Data.Vec as Vec
 
-  example : ℕ → ℕ → ℕ → ℕ
-  example x y z = ⟦ ((ι Fin.zero ⊡ d) ⊞ (ι (Fin.suc Fin.zero) ⊡ d) ⊞ (ι (Fin.suc (Fin.suc Fin.zero)) ⊡ d)) ⊡ 2 ⟧ (x Vec.∷ y Vec.∷ z Vec.∷ Vec.[])
+  example : ℕ → ℕ → ℕ → ℕ → ℕ → ℕ
+  example v w x y z = ⟦ ((ι 0) ⊞ (ι 1) ⊞ (ι 2) ⊞ (ι 3) ⊞ ι 4) ⊡ d ⟧ (v ∷ w ∷ x ∷ y ∷ z ∷ [])
 
 open import IO.Primitive using (IO; putStrLn)
-open import Data.String using (String)
-open import Codata.Musical.Costring using (toCostring)
 open import Foreign.Haskell using (Unit)
 
 postulate
@@ -75,4 +85,4 @@ postulate
 open New using (example)
 
 main : IO Unit
-main = printNat (example 3 4 5)
+main = printNat (example 3 4 5 6 7)
