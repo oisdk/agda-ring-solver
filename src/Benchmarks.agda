@@ -1,18 +1,21 @@
 module Benchmarks where
 
-module Old where
-  open import Data.Nat as ℕ using (ℕ; suc; zero)
-  open import Data.Nat.Properties using (*-+-commutativeSemiring)
-  open import Algebra.Solver.Ring.AlmostCommutativeRing
-  open import Algebra.Solver.Ring.Simple (fromCommutativeSemiring *-+-commutativeSemiring) ℕ._≟_
-  import Data.Fin as Fin
-  import Data.Vec as Vec
+open import Data.Nat as ℕ using (ℕ; suc; zero)
 
-  example : ℕ → ℕ → ℕ
-  example x y = ⟦ (var Fin.zero :+ var (Fin.suc Fin.zero)) :^ 10 ⟧ (x Vec.∷ y Vec.∷ Vec.[])
+d : ℕ
+d = 6
+
+-- module Old where
+--   open import Data.Nat.Properties using (*-+-commutativeSemiring)
+--   open import Algebra.Solver.Ring.AlmostCommutativeRing
+--   open import Algebra.Solver.Ring.Simple (fromCommutativeSemiring *-+-commutativeSemiring) ℕ._≟_
+--   import Data.Fin as Fin
+--   import Data.Vec as Vec
+
+--   example : ℕ → ℕ → ℕ → ℕ
+--   example x y z = ⟦ ((var Fin.zero :^ d) :+ (var (Fin.suc Fin.zero) :^ d) :+ (var (Fin.suc (Fin.suc Fin.zero)) :^ d)) :^ 2 ⟧ (x Vec.∷ y Vec.∷ z Vec.∷ Vec.[])
 
 module New where
-  open import Data.Nat as ℕ using (ℕ; suc; zero)
   open import Polynomial.Simple.AlmostCommutativeRing
   open import Polynomial.Parameters
   open import Data.Nat.Properties using (*-+-commutativeSemiring)
@@ -56,16 +59,20 @@ module New where
   import Data.Fin as Fin
   import Data.Vec as Vec
 
-  example : ℕ → ℕ → ℕ
-  example x y = ⟦ (ι Fin.zero ⊞ ι (Fin.suc Fin.zero)) ⊡ 10 ⟧ (x Vec.∷ y Vec.∷ Vec.[])
+  example : ℕ → ℕ → ℕ → ℕ
+  example x y z = ⟦ ((ι Fin.zero ⊡ d) ⊞ (ι (Fin.suc Fin.zero) ⊡ d) ⊞ (ι (Fin.suc (Fin.suc Fin.zero)) ⊡ d)) ⊡ 2 ⟧ (x Vec.∷ y Vec.∷ z Vec.∷ Vec.[])
 
-open import Data.Nat.Show
 open import IO.Primitive using (IO; putStrLn)
 open import Data.String using (String)
 open import Codata.Musical.Costring using (toCostring)
 open import Foreign.Haskell using (Unit)
 
-open Old using (example)
+postulate
+  printNat : ℕ → IO Unit
+
+{-# COMPILE GHC printNat = print #-}
+
+open New using (example)
 
 main : IO Unit
-main = putStrLn (toCostring (show (example 3 4)))
+main = printNat (example 3 4 5)

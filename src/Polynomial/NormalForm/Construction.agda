@@ -35,6 +35,7 @@ zero? : ∀ {n} → (p : Poly n) → Dec (Zero p)
 zero? (Σ []      Π _) = yes (lift tt)
 zero? (Σ (_ ∷ _) Π _) = no lower
 zero? (Κ x       Π _) = zero-c? x
+{-# INLINE zero? #-}
 
 -- Exponentiate the first variable of a polynomial
 infixr 8 _⍓_
@@ -68,6 +69,8 @@ Fold i = PolyF i → PolyF i
 
 para : ∀ {i} → Fold i → Coeffs i → Coeffs i
 para f = foldr (λ { (x ≠0 Δ i) → uncurry (_∷↓_ ∘ (_Δ i)) ∘ curry f x}) []
+{-# INLINE para #-}
 
 poly-map : ∀ {i} → (Poly i → Poly i) → Coeffs i → Coeffs i
 poly-map f = para (map₁ f)
+{-# INLINE poly-map #-}

@@ -41,3 +41,5 @@ mutual
   ⟦_⟧ : ∀ {n} → Poly n → Vec Carrier n → Carrier
   ⟦ Κ x  Π i≤n ⟧ _ = ⟦ x ⟧ᵣ
   ⟦ Σ xs Π i≤n ⟧ Ρ = Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
+
+{-# INLINE _⟦∷⟧_ #-}
