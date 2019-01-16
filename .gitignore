@@ -1,1 +1,3 @@
 *.agdai
+src/Benchmarks
+src/MAlonzo/*

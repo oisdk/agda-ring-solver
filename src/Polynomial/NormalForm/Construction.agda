@@ -10,7 +10,8 @@ module Polynomial.NormalForm.Construction
 open import Relation.Nullary         using (Dec; yes; no)
 open import Level                    using (lift; lower; _⊔_)
 open import Data.Unit                using (tt)
-open import Data.List                using (_∷_; []; foldr)
+open import Data.List                using (_∷_; []; List)
+open import FastFoldr
 open import Data.Nat            as ℕ using (ℕ; suc; zero)
 open import Data.Nat.Properties      using (z≤′n)
 open import Data.Product             using (_×_; _,_; map₁; curry; uncurry)
@@ -35,6 +36,7 @@ zero? : ∀ {n} → (p : Poly n) → Dec (Zero p)
 zero? (Σ []      Π _) = yes (lift tt)
 zero? (Σ (_ ∷ _) Π _) = no lower
 zero? (Κ x       Π _) = zero-c? x
+{-# INLINE zero? #-}
 
 -- Exponentiate the first variable of a polynomial
 infixr 8 _⍓_
@@ -47,6 +49,7 @@ _∷↓_ : ∀ {n} → PowInd (Poly n) → Coeffs n → Coeffs n
 x Δ i ∷↓ xs with zero? x
 ... | yes p = xs ⍓ suc i
 ... | no ¬p = _≠0 x {¬p} Δ i ∷ xs
+{-# INLINE _∷↓_ #-}
 
 -- Inject a polynomial into a larger polynomoial with more variables
 _Π↑_ : ∀ {n m} → Poly n → (suc n ≤′ m) → Poly m
@@ -68,6 +71,8 @@ Fold i = PolyF i → PolyF i
 
 para : ∀ {i} → Fold i → Coeffs i → Coeffs i
 para f = foldr (λ { (x ≠0 Δ i) → uncurry (_∷↓_ ∘ (_Δ i)) ∘ curry f x}) []
+{-# INLINE para #-}
 
 poly-map : ∀ {i} → (Poly i → Poly i) → Coeffs i → Coeffs i
-poly-map f = para (map₁ f)
+poly-map f = para (λ { (x , y) → (f x , y)})
+{-# INLINE poly-map #-}
