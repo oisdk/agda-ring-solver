@@ -15,7 +15,7 @@ instance
   natLit = NatLit.number
 
 d : ℕ
-d = 25
+d = 15
 
 module Old where
   open import Data.Nat.Properties using (*-+-commutativeSemiring)
@@ -23,8 +23,8 @@ module Old where
   open import Algebra.Solver.Ring.Simple (fromCommutativeSemiring *-+-commutativeSemiring) ℕ._≟_
   open import Data.Vec as Vec using (_∷_; [])
 
-  example : ℕ → ℕ → ℕ → ℕ → ℕ → ℕ → ℕ → ℕ → ℕ
-  example s t u v w x y z = ⟦ ((var 0) :+ (var 1) :+ (var 2) :+ (var 3) :+ (var 4) :+ var 5 :+ var 6 :+ var 7) :^ d ⟧↓ (s ∷ t ∷ u ∷ v ∷ w ∷ x ∷ y ∷ z ∷ [])
+  example : ℕ → ℕ → ℕ → ℕ → ℕ → ℕ
+  example v w x y z = ⟦ ((var 0) :+ (var 1) :+ (var 2) :+ (var 3) :+ (var 4)) :^ d ⟧↓ (v ∷ w ∷ x ∷ y ∷ z ∷ [])
 
 module New where
   open import Polynomial.Simple.AlmostCommutativeRing
@@ -71,8 +71,8 @@ module New where
   import Data.Fin as Fin
   import Data.Vec as Vec
 
-  example : ℕ → ℕ → ℕ → ℕ → ℕ → ℕ → ℕ → ℕ → ℕ
-  example s t u v w x y z = ⟦ ((ι 0) ⊞ (ι 1) ⊞ (ι 2) ⊞ (ι 3) ⊞ ι 4 ⊞ ι 5 ⊞ ι 6 ⊞ ι 7) ⊡ d ⟧ (s ∷ t ∷ u ∷ v ∷ w ∷ x ∷ y ∷ z ∷ [])
+  example : ℕ → ℕ → ℕ → ℕ → ℕ → ℕ
+  example v w x y z = ⟦ ((ι 0) ⊞ (ι 1) ⊞ (ι 2) ⊞ (ι 3) ⊞ ι 4) ⊡ d ⟧ (v ∷ w ∷ x ∷ y ∷ z ∷ [])
 
 open import IO.Primitive using (IO; putStrLn)
 open import Foreign.Haskell using (Unit)
@@ -82,7 +82,7 @@ postulate
 
 {-# COMPILE GHC printNat = print #-}
 
-open New using (example)
+open Old using (example)
 
 main : IO Unit
-main = printNat (example 3 4 5 6 7 8 9 10)
+main = printNat (example 3 4 5 6 7)
