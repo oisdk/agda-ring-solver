@@ -2,7 +2,7 @@ module Examples where
 open import Data.Nat using (ℕ)
 
 d : ℕ
-d = 1
+d = 100
 
 -- module New where
 --   open import Polynomial.Simple.AlmostCommutativeRing
@@ -28,4 +28,4 @@ module Old where
   open +-*-Solver
 
   lemma : _
-  lemma = solve 3 (λ x y z → (x :^ d :+ y :^ d :+ z :^ d) := (x :^ d :+ y :^ d :+ z :^ d)) refl
+  lemma = solve 5 (λ v w x y z → (v :^ d :+ w :^ d :+ x :^ d :+ y :^ d :+ z :^ d) := (v :^ d :+ w :^ d :+ x :^ d :+ y :^ d :+ z :^ d)) refl
