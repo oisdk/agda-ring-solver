@@ -15,7 +15,7 @@ instance
   natLit = NatLit.number
 
 d : ℕ
-d = 5
+d = 40
 
 module Old where
   open import Data.Nat.Properties using (*-+-commutativeSemiring)
@@ -27,7 +27,7 @@ module Old where
   dub x = x :+ x
 
   example : ℕ → ℕ → ℕ → ℕ → ℕ → ℕ
-  example v w x y z = ⟦ ((con 1 :+ (var 0 :^ d)) :+ (var 1 :^ d) :+ (var 2 :^ d) :+ (var 3 :^ d) :+ (var 4 :^ d)) :^ d  ⟧↓ (v ∷ w ∷ x ∷ y ∷ z ∷ [])
+  example v w x y z = ⟦ (con 1 :+ var 0 :+ var 1 :+ var 2 :+ var 3 :+ var 4) :^ d  ⟧↓ (v ∷ w ∷ x ∷ y ∷ z ∷ [])
 
 module New where
   open import Polynomial.Simple.AlmostCommutativeRing
@@ -78,7 +78,10 @@ module New where
   dub x = x ⊞ x
 
   example : ℕ → ℕ → ℕ → ℕ → ℕ → ℕ
-  example v w x y z = ⟦ ((κ 1 ⊞ (ι 0 ⊡ d)) ⊞ (ι 1 ⊡ d) ⊞ (ι 2 ⊡ d) ⊞ (ι 3 ⊡ d) ⊞ (ι 4 ⊡ d)) ⊡ d ⟧ (v ∷ w ∷ x ∷ y ∷ z ∷ [])
+  example v w x y z = ⟦ (κ 1 ⊞ ι 0 ⊞ ι 1 ⊞ ι 2 ⊞ ι 3 ⊞ ι 4) ⊡ d ⟧ (v ∷ w ∷ x ∷ y ∷ z ∷ [])
+
+
+
 
 open import IO.Primitive using (IO; putStrLn)
 open import Foreign.Haskell using (Unit)
