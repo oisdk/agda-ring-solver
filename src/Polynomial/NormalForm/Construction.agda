@@ -3,8 +3,8 @@
 open import Polynomial.Parameters
 
 module Polynomial.NormalForm.Construction
-  {a ℓ}
-  (coeffs : RawCoeff a ℓ)
+  {a}
+  (coeffs : RawCoeff a)
   where
 
 open import Relation.Nullary         using (Dec; yes; no)
@@ -16,6 +16,7 @@ open import Data.Nat            as ℕ using (ℕ; suc; zero)
 open import Data.Nat.Properties      using (z≤′n)
 open import Data.Product             using (_×_; _,_; map₁; curry; uncurry)
 open import Data.Maybe               using (just; nothing)
+open import Data.Bool                using (if_then_else_; true; false)
 
 open import Function
 
@@ -35,7 +36,9 @@ open RawCoeff coeffs
 zero? : ∀ {n} → (p : Poly n) → Dec (Zero p)
 zero? (Σ []      Π _) = yes (lift tt)
 zero? (Σ (_ ∷ _) Π _) = no lower
-zero? (Κ x       Π _) = zero-c? x
+zero? (Κ x       Π _) with Zero-C x
+zero? (Κ x       Π _) | true = yes tt
+zero? (Κ x       Π _) | false = no (λ z → z)
 {-# INLINE zero? #-}
 
 -- Exponentiate the first variable of a polynomial
@@ -63,10 +66,10 @@ _Π↓_ : ∀ {i n} → Coeffs i → suc i ≤′ n → Poly n
 (x₁   Δ zero  ∷ x₂ ∷ xs) Π↓ i≤n = Σ (x₁ Δ zero  ∷ x₂ ∷ xs) Π i≤n
 (x    Δ suc j ∷ xs)      Π↓ i≤n = Σ (x  Δ suc j ∷ xs) Π i≤n
 
-PolyF : ℕ → Set (a ⊔ ℓ)
+PolyF : ℕ → Set (a )
 PolyF i = Poly i × Coeffs i
 
-Fold : ℕ → Set (a ⊔ ℓ)
+Fold : ℕ → Set (a )
 Fold i = PolyF i → PolyF i
 
 para : ∀ {i} → Fold i → Coeffs i → Coeffs i

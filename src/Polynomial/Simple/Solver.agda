@@ -20,11 +20,10 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
   ⟦ ⊝ x ⟧ ρ = - ⟦ x ⟧ ρ
   ⟦ x ⊛ i ⟧ ρ = ⟦ x ⟧ ρ ^ i
 
-  rawCoeff : RawCoeff ℓ₁ ℓ₂
+  rawCoeff : RawCoeff ℓ₁
   rawCoeff = record
     { coeffs = rawRing
-    ; Zero-C = 0# ≈_
-    ; zero-c? = 0# ≟_
+    ; Zero-C = is-just ∘ 0≟_
     }
   open import Polynomial.NormalForm.Definition rawCoeff
   open import Polynomial.NormalForm.Operations rawCoeff
@@ -52,12 +51,18 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
         }
     }
 
-  homo : Homomorphism ℓ₁ ℓ₂ ℓ₁ ℓ₂
+  open import Data.Bool using (T)
+  zero-homo : ∀ x → T (is-just (0≟ x)) → 0# ≈ x
+  zero-homo x prf with 0≟ x
+  zero-homo x prf | just x₁ = x₁
+  zero-homo x () | nothing
+
+  homo : Homomorphism ℓ₁ ℓ₁ ℓ₂
   homo = record
     { coeffs = rawCoeff
     ; ring = complex
     ; morphism = UnDec.-raw-almostCommutative⟶ complex
-    ; Zero-C⟶Zero-R = id
+    ; Zero-C⟶Zero-R = zero-homo
     }
 
   ⟦_⇓⟧ : ∀ {n} → Expr Carrier n → Vec Carrier n → Carrier

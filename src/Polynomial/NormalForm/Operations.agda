@@ -3,8 +3,8 @@
 open import Polynomial.Parameters
 
 module Polynomial.NormalForm.Operations
-  {a ℓ}
-  (coeffs : RawCoeff a ℓ)
+  {a}
+  (coeffs : RawCoeff a)
   where
 
 open import Data.Nat as ℕ          using (ℕ; suc; zero)

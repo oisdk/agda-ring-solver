@@ -9,6 +9,7 @@ open import Algebra.FunctionProperties
 import Algebra.Morphism as Morphism
 open import Function
 open import Level
+open import Data.Maybe as Maybe using (Maybe; just; nothing)
 
 record IsAlmostCommutativeRing
          {a ℓ} {A : Set a} (_≈_ : Rel A ℓ)
@@ -28,16 +29,15 @@ record AlmostCommutativeRing c ℓ : Set (suc (c ⊔ ℓ)) where
   infixl 7 _*_
   infixl 6 _+_
   infix  4 _≈_
-  infix  4 _≟_
   infixr 8 _^_
   field
     Carrier                 : Set c
     _≈_                     : Rel Carrier ℓ
-    _≟_                     : Decidable _≈_
     _+_                     : Op₂ Carrier
     _*_                     : Op₂ Carrier
     -_                      : Op₁ Carrier
     0#                      : Carrier
+    0≟_                     : (x : Carrier) → Maybe (0# ≈ x)
     1#                      : Carrier
     isAlmostCommutativeRing :
       IsAlmostCommutativeRing _≈_ _+_ _*_ -_ 0# 1#
@@ -114,25 +114,25 @@ Induced-equivalence {R = R} morphism a b = ⟦ a ⟧ ≈ ⟦ b ⟧
 
 -- Commutative rings are almost commutative rings.
 
-fromCommutativeRing :
-  ∀ {r₁ r₂} → (CR : CommutativeRing r₁ r₂) → Decidable (CommutativeRing._≈_ CR) → AlmostCommutativeRing _ _
-fromCommutativeRing CR _≟_ = record
+
+
+fromCommutativeRing : ∀ {r₁ r₂} → (CR : CommutativeRing r₁ r₂) → (∀ x → Maybe ((CommutativeRing._≈_ CR) (CommutativeRing.0# CR) x)) → AlmostCommutativeRing _ _
+fromCommutativeRing CR 0≟_ = record
   { isAlmostCommutativeRing = record
       { isCommutativeSemiring = isCommutativeSemiring
       ; -‿cong                = -‿cong
       ; -‿*-distribˡ          = -‿*-distribˡ
       ; -‿+-comm              = ⁻¹-∙-comm
       }
-  ; _≟_ = _≟_
+  ; 0≟_ = 0≟_
   }
   where
   open CommutativeRing CR
   import Algebra.Properties.Ring as R; open R ring
   import Algebra.Properties.AbelianGroup as AG; open AG +-abelianGroup
 
-fromCommutativeSemiring :
-  ∀ {r₁ r₂} → (CS : CommutativeSemiring r₁ r₂) → (_≟_ : Decidable (CommutativeSemiring._≈_ CS)) → AlmostCommutativeRing _ _
-fromCommutativeSemiring CS _≟_ = record
+fromCommutativeSemiring : ∀ {r₁ r₂} → (CS : CommutativeSemiring r₁ r₂) → (∀ x → Maybe ((CommutativeSemiring._≈_ CS) (CommutativeSemiring.0# CS) x)) → AlmostCommutativeRing _ _
+fromCommutativeSemiring CS 0≟_ = record
   { -_                      = id
   ; isAlmostCommutativeRing = record
       { isCommutativeSemiring = isCommutativeSemiring
@@ -140,6 +140,6 @@ fromCommutativeSemiring CS _≟_ = record
       ; -‿*-distribˡ          = λ _ _ → refl
       ; -‿+-comm              = λ _ _ → refl
       }
-  ; _≟_ = _≟_
+  ; 0≟_ = 0≟_
   }
   where open CommutativeSemiring CS

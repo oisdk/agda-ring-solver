@@ -3,8 +3,8 @@
 open import Polynomial.Parameters
 
 module Polynomial.Homomorphism.Lemmas
-  {r₁ r₂ r₃ r₄}
-  (homo : Homomorphism r₁ r₂ r₃ r₄)
+  {r₁ r₂ r₃}
+  (homo : Homomorphism r₁ r₂ r₃)
   where
 
 open import Data.List                                  using (_∷_; [])
@@ -17,7 +17,8 @@ open import Relation.Binary.PropositionalEquality as ≡ using (_≡_)
 open import Data.Product                               using (_,_; proj₁; proj₂; map₁)
 open import Data.Empty                                 using (⊥-elim)
 open import Data.Maybe                                 using (nothing; just)
-
+open import Data.Bool using (Bool;true;false)
+open import Data.Unit using (tt)
 open import Function
 
 open Homomorphism homo
@@ -81,9 +82,7 @@ pow-cong (suc i) x≈y = x≈y ⟨ *-cong ⟩ pow-cong i x≈y
 zero-hom : ∀ {n} (p : Poly n) → Zero p → (Ρ : Vec Carrier n) → 0# ≈ ⟦ p ⟧ Ρ
 zero-hom (Σ (_ ∷ _) Π i≤n) ()
 zero-hom (Σ [] {()} Π i≤n) p≡0 Ρ
-zero-hom (Κ x  Π i≤n) p≡0 Ρ with RawCoeff.zero-c? coeffs x
-zero-hom (Κ x  Π i≤n) p≡0 Ρ | no ¬p = ⊥-elim (¬p p≡0)
-zero-hom (Κ x  Π i≤n) p≡0 Ρ | yes p = Zero-C⟶Zero-R p
+zero-hom (Κ x  Π i≤n) p≡0 Ρ = Zero-C⟶Zero-R x p≡0
 
 ∷↓-hom : ∀ {n}
        → (x : Poly n)

@@ -12,8 +12,8 @@
 open import Polynomial.Parameters
 
 module Polynomial.NormalForm
-  {r₁ r₂ r₃ r₄}
-  (homo : Homomorphism r₁ r₂ r₃ r₄)
+  {r₁ r₂ r₃}
+  (homo : Homomorphism r₁ r₂ r₃)
   where
 
 open Homomorphism homo
