@@ -26,6 +26,7 @@ drop (≤′-step si≤n) (_ ∷ Ρ) = drop si≤n Ρ
 
 vec-uncons : ∀ {n} → Vec Carrier (suc n) → Carrier × Vec Carrier n
 vec-uncons (x ∷ xs) = x , xs
+{-# INLINE vec-uncons #-}
 
 drop-1 : ∀ {i n} → suc i ≤′ n → Vec Carrier n → Carrier × Vec Carrier i
 drop-1 si≤n xs = vec-uncons (drop si≤n xs)
@@ -41,5 +42,5 @@ mutual
   ⟦_⟧ : ∀ {n} → Poly n → Vec Carrier n → Carrier
   ⟦ Κ x  Π i≤n ⟧ _ = ⟦ x ⟧ᵣ
   ⟦ Σ xs Π i≤n ⟧ Ρ = Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
-
-{-# INLINE _⟦∷⟧_ #-}
+{-# INLINE ⟦_⟧ #-}
+{-# INLINE Σ⟦_⟧ #-}

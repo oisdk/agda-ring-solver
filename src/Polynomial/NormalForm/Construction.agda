@@ -34,8 +34,8 @@ open RawCoeff coeffs
 
 -- Decision procedure for Zero
 zero? : ∀ {n} → (p : Poly n) → Dec (Zero p)
-zero? (Σ []      Π _) = yes (lift tt)
-zero? (Σ (_ ∷ _) Π _) = no lower
+zero? (Σ []      Π _) = yes tt
+zero? (Σ (_ ∷ _) Π _) = no (λ z → z)
 zero? (Κ x       Π _) with Zero-C x
 zero? (Κ x       Π _) | true = yes tt
 zero? (Κ x       Π _) | false = no (λ z → z)

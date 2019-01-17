@@ -74,7 +74,7 @@ mutual
   -- This is sparse Horner normal form.
 
   Coeffs : ℕ → Set a
-  Coeffs = List ∘ PowInd ∘ NonZero
+  Coeffs n = List (PowInd (NonZero n))
 
   -- We disallow zeroes in the coefficient list. This condition alone
   -- is enough to ensure a unique representation for any polynomial.
@@ -90,8 +90,8 @@ mutual
   -- coefficient is zero, preventing any trailing zeroes.
   Zero : ∀ {n} → Poly n → Set
   Zero (Κ x       Π _) = T (Zero-C x)
-  Zero (Σ []      Π _) = Lift _ ⊤
-  Zero (Σ (_ ∷ _) Π _) = Lift _ ⊥
+  Zero (Σ []      Π _) = ⊤
+  Zero (Σ (_ ∷ _) Π _) = ⊥
 
   -- This predicate is used to ensure that all polynomials are in
   -- normal form: if a particular level is constant, than it can

@@ -1,38 +1,31 @@
 module Examples where
+open import Data.Nat using (ℕ)
 
-open import Polynomial.Simple.AlmostCommutativeRing
-open import Polynomial.Simple.Reflection
-open import Data.Nat as ℕ using (ℕ; suc; zero)
-open import Data.Nat.Properties
-open import Level using (0ℓ)
-open import Data.Maybe
-open import Relation.Binary.PropositionalEquality using (refl)
+d : ℕ
+d = 1
 
-NatRing : AlmostCommutativeRing 0ℓ 0ℓ
-NatRing = fromCommutativeSemiring *-+-commutativeSemiring λ { zero → just refl ; (suc x) → nothing}
--- open import Relation.Traced
+-- module New where
+--   open import Polynomial.Simple.AlmostCommutativeRing
+--   open import Polynomial.Simple.Reflection
+--   open import Data.Nat using (ℕ; suc; zero)
+--   open import Data.Nat.Properties
+--   open import Level using (0ℓ)
+--   open import Data.Maybe
+--   open import Relation.Binary.PropositionalEquality using (refl)
 
--- rng : _
--- rng = tracedRing NatRing
+--   NatRing : AlmostCommutativeRing 0ℓ 0ℓ
+--   NatRing = fromCommutativeSemiring *-+-commutativeSemiring λ { zero → just refl ; (suc x) → nothing}
 
-open AlmostCommutativeRing NatRing
+--   open AlmostCommutativeRing NatRing
 
+--   lemma : ∀ x y z → (x ^ d + y ^ d + z ^ d) ≈ (x ^ d + y ^ d + z ^ d)
+--   lemma = solve NatRing
 
-lemma : ∀ v w x y z → (v + w + x + y + z) ^ 5 ≈ (v + w + x + y + z) ^ 5
-lemma = solve NatRing
+module Old where
+  open import Relation.Binary.PropositionalEquality
+  open import Data.Nat
+  open import Data.Nat.Solver using (module +-*-Solver)
+  open +-*-Solver
 
--- open import Data.List
--- open import Data.String
-
--- example : List _
--- example = showProof NatRing (lemma 10 20)
-
--- ~ 30 seconds
--- module Old where
---   open import Relation.Binary.PropositionalEquality
---   open import Data.Nat
---   open import Data.Nat.Solver using (module +-*-Solver)
---   open +-*-Solver
-
---   lemma : ∀ x y → (x ^ 400) * (y ^ 400) ≡ (y ^ 400) * (x ^ 400)
---   lemma = solve 2 (λ x y → ((x :^ 400) :* (y :^ 400)) := ((y :^ 400) :* (x :^ 400))) refl
+  lemma : _
+  lemma = solve 3 (λ x y z → (x :^ d :+ y :^ d :+ z :^ d) := (x :^ d :+ y :^ d :+ z :^ d)) refl

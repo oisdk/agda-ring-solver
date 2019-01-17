@@ -66,6 +66,7 @@ record AlmostCommutativeRing c ℓ : Set (suc (c ⊔ ℓ)) where
 
   _^_ : Carrier → ℕ → Carrier
   _^_ = Exp._^_ rawRing
+  {-# NOINLINE _^_ #-}
 
   refl : ∀ {x} → x ≈ x
   refl = IsAlmostCommutativeRing.refl isAlmostCommutativeRing
