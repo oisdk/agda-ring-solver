@@ -2,30 +2,30 @@ module Examples where
 open import Data.Nat using (ℕ)
 
 d : ℕ
-d = 100
+d = 1
 
--- module New where
---   open import Polynomial.Simple.AlmostCommutativeRing
---   open import Polynomial.Simple.Reflection
---   open import Data.Nat using (ℕ; suc; zero)
---   open import Data.Nat.Properties
---   open import Level using (0ℓ)
---   open import Data.Maybe
---   open import Relation.Binary.PropositionalEquality using (refl)
+module New where
+  open import Polynomial.Simple.AlmostCommutativeRing
+  open import Polynomial.Simple.Reflection
+  open import Data.Nat using (ℕ; suc; zero)
+  open import Data.Nat.Properties
+  open import Level using (0ℓ)
+  open import Data.Maybe
+  open import Relation.Binary.PropositionalEquality using (refl)
 
---   NatRing : AlmostCommutativeRing 0ℓ 0ℓ
---   NatRing = fromCommutativeSemiring *-+-commutativeSemiring λ { zero → just refl ; (suc x) → nothing}
+  NatRing : AlmostCommutativeRing 0ℓ 0ℓ
+  NatRing = fromCommutativeSemiring *-+-commutativeSemiring λ { zero → just refl ; (suc x) → nothing}
 
---   open AlmostCommutativeRing NatRing
+  open AlmostCommutativeRing NatRing
 
---   lemma : ∀ x y z → (x ^ d + y ^ d + z ^ d) ≈ (x ^ d + y ^ d + z ^ d)
---   lemma = solve NatRing
+  lemma : ∀ v w x y z → (v ^ d + w ^ d + x ^ d + y ^ d + z ^ d) ≈ (v ^ d + w ^ d + x ^ d + y ^ d + z ^ d)
+  lemma = solve NatRing
 
-module Old where
-  open import Relation.Binary.PropositionalEquality
-  open import Data.Nat
-  open import Data.Nat.Solver using (module +-*-Solver)
-  open +-*-Solver
+-- module Old where
+--   open import Relation.Binary.PropositionalEquality
+--   open import Data.Nat
+--   open import Data.Nat.Solver using (module +-*-Solver)
+--   open +-*-Solver
 
-  lemma : _
-  lemma = solve 5 (λ v w x y z → (v :^ d :+ w :^ d :+ x :^ d :+ y :^ d :+ z :^ d) := (v :^ d :+ w :^ d :+ x :^ d :+ y :^ d :+ z :^ d)) refl
+--   lemma : _
+--   lemma = solve 5 (λ v w x y z → (v :^ d :+ w :^ d :+ x :^ d :+ y :^ d :+ z :^ d) := (v :^ d :+ w :^ d :+ x :^ d :+ y :^ d :+ z :^ d)) refl
