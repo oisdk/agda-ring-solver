@@ -34,7 +34,7 @@ drop-1 si≤n xs = vec-uncons (drop si≤n xs)
 
 _*⟨_⟩^_ : Carrier → Carrier → ℕ → Carrier
 x *⟨ ρ ⟩^ ℕ.zero = x
-x *⟨ ρ ⟩^ suc i = x * ρ ^ i +1
+x *⟨ ρ ⟩^ suc i = ρ ^ i +1 * x
 {-# INLINE _*⟨_⟩^_ #-}
 
 mutual
