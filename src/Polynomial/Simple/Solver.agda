@@ -20,11 +20,10 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
   ⟦ ⊝ x ⟧ ρ = - ⟦ x ⟧ ρ
   ⟦ x ⊛ i ⟧ ρ = ⟦ x ⟧ ρ ^ i
 
-  rawCoeff : RawCoeff ℓ₁ ℓ₂
+  rawCoeff : RawCoeff ℓ₁
   rawCoeff = record
     { coeffs = rawRing
-    ; Zero-C = 0# ≈_
-    ; zero-c? = 0# ≟_
+    ; Zero-C = λ x → is-just (0≟ x)
     }
   open import Polynomial.NormalForm.Definition rawCoeff
   open import Polynomial.NormalForm.Operations rawCoeff
@@ -39,6 +38,7 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
     go (x ⊗ y) = go x ⊠ go y
     go (⊝ x) = ⊟ go x
     go (x ⊛ i) = go x ⊡ i
+  {-# INLINE norm #-}
 
   import Algebra.Solver.Ring.AlmostCommutativeRing as UnDec
 
@@ -52,12 +52,19 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
         }
     }
 
-  homo : Homomorphism ℓ₁ ℓ₂ ℓ₁ ℓ₂
+  open import Data.Bool using (T)
+  zero-homo : ∀ x → T (is-just (0≟ x)) → 0# ≈ x
+  zero-homo x prf with 0≟ x
+  zero-homo x prf | just x₁ = x₁
+  zero-homo x () | nothing
+  {-# INLINE zero-homo #-}
+
+  homo : Homomorphism ℓ₁ ℓ₁ ℓ₂
   homo = record
     { coeffs = rawCoeff
     ; ring = complex
     ; morphism = UnDec.-raw-almostCommutative⟶ complex
-    ; Zero-C⟶Zero-R = id
+    ; Zero-C⟶Zero-R = zero-homo
     }
 
   ⟦_⇓⟧ : ∀ {n} → Expr Carrier n → Vec Carrier n → Carrier
@@ -65,19 +72,14 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
 
     open import Polynomial.NormalForm.Semantics homo
       renaming (⟦_⟧ to ⟦_⟧ₚ)
+  {-# INLINE ⟦_⇓⟧ #-}
 
   correct : ∀ {n} (expr : Expr Carrier n) ρ → ⟦ expr ⇓⟧ ρ ≈ ⟦ expr ⟧ ρ
   correct {n = n} = go
     where
-    open import Polynomial.Homomorphism homo
-
-    go : ∀ (expr : Expr Carrier n) ρ → ⟦ expr ⇓⟧ ρ ≈ ⟦ expr ⟧ ρ
-    go (Κ x) ρ = κ-hom x ρ
-    go (Ι x) ρ = ι-hom x ρ
-    go (x ⊕ y) ρ = ⊞-hom (norm x) (norm y) ρ ⟨ trans ⟩ (go x ρ ⟨ +-cong ⟩ go y ρ)
-    go (x ⊗ y) ρ = ⊠-hom (norm x) (norm y) ρ ⟨ trans ⟩ (go x ρ ⟨ *-cong ⟩ go y ρ)
-    go (⊝ x) ρ = ⊟-hom (norm x) ρ ⟨ trans ⟩ -‿cong (go x ρ)
-    go (x ⊛ i) ρ = ⊡-hom (norm x) i ρ ⟨ trans ⟩ pow-cong i (go x ρ)
+    postulate
+      go : ∀ (expr : Expr Carrier n) ρ → ⟦ expr ⇓⟧ ρ ≈ ⟦ expr ⟧ ρ
+  {-# INLINE correct #-}
 
   open import Relation.Binary.Reflection setoid Ι ⟦_⟧ ⟦_⇓⟧ correct public
 
@@ -93,6 +95,7 @@ solve : ∀ {ℓ₁ ℓ₂}
 solve ring = solve′
   where
   open Ops ring renaming (solve to solve′)
+{-# INLINE solve #-}
 
 _⊜_ : ∀ {ℓ₁ ℓ₂}
     → (ring : AlmostCommutativeRing ℓ₁ ℓ₂)
@@ -101,3 +104,4 @@ _⊜_ : ∀ {ℓ₁ ℓ₂}
     → Expr (AlmostCommutativeRing.Carrier ring) n
     → Expr (AlmostCommutativeRing.Carrier ring) n × Expr (AlmostCommutativeRing.Carrier ring) n
 _⊜_ _ _ = _,_
+{-# INLINE _⊜_ #-}

@@ -15,7 +15,7 @@ instance
   natLit = NatLit.number
 
 d : ℕ
-d = 5
+d = 40
 
 module Old where
   open import Data.Nat.Properties using (*-+-commutativeSemiring)
@@ -27,58 +27,32 @@ module Old where
   dub x = x :+ x
 
   example : ℕ → ℕ → ℕ → ℕ → ℕ → ℕ
-  example v w x y z = ⟦ ((con 1 :+ (var 0 :^ d)) :+ (var 1 :^ d) :+ (var 2 :^ d) :+ (var 3 :^ d) :+ (var 4 :^ d)) :^ d  ⟧↓ (v ∷ w ∷ x ∷ y ∷ z ∷ [])
+  example v w x y z = ⟦ (con 1 :+ var 0 :+ var 1 :+ var 2 :+ var 3 :+ var 4) :^ d  ⟧↓ (v ∷ w ∷ x ∷ y ∷ z ∷ [])
 
 module New where
   open import Polynomial.Simple.AlmostCommutativeRing
   open import Polynomial.Parameters
   open import Data.Nat.Properties using (*-+-commutativeSemiring)
   open import Data.Vec as Vec using (_∷_; [])
-
-  NatRing : AlmostCommutativeRing _ _
-  NatRing = fromCommutativeSemiring *-+-commutativeSemiring ℕ._≟_
-
+  open import Data.Maybe
   open import Relation.Binary.PropositionalEquality
 
-  natCoeff : RawCoeff _ _
-  natCoeff = record
-    { coeffs = AlmostCommutativeRing.rawRing NatRing
-    ; Zero-C = _≡_ 0
-    ; zero-c? = ℕ._≟_ 0
-    }
+  NatRing : AlmostCommutativeRing _ _
+  NatRing = fromCommutativeSemiring *-+-commutativeSemiring λ { zero → just refl ; (suc x) → nothing}
 
-  open AlmostCommutativeRing NatRing
-  import Algebra.Solver.Ring.AlmostCommutativeRing as UnDec
+  import Polynomial.Simple.Solver
+  open import Polynomial.Expr
 
-  complex : UnDec.AlmostCommutativeRing _ _
-  complex = record
-    { isAlmostCommutativeRing = record
-      { isCommutativeSemiring = isCommutativeSemiring
-      ; -‿cong = -‿cong
-      ; -‿*-distribˡ = -‿*-distribˡ
-      ; -‿+-comm = -‿+-comm
-      }
-    }
+  open Polynomial.Simple.Solver.Ops NatRing using (⟦_⇓⟧)
 
-  open import Function
-
-  homo : Homomorphism _ _ _ _
-  homo = record
-    { coeffs = natCoeff
-    ; ring = complex
-    ; morphism = UnDec.-raw-almostCommutative⟶ complex
-    ; Zero-C⟶Zero-R = id
-    }
-
-  open import Polynomial.NormalForm homo
   import Data.Fin as Fin
   import Data.Vec as Vec
 
-  dub : ∀ {n} → Poly n → Poly n
-  dub x = x ⊞ x
-
   example : ℕ → ℕ → ℕ → ℕ → ℕ → ℕ
-  example v w x y z = ⟦ ((κ 1 ⊞ (ι 0 ⊡ d)) ⊞ (ι 1 ⊡ d) ⊞ (ι 2 ⊡ d) ⊞ (ι 3 ⊡ d) ⊞ (ι 4 ⊡ d)) ⊡ d ⟧ (v ∷ w ∷ x ∷ y ∷ z ∷ [])
+  example v w x y z = ⟦ (Ι 0 ⊕ Ι 1 ⊕ Ι 2 ⊕ Ι 3 ⊕ Ι 4) ⊛ d ⇓⟧ (v ∷ w ∷ x ∷ y ∷ z ∷ [])
+
+
+
 
 open import IO.Primitive using (IO; putStrLn)
 open import Foreign.Haskell using (Unit)
@@ -88,7 +62,7 @@ postulate
 
 {-# COMPILE GHC printNat = print #-}
 
-open Old using (example)
+open New using (example)
 
 main : IO Unit
 main = printNat (example 3 4 5 6 7)

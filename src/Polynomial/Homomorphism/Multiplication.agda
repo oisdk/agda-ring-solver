@@ -3,8 +3,8 @@
 open import Polynomial.Parameters
 
 module Polynomial.Homomorphism.Multiplication
-  {r₁ r₂ r₃ r₄}
-  (homo : Homomorphism r₁ r₂ r₃ r₄)
+  {r₁ r₂ r₃}
+  (homo : Homomorphism r₁ r₂ r₃)
   where
 
 open import Data.Nat as ℕ          using (ℕ; suc; zero)
@@ -44,7 +44,7 @@ mutual
           → (ys : Poly n)
           → ∀ ρ
           → ⟦ ⊠-Κ a x ys ⟧ ρ ≈ ⟦ x ⟧ᵣ * ⟦ ys ⟧ ρ
-  ⊠-Κ-hom a x (Κ y  Π i≤n) ρ = *-homo x y
+  ⊠-Κ-hom  (acc _) x (Κ y  Π i≤n) ρ = *-homo x y
   ⊠-Κ-hom (acc wf) x (Σ xs Π i≤n) ρ =
     begin
       ⟦ ⊠-Κ-inj (wf _ i≤n) x xs Π↓ i≤n ⟧ ρ

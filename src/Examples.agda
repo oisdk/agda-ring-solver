@@ -1,36 +1,35 @@
 module Examples where
+open import Data.Nat using (ℕ)
 
-open import Polynomial.Simple.AlmostCommutativeRing
-open import Polynomial.Simple.Reflection
-open import Data.Nat as ℕ using (ℕ; suc; zero)
-open import Data.Nat.Properties
-open import Level using (0ℓ)
+d : ℕ
+d = 8
 
-NatRing : AlmostCommutativeRing 0ℓ 0ℓ
-NatRing = fromCommutativeSemiring *-+-commutativeSemiring ℕ._≟_
-open import Relation.Traced
+module New where
+  open import Polynomial.Simple.AlmostCommutativeRing
+  open import Polynomial.Simple.Reflection
+  open import Data.Nat using (ℕ; suc; zero)
+  open import Data.Nat.Properties
+  open import Level using (0ℓ)
+  open import Data.Maybe
+  open import Relation.Binary.PropositionalEquality using (refl)
 
-rng : _
-rng = tracedRing NatRing
+  NatRing : AlmostCommutativeRing 0ℓ 0ℓ
+  NatRing = fromCommutativeSemiring *-+-commutativeSemiring λ { zero → just refl ; (suc x) → nothing}
 
-open AlmostCommutativeRing rng
+  open AlmostCommutativeRing NatRing
+
+  lemma₁ : ∀ v w x y z → (v + w + x + y + z) ^ d ≈ (v + w + x + y + z) ^ d
+  lemma₁ = solve NatRing
+
+  -- lemma₂ : ∀ x y z → 1 + x + y ^ 2 + z ^ 3 ≈ 1 + x + y ^ 2 + z ^ 3
+  -- lemma₂ = solve NatRing
 
 
-lemma : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x
-lemma = solve rng
-
-open import Data.List
-open import Data.String
-
-example : List _
-example = showProof NatRing (lemma 10 20)
-
--- ~ 30 seconds
 -- module Old where
 --   open import Relation.Binary.PropositionalEquality
 --   open import Data.Nat
 --   open import Data.Nat.Solver using (module +-*-Solver)
 --   open +-*-Solver
 
---   lemma : ∀ x y → (x ^ 400) * (y ^ 400) ≡ (y ^ 400) * (x ^ 400)
---   lemma = solve 2 (λ x y → ((x :^ 400) :* (y :^ 400)) := ((y :^ 400) :* (x :^ 400))) refl
+--   lemma : _
+--   lemma = solve 2 (λ x y → (con 1 :+ x :^ 5 :+ y) :^ d := (con 1 :+ x :^ 5 :+ y) :^ d) refl

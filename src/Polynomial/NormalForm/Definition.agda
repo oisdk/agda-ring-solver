@@ -9,8 +9,8 @@
 open import Polynomial.Parameters
 
 module Polynomial.NormalForm.Definition
-  {a ℓ}
-  (coeffs : RawCoeff a ℓ)
+  {a}
+  (coeffs : RawCoeff a)
   where
 
 open import Polynomial.NormalForm.InjectionIndex
@@ -23,6 +23,7 @@ open import Data.List        using (_∷_; []; List)
 open import Data.Nat         using (ℕ; suc; zero)
 open import Function         using (_∘_)
 open import Data.Maybe       using (Maybe; just; nothing)
+open import Data.Bool        using (T)
 
 infixl 6 _Δ_
 record PowInd {c} (C : Set c) : Set c where
@@ -38,7 +39,7 @@ open RawCoeff coeffs
 mutual
   -- A Polynomial is indexed by the number of variables it contains.
   infixl 6 _Π_
-  record Poly (n : ℕ) : Set (a ⊔ ℓ) where
+  record Poly (n : ℕ) : Set a where
     inductive
     constructor _Π_
     field
@@ -52,7 +53,7 @@ mutual
   --   Κ   : Carrier → Poly n
   --   _Σ_ : ∀ {i} → suc i ≤′ n → (xs : Coeffs i) → .{xn : Norm xs} → Poly n
 
-  data FlatPoly : ℕ → Set (a ⊔ ℓ) where
+  data FlatPoly : ℕ → Set a where
     Κ : Carrier → FlatPoly zero
     Σ : ∀ {n} → (xs : Coeffs n) → .{xn : Norm xs} → FlatPoly (suc n)
 
@@ -72,13 +73,13 @@ mutual
   --
   -- This is sparse Horner normal form.
 
-  Coeffs : ℕ → Set (a ⊔ ℓ)
-  Coeffs = List ∘ PowInd ∘ NonZero
+  Coeffs : ℕ → Set a
+  Coeffs n = List (PowInd (NonZero n))
 
   -- We disallow zeroes in the coefficient list. This condition alone
   -- is enough to ensure a unique representation for any polynomial.
   infixl 6 _≠0
-  record NonZero (i : ℕ) : Set (a ⊔ ℓ) where
+  record NonZero (i : ℕ) : Set a where
     inductive
     constructor _≠0
     field
@@ -87,10 +88,10 @@ mutual
 
   -- This predicate is used (in its negation) to ensure that no
   -- coefficient is zero, preventing any trailing zeroes.
-  Zero : ∀ {n} → Poly n → Set ℓ
-  Zero (Κ x       Π _) = Zero-C x
-  Zero (Σ []      Π _) = Lift _ ⊤
-  Zero (Σ (_ ∷ _) Π _) = Lift _ ⊥
+  Zero : ∀ {n} → Poly n → Set
+  Zero (Κ x       Π _) = T (Zero-C x)
+  Zero (Σ []      Π _) = ⊤
+  Zero (Σ (_ ∷ _) Π _) = ⊥
 
   -- This predicate is used to ensure that all polynomials are in
   -- normal form: if a particular level is constant, than it can

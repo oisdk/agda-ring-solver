@@ -6,8 +6,8 @@ open import Polynomial.Parameters
 -- defined on polynomials and those on the underlying ring.
 
 module Polynomial.Homomorphism
-  {r₁ r₂ r₃ r₄}
-  (homo : Homomorphism r₁ r₂ r₃ r₄)
+  {r₁ r₂ r₃}
+  (homo : Homomorphism r₁ r₂ r₃)
   where
 
 open import Polynomial.Homomorphism.Addition       homo using (⊞-hom) public

@@ -1,11 +1,14 @@
 {-# OPTIONS --without-K --safe #-}
 
 open import Polynomial.Parameters
+open import Algebra
 
 module Polynomial.NormalForm.Operations
-  {a ℓ}
-  (coeffs : RawCoeff a ℓ)
+  {a}
+  (coeffs : RawCoeff a)
   where
+
+open import Polynomial.Exponentiation (RawCoeff.coeffs coeffs)
 
 open import Data.Nat as ℕ          using (ℕ; suc; zero)
 open import FastCompare            using (compare)
@@ -89,7 +92,7 @@ _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
 ⊞-inj i≤k xs (y Δ suc j ∷ ys) = xs Π i≤k Δ zero ∷↓ y Δ j ∷ ys
 
 ⊞-coeffs [] ys = ys
-⊞-coeffs (x Δ i ∷ xs) = ⊞-zip-r x i xs
+⊞-coeffs (x Δ i ∷ xs) ys = ⊞-zip-r x i xs ys
 
 ⊞-zip (ℕ.less    i k) x xs y ys = x Δ i ∷ ⊞-zip-r y k ys xs
 ⊞-zip (ℕ.greater j k) x xs y ys = y Δ j ∷ ⊞-zip-r x k xs ys
@@ -107,11 +110,12 @@ _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
 -- https://github.com/agda/agda/issues/3190#issuecomment-416900716
 
 ⊟-step : ∀ {n} → Acc _<′_ n → Poly n → Poly n
-⊟-step _        (Κ x  Π i≤n) = Κ (- x) Π i≤n
+⊟-step (acc wf) (Κ x  Π i≤n) = Κ (- x) Π i≤n
 ⊟-step (acc wf) (Σ xs Π i≤n) = poly-map (⊟-step (wf _ i≤n)) xs Π↓ i≤n
 
 ⊟_ : ∀ {n} → Poly n → Poly n
 ⊟_ = ⊟-step (<′-wellFounded _)
+{-# INLINE ⊟_ #-}
 
 ----------------------------------------------------------------------
 -- Multiplication
@@ -149,24 +153,31 @@ _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
         → Fold n
 
 ⊠-step a (Κ x) _ = ⊠-Κ a x
-⊠-step a (Σ xs) = ⊠-Σ a xs
+⊠-step a (Σ xs)  = ⊠-Σ a xs
 
 ⊠-Κ (acc _ ) x (Κ y  Π i≤n) = Κ (x * y) Π i≤n
 ⊠-Κ (acc wf) x (Σ xs Π i≤n) = ⊠-Κ-inj (wf _ i≤n) x xs Π↓ i≤n
 {-# INLINE ⊠-Κ #-}
 
-⊠-Σ a xs i≤n (Σ ys Π j≤n) = ⊠-match a (inj-compare i≤n j≤n) xs ys
+⊠-Σ (acc wf) xs i≤n (Σ ys Π j≤n) = ⊠-match  (acc wf) (inj-compare i≤n j≤n) xs ys
 ⊠-Σ (acc wf) xs i≤n (Κ y Π _) = ⊠-Κ-inj (wf _ i≤n) y xs Π↓ i≤n
+
 ⊠-Κ-inj a x = poly-map (⊠-Κ a x)
-⊠-Σ-inj a i≤k x (Σ y Π j≤k) = ⊠-match a (inj-compare i≤k j≤k) x y
+
+⊠-Σ-inj (acc wf) i≤k x (Σ y Π j≤k) = ⊠-match (acc wf) (inj-compare i≤k j≤k) x y
 ⊠-Σ-inj (acc wf) i≤k x (Κ y Π j≤k) = ⊠-Κ-inj (wf _ i≤k) y x Π↓ i≤k
+
 ⊠-match (acc wf) (inj-eq i&j≤n)     xs ys = ⊠-coeffs (wf _ i&j≤n) xs ys               Π↓ i&j≤n
 ⊠-match (acc wf) (inj-lt i≤j-1 j≤n) xs ys = poly-map (⊠-Σ-inj (wf _ j≤n) i≤j-1 xs) ys Π↓ j≤n
 ⊠-match (acc wf) (inj-gt i≤n j≤i-1) xs ys = poly-map (⊠-Σ-inj (wf _ i≤n) j≤i-1 ys) xs Π↓ i≤n
+
 ⊠-coeffs _ _ [] = []
 ⊠-coeffs a xs (y ≠0 Δ j ∷ ys) = para (⊠-cons a y ys) xs ⍓ j
+{-# INLINE ⊠-coeffs #-}
+
 ⊠-cons a y ys (x Π j≤n , xs) =
   ⊠-step a x j≤n y , ⊞-coeffs (poly-map (⊠-step a x j≤n) ys) xs
+{-# INLINE ⊠-cons #-}
 
 infixl 7 _⊠_
 _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
@@ -191,13 +202,17 @@ _⊠_ (x Π i≤n) = ⊠-step (<′-wellFounded _) x i≤n
 -- Exponentiation
 ----------------------------------------------------------------------
 ⊡-mult : ∀ {n} → ℕ → Poly n → Poly n
-⊡-mult zero xs = κ 1#
-⊡-mult (suc n) xs = xs ⊠ ⊡-mult n xs
+⊡-mult zero xs = xs
+⊡-mult (suc n) xs = ⊡-mult n xs ⊠ xs
+
+_⊡_+1 : ∀ {n} → Poly n → ℕ → Poly n
+(Κ x  Π i≤n) ⊡ i +1  = Κ (x ^ i +1) Π i≤n
+(Σ [] {()}  Π i≤n) ⊡ i +1
+(Σ (x Δ j ∷ []) Π i≤n) ⊡ i +1  = x .poly ⊡ i +1 Δ (j ℕ.+ i ℕ.* j) ∷↓ [] Π↓ i≤n
+xs@(Σ (_ ∷ _ ∷ _) Π i≤n) ⊡ i +1  = ⊡-mult i xs
 
 infixr 8 _⊡_
 _⊡_ : ∀ {n} → Poly n → ℕ → Poly n
-xs@(Κ _ Π _) ⊡ i = ⊡-mult i xs
-xs@(Σ [] Π _) ⊡ i = ⊡-mult i xs
-(Σ (x Δ j ∷ []) Π i≤n) ⊡ i = x .poly ⊡ i Δ (i ℕ.* j) ∷↓ [] Π↓ i≤n
-xs@(Σ (_ ∷ _ ∷ _) Π _) ⊡ i = ⊡-mult i xs
+_ ⊡ zero = κ 1#
+xs ⊡ suc i = xs ⊡ i +1
 {-# INLINE _⊡_ #-}
