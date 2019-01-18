@@ -1,11 +1,14 @@
 {-# OPTIONS --without-K --safe #-}
 
 open import Polynomial.Parameters
+open import Algebra
 
 module Polynomial.NormalForm.Operations
   {a}
   (coeffs : RawCoeff a)
   where
+
+open import Polynomial.Exponentiation (RawCoeff.coeffs coeffs)
 
 open import Data.Nat as ℕ          using (ℕ; suc; zero)
 open import FastCompare            using (compare)
@@ -194,11 +197,12 @@ _⊠_ (x Π i≤n) = ⊠-step (<′-wellFounded _) x i≤n
 ⊡-mult zero xs = xs
 ⊡-mult (suc n) xs = xs ⊠ ⊡-mult n xs
 
+
 infixr 8 _⊡_
 _⊡_ : ∀ {n} → Poly n → ℕ → Poly n
 _ ⊡ zero = κ 1#
-xs@(Κ _ Π _) ⊡ suc i = ⊡-mult i xs
-xs@(Σ [] Π _) ⊡ suc i = ⊡-mult i xs
+xs@(Κ x Π i≤n) ⊡ suc i = Κ (x ^ i +1) Π i≤n
+(Σ [] {()} Π i≤n) ⊡ suc i
 (Σ (x Δ j ∷ []) Π i≤n) ⊡ suc i = x .poly ⊡ suc i Δ (i ℕ.* j) ∷↓ [] Π↓ i≤n
 xs@(Σ (_ ∷ _ ∷ _) Π _) ⊡ suc i = ⊡-mult i xs
 {-# INLINE _⊡_ #-}
