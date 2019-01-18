@@ -113,6 +113,10 @@ pow-cong-+1 : ∀ {x y} i → x ≈ y → x ^ i +1 ≈ y ^ i +1
 pow-cong-+1 ℕ.zero x≈y = x≈y
 pow-cong-+1 (suc i) x≈y = pow-cong-+1 i x≈y ⟨ *-cong ⟩ x≈y
 
+pow-cong : ∀ {x y} i → x ≈ y → x ^ i ≈ y ^ i
+pow-cong ℕ.zero x≈y = refl
+pow-cong (suc i) x≈y = pow-cong-+1 i x≈y
+
 zero-hom : ∀ {n} (p : Poly n) → Zero p → (ρs : Vec Carrier n) → 0# ≈ ⟦ p ⟧ ρs
 zero-hom (Σ (_ ∷ _) Π i≤n) ()
 zero-hom (Σ [] {()} Π i≤n) p≡0 ρs
