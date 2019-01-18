@@ -164,7 +164,7 @@ _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
 
 ⊠-Κ-inj a x = poly-map (⊠-Κ a x)
 
-⊠-Σ-inj a i≤k x (Σ y Π j≤k) = ⊠-match a (inj-compare i≤k j≤k) x y
+⊠-Σ-inj (acc wf) i≤k x (Σ y Π j≤k) = ⊠-match (acc wf) (inj-compare i≤k j≤k) x y
 ⊠-Σ-inj (acc wf) i≤k x (Κ y Π j≤k) = ⊠-Κ-inj (wf _ i≤k) y x Π↓ i≤k
 
 ⊠-match (acc wf) (inj-eq i&j≤n)     xs ys = ⊠-coeffs (wf _ i&j≤n) xs ys               Π↓ i&j≤n
