@@ -2,7 +2,7 @@ module Examples where
 open import Data.Nat using (ℕ)
 
 d : ℕ
-d = 8
+d = 7
 
 module New where
   open import Polynomial.Simple.AlmostCommutativeRing

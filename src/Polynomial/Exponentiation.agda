@@ -7,7 +7,7 @@ open RawRing ring
 
 infixr 8 _^_+1
 _^_+1 : Carrier → ℕ → Carrier
-x ^ zero +1 = x
+x ^ zero  +1 = x
 x ^ suc n +1 = x * (x ^ n +1)
 
 infixr 8 _^_

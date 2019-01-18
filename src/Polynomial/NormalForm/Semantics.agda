@@ -30,6 +30,7 @@ vec-uncons (x ∷ xs) = x , xs
 
 drop-1 : ∀ {i n} → suc i ≤′ n → Vec Carrier n → Carrier × Vec Carrier i
 drop-1 si≤n xs = vec-uncons (drop si≤n xs)
+{-# INLINE drop-1 #-}
 
 _*⟨_⟩^_ : Carrier → Carrier → ℕ → Carrier
 x *⟨ ρ ⟩^ ℕ.zero = x

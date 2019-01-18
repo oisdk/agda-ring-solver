@@ -92,7 +92,7 @@ _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
 ⊞-inj i≤k xs (y Δ suc j ∷ ys) = xs Π i≤k Δ zero ∷↓ y Δ j ∷ ys
 
 ⊞-coeffs [] ys = ys
-⊞-coeffs (x Δ i ∷ xs) = ⊞-zip-r x i xs
+⊞-coeffs (x Δ i ∷ xs) ys = ⊞-zip-r x i xs ys
 
 ⊞-zip (ℕ.less    i k) x xs y ys = x Δ i ∷ ⊞-zip-r y k ys xs
 ⊞-zip (ℕ.greater j k) x xs y ys = y Δ j ∷ ⊞-zip-r x k xs ys
@@ -115,6 +115,7 @@ _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
 
 ⊟_ : ∀ {n} → Poly n → Poly n
 ⊟_ = ⊟-step (<′-wellFounded _)
+{-# INLINE ⊟_ #-}
 
 ----------------------------------------------------------------------
 -- Multiplication
@@ -152,7 +153,7 @@ _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
         → Fold n
 
 ⊠-step a (Κ x) _ = ⊠-Κ a x
-⊠-step a (Σ xs) = ⊠-Σ a xs
+⊠-step a (Σ xs)  = ⊠-Σ a xs
 
 ⊠-Κ (acc _ ) x (Κ y  Π i≤n) = Κ (x * y) Π i≤n
 ⊠-Κ (acc wf) x (Σ xs Π i≤n) = ⊠-Κ-inj (wf _ i≤n) x xs Π↓ i≤n
@@ -196,7 +197,6 @@ _⊠_ (x Π i≤n) = ⊠-step (<′-wellFounded _) x i≤n
 ⊡-mult : ∀ {n} → ℕ → Poly n → Poly n
 ⊡-mult zero xs = xs
 ⊡-mult (suc n) xs = xs ⊠ ⊡-mult n xs
-
 
 infixr 8 _⊡_
 _⊡_ : ∀ {n} → Poly n → ℕ → Poly n
