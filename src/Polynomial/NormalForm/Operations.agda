@@ -110,7 +110,7 @@ _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
 -- https://github.com/agda/agda/issues/3190#issuecomment-416900716
 
 ⊟-step : ∀ {n} → Acc _<′_ n → Poly n → Poly n
-⊟-step _        (Κ x  Π i≤n) = Κ (- x) Π i≤n
+⊟-step (acc wf) (Κ x  Π i≤n) = Κ (- x) Π i≤n
 ⊟-step (acc wf) (Σ xs Π i≤n) = poly-map (⊟-step (wf _ i≤n)) xs Π↓ i≤n
 
 ⊟_ : ∀ {n} → Poly n → Poly n
