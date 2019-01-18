@@ -49,14 +49,16 @@ _⍓_ : ∀ {n} → Coeffs n → ℕ → Coeffs n
 
 infixr 5 _∷↓_
 _∷↓_ : ∀ {n} → PowInd (Poly n) → Coeffs n → Coeffs n
-x Δ i ∷↓ xs with zero? x
-... | yes p = xs ⍓ suc i
-... | no ¬p = _≠0 x {¬p} Δ i ∷ xs
+x Δ i ∷↓ xs = case zero? x of
+  λ { (yes p) → xs ⍓ suc i
+    ; (no ¬p) → _≠0 x {¬p} Δ i ∷ xs
+    }
 {-# INLINE _∷↓_ #-}
 
 -- Inject a polynomial into a larger polynomoial with more variables
 _Π↑_ : ∀ {n m} → Poly n → (suc n ≤′ m) → Poly m
 (xs Π i≤n) Π↑ n≤m = xs Π (≤′-step i≤n ⟨ ≤′-trans ⟩ n≤m)
+{-# INLINE _Π↑_ #-}
 
 -- NormalForm.sing Π
 infixr 4 _Π↓_
@@ -65,6 +67,7 @@ _Π↓_ : ∀ {i n} → Coeffs i → suc i ≤′ n → Poly n
 (x ≠0 Δ zero  ∷ [])      Π↓ i≤n = x Π↑ i≤n
 (x₁   Δ zero  ∷ x₂ ∷ xs) Π↓ i≤n = Σ (x₁ Δ zero  ∷ x₂ ∷ xs) Π i≤n
 (x    Δ suc j ∷ xs)      Π↓ i≤n = Σ (x  Δ suc j ∷ xs) Π i≤n
+{-# INLINE _Π↓_ #-}
 
 PolyF : ℕ → Set (a )
 PolyF i = Poly i × Coeffs i
@@ -73,7 +76,7 @@ Fold : ℕ → Set (a )
 Fold i = PolyF i → PolyF i
 
 para : ∀ {i} → Fold i → Coeffs i → Coeffs i
-para f = foldr (λ { (x ≠0 Δ i) → uncurry (_∷↓_ ∘ (_Δ i)) ∘ curry f x}) []
+para f = foldr (λ { (x ≠0 Δ i) xs → case (f (x , xs)) of λ { (y , ys) → (y Δ i) ∷↓ ys }}) []
 {-# INLINE para #-}
 
 poly-map : ∀ {i} → (Poly i → Poly i) → Coeffs i → Coeffs i

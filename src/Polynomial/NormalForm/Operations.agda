@@ -161,16 +161,23 @@ _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
 
 ⊠-Σ a xs i≤n (Σ ys Π j≤n) = ⊠-match a (inj-compare i≤n j≤n) xs ys
 ⊠-Σ (acc wf) xs i≤n (Κ y Π _) = ⊠-Κ-inj (wf _ i≤n) y xs Π↓ i≤n
+
 ⊠-Κ-inj a x = poly-map (⊠-Κ a x)
+
 ⊠-Σ-inj a i≤k x (Σ y Π j≤k) = ⊠-match a (inj-compare i≤k j≤k) x y
 ⊠-Σ-inj (acc wf) i≤k x (Κ y Π j≤k) = ⊠-Κ-inj (wf _ i≤k) y x Π↓ i≤k
+
 ⊠-match (acc wf) (inj-eq i&j≤n)     xs ys = ⊠-coeffs (wf _ i&j≤n) xs ys               Π↓ i&j≤n
 ⊠-match (acc wf) (inj-lt i≤j-1 j≤n) xs ys = poly-map (⊠-Σ-inj (wf _ j≤n) i≤j-1 xs) ys Π↓ j≤n
 ⊠-match (acc wf) (inj-gt i≤n j≤i-1) xs ys = poly-map (⊠-Σ-inj (wf _ i≤n) j≤i-1 ys) xs Π↓ i≤n
+
 ⊠-coeffs _ _ [] = []
 ⊠-coeffs a xs (y ≠0 Δ j ∷ ys) = para (⊠-cons a y ys) xs ⍓ j
+{-# INLINE ⊠-coeffs #-}
+
 ⊠-cons a y ys (x Π j≤n , xs) =
   ⊠-step a x j≤n y , ⊞-coeffs (poly-map (⊠-step a x j≤n) ys) xs
+{-# INLINE ⊠-cons #-}
 
 infixl 7 _⊠_
 _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
@@ -198,11 +205,14 @@ _⊠_ (x Π i≤n) = ⊠-step (<′-wellFounded _) x i≤n
 ⊡-mult zero xs = xs
 ⊡-mult (suc n) xs = xs ⊠ ⊡-mult n xs
 
+_⊡_+1 : ∀ {n} → Poly n → ℕ → Poly n
+(Κ x  Π i≤n) ⊡ i +1  = Κ (x ^ i +1) Π i≤n
+(Σ [] {()}  Π i≤n) ⊡ i +1
+(Σ (x Δ j ∷ []) Π i≤n) ⊡ i +1  = x .poly ⊡ i +1 Δ (j ℕ.+ i ℕ.* j) ∷↓ [] Π↓ i≤n
+xs@(Σ (_ ∷ _ ∷ _) Π i≤n) ⊡ i +1  = ⊡-mult i xs
+
 infixr 8 _⊡_
 _⊡_ : ∀ {n} → Poly n → ℕ → Poly n
 _ ⊡ zero = κ 1#
-xs@(Κ x Π i≤n) ⊡ suc i = Κ (x ^ i +1) Π i≤n
-(Σ [] {()} Π i≤n) ⊡ suc i
-(Σ (x Δ j ∷ []) Π i≤n) ⊡ suc i = x .poly ⊡ suc i Δ (i ℕ.* j) ∷↓ [] Π↓ i≤n
-xs@(Σ (_ ∷ _ ∷ _) Π _) ⊡ suc i = ⊡-mult i xs
+xs ⊡ suc i = xs ⊡ i +1
 {-# INLINE _⊡_ #-}
