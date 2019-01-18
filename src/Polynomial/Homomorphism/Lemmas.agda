@@ -102,6 +102,10 @@ pow-suc : ∀ x i → x ^ suc i ≈ x * x ^ i
 pow-suc x ℕ.zero = sym (*-identityʳ _)
 pow-suc x (suc i) = *-comm _ _
 
+pow-sucʳ : ∀ x i → x ^ suc i ≈ x ^ i * x
+pow-sucʳ x ℕ.zero = sym (*-identityˡ _)
+pow-sucʳ x (suc i) = refl
+
 ∷↓-hom : ∀ {n}
        → (x : Poly n)
        → ∀ i xs ρ ρs
