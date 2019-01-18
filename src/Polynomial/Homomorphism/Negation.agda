@@ -20,7 +20,7 @@ open import Polynomial.Reasoning ring
 open import Polynomial.NormalForm homo
 
 ⊟-step-hom : ∀ {n} (a : Acc _<′_ n) → (xs : Poly n) → ∀ ρ → ⟦ ⊟-step a xs ⟧ ρ ≈ - (⟦ xs ⟧ ρ)
-⊟-step-hom a (Κ x  Π i≤n) ρ = -‿homo x
+⊟-step-hom (acc _ ) (Κ x  Π i≤n) ρ = -‿homo x
 ⊟-step-hom (acc wf) (Σ xs Π i≤n) ρ′ =
   let (ρ , ρs) = drop-1 i≤n ρ′
       neg-zero =
@@ -36,9 +36,9 @@ open import Polynomial.NormalForm homo
   in
   begin
     ⟦ poly-map (⊟-step (wf _ i≤n)) xs Π↓ i≤n ⟧ ρ′
-  ≈⟨ Π↓-hom (poly-map (⊟-step _) xs) i≤n ρ′ ⟩
-    Σ⟦ poly-map (⊟-step _) xs ⟧ (ρ , ρs)
-  ≈⟨ poly-mapR ρ ρs (⊟-step (wf _ i≤n)) -_ -‿*-distribˡ (λ x y → sym (-‿+-comm x y)) (flip (⊟-step-hom (wf _ i≤n)) ρs) (sym neg-zero ) xs ⟩
+  ≈⟨ Π↓-hom (poly-map (⊟-step (wf _ i≤n)) xs) i≤n ρ′ ⟩
+    Σ⟦ poly-map (⊟-step  (wf _ i≤n)) xs ⟧ (ρ , ρs)
+  ≈⟨ poly-mapR ρ ρs (⊟-step (wf _ i≤n)) -_ (λ x y → *-comm x (- y) ⟨ trans ⟩ -‿*-distribˡ y x ⟨ trans ⟩ -‿cong (*-comm _ _)) (λ x y → sym (-‿+-comm x y)) (flip (⊟-step-hom (wf _ i≤n)) ρs) (sym neg-zero ) xs ⟩
     - Σ⟦ xs ⟧ (ρ , ρs)
   ∎
 
