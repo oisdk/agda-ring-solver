@@ -25,33 +25,64 @@ open import Polynomial.Reasoning ring
 open import Polynomial.Homomorphism.Semantics homo
 open import Polynomial.Homomorphism.Multiplication homo
 
-open import Polynomial.Exponentiation rawRing
+import Polynomial.Exponentiation
+module RawPow = Polynomial.Exponentiation rawRing
+module CoPow = Polynomial.Exponentiation (RawCoeff.coeffs coeffs)
 
-⊡-mult-hom : ∀ {n} → (i : ℕ) → (xs : Poly n) → ∀ ρ → ⟦ ⊡-mult i xs ⟧ ρ ≈ ⟦ xs ⟧ ρ ^ i
-⊡-mult-hom ℕ.zero xs ρ = κ-hom Raw.1# ρ ⟨ trans ⟩ 1-homo
-⊡-mult-hom (suc i) xs ρ = ⊠-hom xs (⊡-mult i xs) ρ ⟨ trans ⟩ (*≫ ⊡-mult-hom i xs ρ)
 
-⊡-hom : ∀ {n} → (xs : Poly n) → (i : ℕ) → ∀ ρ → ⟦ xs ⊡ i ⟧ ρ ≈ ⟦ xs ⟧ ρ ^ i
-⊡-hom xs@(Κ _ Π _) i = ⊡-mult-hom i xs
-⊡-hom xs@(Σ [] Π _) i = ⊡-mult-hom i xs
-⊡-hom xs@(Σ (_ ∷ _ ∷ _) Π _) i = ⊡-mult-hom i xs
-⊡-hom xs@(Σ (x ≠0 Δ j ∷ []) Π i≤n) i ρ =
+pow-eval-hom : ∀ x i → ⟦ x CoPow.^ i +1 ⟧ᵣ ≈ ⟦ x ⟧ᵣ RawPow.^ i +1
+pow-eval-hom x ℕ.zero = refl
+pow-eval-hom x (suc i) = (*-homo _ x) ⟨ trans ⟩ (≪* pow-eval-hom x i)
+
+⊡-mult-hom : ∀ {n} i (xs : Poly n) ρ → ⟦ ⊡-mult i xs ⟧ ρ ≈ ⟦ xs ⟧ ρ RawPow.^ i +1
+⊡-mult-hom ℕ.zero xs ρ = refl
+⊡-mult-hom (suc i) xs ρ =  ⊠-hom (⊡-mult i xs) xs ρ ⟨ trans ⟩ (≪* ⊡-mult-hom i xs ρ)
+
+⊡-+1-hom : ∀ {n} → (xs : Poly n) → (i : ℕ) → ∀ ρ → ⟦ xs ⊡ i +1 ⟧ ρ ≈ ⟦ xs ⟧ ρ RawPow.^ i +1
+⊡-+1-hom (Κ x  Π i≤n) i ρ = pow-eval-hom x i
+⊡-+1-hom (Σ [] {()} Π i≤n) i ρ
+⊡-+1-hom xs@(Σ (_ ∷ _ ∷ _) Π i≤n) i ρ = ⊡-mult-hom i xs ρ
+⊡-+1-hom (Σ (x ≠0 Δ ℕ.zero ∷ []) Π i≤n) i ρ =
   let (ρ′ , Ρ) = drop-1 i≤n ρ
   in
   begin
-    ⟦ x ⊡ i Δ (i ℕ.* j) ∷↓ [] Π↓ i≤n ⟧ ρ
-  ≈⟨ Π↓-hom (x ⊡ i Δ (i ℕ.* j) ∷↓ []) i≤n ρ ⟩
-    Σ⟦ x ⊡ i Δ (i ℕ.* j) ∷↓ [] ⟧ (drop-1 i≤n ρ)
-  ≈⟨ ∷↓-hom (x ⊡ i) (i ℕ.* j) [] ρ′ Ρ ⟩
-    (⟦ x ⊡ i ⟧ Ρ + 0# * ρ′) * ρ′ ^ (i ℕ.* j)
-  ≈⟨ ≪* ((+≫ zeroˡ _) ⟨ trans ⟩ +-identityʳ _) ⟩
-    (⟦ x ⊡ i ⟧ Ρ) * ρ′ ^ (i ℕ.* j)
-  ≈⟨ ≪* ⊡-hom x i Ρ ⟩
-    (⟦ x ⟧ Ρ ^ i) * ρ′ ^ (i ℕ.* j)
-  ≈⟨ *≫ sym (pow-mult ρ′ j i ) ⟩
-    (⟦ x ⟧ Ρ ^ i) * (ρ′ ^ j) ^ i
-  ≈⟨ sym (pow-distrib _ _ i) ⟩
-    (⟦ x ⟧ Ρ * ρ′ ^ j) ^ i
-  ≈⟨ pow-cong i (≪* sym ((+≫ zeroˡ _) ⟨ trans ⟩ +-identityʳ _)) ⟩
-    ((⟦ x ⟧ Ρ + 0# * ρ′) * ρ′ ^ j) ^ i
+    ⟦ x ⊡ i +1 Δ (0 ℕ.+ i ℕ.* 0) ∷↓ [] Π↓ i≤n ⟧ ρ
+  ≈⟨ Π↓-hom (x ⊡ i +1 Δ (i ℕ.* 0) ∷↓ []) i≤n ρ ⟩
+    Σ⟦ x ⊡ i +1 Δ (i ℕ.* 0) ∷↓ [] ⟧ (ρ′ , Ρ)
+  ≈⟨ ∷↓-hom (x ⊡ i +1) (i ℕ.* 0) [] ρ′ Ρ ⟩
+    (ρ′ * 0# + ⟦ x ⊡ i +1 ⟧ Ρ) * (ρ′ RawPow.^ (i ℕ.* 0))
+  ≡⟨ ≡.cong (λ k → (ρ′ * 0# + ⟦ x ⊡ i +1 ⟧ Ρ) * (ρ′ RawPow.^ k)) (ℕ-Prop.*-zeroʳ i) ⟩
+    (ρ′ * 0# + ⟦ x ⊡ i +1 ⟧ Ρ) * 1#
+  ≈⟨ *-identityʳ _ ⟩
+    ρ′ * 0# + ⟦ x ⊡ i +1 ⟧ Ρ
+  ≈⟨ zeroʳ ρ′ ⟨ +-cong ⟩ ⊡-+1-hom x i Ρ ⟩
+    0# + (⟦ x ⟧ Ρ RawPow.^ i +1)
+  ≈⟨ +-identityˡ _ ⟩
+    ⟦ x ⟧ Ρ RawPow.^ i +1
+  ≈⟨ pow-cong-+1 i (sym ((≪+ zeroʳ _) ⟨ trans ⟩ +-identityˡ _)) ⟩
+    (ρ′ * 0# + ⟦ x ⟧ Ρ) RawPow.^ i +1
   ∎
+⊡-+1-hom (Σ (x ≠0 Δ j@(suc j′) ∷ []) Π i≤n) i ρ =
+  let (ρ′ , Ρ) = drop-1 i≤n ρ
+  in
+  begin
+    ⟦ x ⊡ i +1 Δ (j ℕ.+ i ℕ.* j) ∷↓ [] Π↓ i≤n ⟧ ρ
+  ≈⟨ Π↓-hom (x ⊡ i +1 Δ (j ℕ.+ i ℕ.* j) ∷↓ []) i≤n ρ ⟩
+    Σ⟦ x ⊡ i +1 Δ (j ℕ.+ i ℕ.* j) ∷↓ [] ⟧ (drop-1 i≤n ρ)
+  ≈⟨ ∷↓-hom (x ⊡ i +1) (j ℕ.+ i ℕ.* j) [] ρ′ Ρ ⟩
+    (ρ′ * 0# + ⟦ x ⊡ i +1 ⟧ Ρ) * (ρ′ RawPow.^ (j ℕ.+ i ℕ.* j))
+  ≈⟨ ≪* +≫ ⊡-+1-hom x i Ρ ⟩
+    (ρ′ * 0# + ⟦ x ⟧ Ρ RawPow.^ i +1) * (ρ′ RawPow.^ (j ℕ.+ i ℕ.* j))
+  ≈⟨ ≪* ((≪+ zeroʳ _) ⟨ trans ⟩ +-identityˡ _) ⟩
+    (⟦ x ⟧ Ρ RawPow.^ i +1) * (ρ′ RawPow.^ (j′ ℕ.+ i ℕ.* j) +1)
+  ≈⟨ *≫ sym ( pow-mult-+1 ρ′ j′ i) ⟩
+    (⟦ x ⟧ Ρ RawPow.^ i +1) * ((ρ′ RawPow.^ j′ +1) RawPow.^ i +1)
+  ≈⟨ sym (pow-distrib-+1 (⟦ x ⟧ Ρ) _ i) ⟩
+    (⟦ x ⟧ Ρ * (ρ′ RawPow.^ j′ +1)) RawPow.^ i +1
+  ≈⟨ pow-cong-+1 i (*-comm _ _ ⟨ trans ⟩ sym (*≫ ((≪+ zeroʳ _) ⟨ trans ⟩ +-identityˡ _))) ⟩
+    ((ρ′ * 0# + ⟦ x ⟧ Ρ) *⟨ ρ′ ⟩^ j) RawPow.^ i +1
+  ∎
+
+⊡-hom : ∀ {n} → (xs : Poly n) → (i : ℕ) → ∀ ρ → ⟦ xs ⊡ i ⟧ ρ ≈ ⟦ xs ⟧ ρ RawPow.^ i
+⊡-hom xs ℕ.zero ρ = 1-homo
+⊡-hom xs (suc i) ρ = ⊡-+1-hom xs i ρ

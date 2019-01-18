@@ -28,6 +28,18 @@ open import Polynomial.NormalForm homo
 
 open import Polynomial.Exponentiation rawRing
 
+pow-add′ : ∀ x i j → (x ^ i +1) * (x ^ j +1) ≈ x ^ (j ℕ.+ suc i) +1
+pow-add′ x i ℕ.zero = refl
+pow-add′ x i (suc j) =
+  begin
+    x ^ i +1 * (x ^ j +1 * x)
+  ≈⟨ sym (*-assoc _ _ _) ⟩
+    x ^ i +1 * x ^ j +1 * x
+  ≈⟨ ≪* pow-add′ x i j ⟩
+    x ^ (j ℕ.+ suc i) +1 * x
+  ∎
+
+
 pow-add : ∀ x y i j → y ^ j +1 * x *⟨ y ⟩^ i  ≈ x *⟨ y ⟩^ (i ℕ.+ suc j)
 pow-add x y ℕ.zero j = refl
 pow-add x y (suc i) j = go x y i j
@@ -63,35 +75,43 @@ pow-hom (suc i) (x ≠0 Δ j ∷ xs) ρ ρs =
     (((x , xs) ⟦∷⟧ (ρ , ρs)) *⟨ ρ ⟩^ (j ℕ.+ suc i))
   ∎
 
--- pow-distrib : ∀ x y i
---             → (x * y) ^ i ≈ x ^ i * y ^ i
--- pow-distrib x y ℕ.zero = sym (*-identityˡ _)
--- pow-distrib x y (suc i) =
---   begin
---     (x * y) * ((x * y) ^ i)
---   ≈⟨ *≫ pow-distrib x y i ⟩
---     (x * y) * (x ^ i * y ^ i)
---   ≈⟨ *-assoc _ _ _ ⟨ trans ⟩ (*≫ *-comm _ _) ⟩
---     x * ((x ^ i * y ^ i) * y)
---   ≈⟨  (*≫ *-assoc _ _ _) ⟨ trans ⟩ sym (*-assoc _ _ _) ⟨ trans ⟩ (*≫ *-comm _ _) ⟩
---     (x * x ^ i) * (y * y ^ i)
---   ∎
+pow-distrib-+1 : ∀ x y i → (x * y) ^ i +1 ≈ x ^ i +1 * y ^ i +1
+pow-distrib-+1 x y ℕ.zero = refl
+pow-distrib-+1 x y (suc i) =
+  begin
+    (x * y) ^ i +1 * (x * y)
+  ≈⟨ ≪* pow-distrib-+1 x y i ⟩
+    (x ^ i +1 * y ^ i +1) * (x * y)
+  ≈⟨ *-assoc _ _ _ ⟨ trans ⟩ (*≫ (sym (*-assoc _ _ _) ⟨ trans ⟩ (≪* *-comm _ _))) ⟩
+    x ^ i +1 * (x * y ^ i +1 * y)
+  ≈⟨ (*≫ *-assoc _ _ _) ⟨ trans ⟩ sym (*-assoc _ _ _) ⟩
+    (x ^ i +1 * x) * (y ^ i +1 * y)
+  ∎
+
+pow-distrib : ∀ x y i
+            → (x * y) ^ i ≈ x ^ i * y ^ i
+pow-distrib x y ℕ.zero = sym (*-identityˡ _)
+pow-distrib x y (suc i) = pow-distrib-+1 x y i
+
+pow-mult-+1 : ∀ x i j → (x ^ i +1) ^ j +1 ≈ x ^ (i ℕ.+ j ℕ.* suc i) +1
+pow-mult-+1 x i ℕ.zero rewrite ℕ-Prop.+-identityʳ i = refl
+pow-mult-+1 x i (suc j) =
+  begin
+    (x ^ i +1) ^ j +1 * (x ^ i +1)
+  ≈⟨ ≪* pow-mult-+1 x i j ⟩
+    (x ^ (i ℕ.+ j ℕ.* suc i) +1) * (x ^ i +1)
+  ≈⟨ pow-add′ x _ i ⟩
+    x ^ (i ℕ.+ suc (i ℕ.+ j ℕ.* suc i)) +1
+  ∎
 
 -- pow-mult : ∀ x i j
 --          → (x ^ i) ^ j ≈ x ^ (j ℕ.* i)
 -- pow-mult x i ℕ.zero = refl
--- pow-mult x i (suc j) =
---   begin
---     x ^ i * ((x ^ i) ^ j)
---   ≈⟨ *≫ pow-mult x i j ⟩
---     x ^ i * (x ^ (j ℕ.* i))
---   ≈⟨ pow-add x i _ ⟩
---     x ^ (i ℕ.+ j ℕ.* i)
---   ∎
+-- pow-mult x i (suc j) = {!!}
 
--- pow-cong : ∀ {x y} i → x ≈ y → x ^ i ≈ y ^ i
--- pow-cong ℕ.zero x≈y = refl
--- pow-cong (suc i) x≈y = x≈y ⟨ *-cong ⟩ pow-cong i x≈y
+pow-cong-+1 : ∀ {x y} i → x ≈ y → x ^ i +1 ≈ y ^ i +1
+pow-cong-+1 ℕ.zero x≈y = x≈y
+pow-cong-+1 (suc i) x≈y = pow-cong-+1 i x≈y ⟨ *-cong ⟩ x≈y
 
 zero-hom : ∀ {n} (p : Poly n) → Zero p → (ρs : Vec Carrier n) → 0# ≈ ⟦ p ⟧ ρs
 zero-hom (Σ (_ ∷ _) Π i≤n) ()
