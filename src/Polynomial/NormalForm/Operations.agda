@@ -203,7 +203,7 @@ _⊠_ (x Π i≤n) = ⊠-step (<′-wellFounded _) x i≤n
 ----------------------------------------------------------------------
 ⊡-mult : ∀ {n} → ℕ → Poly n → Poly n
 ⊡-mult zero xs = xs
-⊡-mult (suc n) xs = xs ⊠ ⊡-mult n xs
+⊡-mult (suc n) xs = ⊡-mult n xs ⊠ xs
 
 _⊡_+1 : ∀ {n} → Poly n → ℕ → Poly n
 (Κ x  Π i≤n) ⊡ i +1  = Κ (x ^ i +1) Π i≤n

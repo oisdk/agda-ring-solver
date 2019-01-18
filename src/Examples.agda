@@ -2,7 +2,7 @@ module Examples where
 open import Data.Nat using (ℕ)
 
 d : ℕ
-d = 6
+d = 7
 
 module New where
   open import Polynomial.Simple.AlmostCommutativeRing
@@ -21,8 +21,8 @@ module New where
   lemma₁ : ∀ v w x y z → (v + w + x + y + z) ^ d ≈ (v + w + x + y + z) ^ d
   lemma₁ = solve NatRing
 
-  lemma₂ : ∀ x y z → 1 + x + y ^ 2 + z ^ 3 ≈ 1 + x + y ^ 2 + z ^ 3
-  lemma₂ = solve NatRing
+  -- lemma₂ : ∀ x y z → 1 + x + y ^ 2 + z ^ 3 ≈ 1 + x + y ^ 2 + z ^ 3
+  -- lemma₂ = solve NatRing
 
 
 -- module Old where
