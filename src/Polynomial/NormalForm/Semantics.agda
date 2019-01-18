@@ -31,12 +31,17 @@ vec-uncons (x ∷ xs) = x , xs
 drop-1 : ∀ {i n} → suc i ≤′ n → Vec Carrier n → Carrier × Vec Carrier i
 drop-1 si≤n xs = vec-uncons (drop si≤n xs)
 
+_*⟨_⟩^_ : Carrier → Carrier → ℕ → Carrier
+x *⟨ ρ ⟩^ ℕ.zero = x
+x *⟨ ρ ⟩^ suc i = x * ρ ^ i +1
+{-# INLINE _*⟨_⟩^_ #-}
+
 mutual
   _⟦∷⟧_ : ∀ {n} → Poly n × Coeffs n → Carrier × Vec Carrier n → Carrier
   (x , xs) ⟦∷⟧ (ρ , ρs) = ⟦ x ⟧ ρs + Σ⟦ xs ⟧ (ρ , ρs) * ρ
 
   Σ⟦_⟧ : ∀ {n} → Coeffs n → (Carrier × Vec Carrier n) → Carrier
-  Σ⟦ x ≠0 Δ i ∷ xs ⟧ (ρ , ρs) = (x , xs) ⟦∷⟧ (ρ , ρs) * ρ ^ i
+  Σ⟦ x ≠0 Δ i ∷ xs ⟧ (ρ , ρs) = ((x , xs) ⟦∷⟧ (ρ , ρs)) *⟨ ρ ⟩^ i
   Σ⟦ [] ⟧ _ = 0#
 
   ⟦_⟧ : ∀ {n} → Poly n → Vec Carrier n → Carrier

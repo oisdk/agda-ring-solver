@@ -191,13 +191,14 @@ _⊠_ (x Π i≤n) = ⊠-step (<′-wellFounded _) x i≤n
 -- Exponentiation
 ----------------------------------------------------------------------
 ⊡-mult : ∀ {n} → ℕ → Poly n → Poly n
-⊡-mult zero xs = κ 1#
+⊡-mult zero xs = xs
 ⊡-mult (suc n) xs = xs ⊠ ⊡-mult n xs
 
 infixr 8 _⊡_
 _⊡_ : ∀ {n} → Poly n → ℕ → Poly n
-xs@(Κ _ Π _) ⊡ i = ⊡-mult i xs
-xs@(Σ [] Π _) ⊡ i = ⊡-mult i xs
-(Σ (x Δ j ∷ []) Π i≤n) ⊡ i = x .poly ⊡ i Δ (i ℕ.* j) ∷↓ [] Π↓ i≤n
-xs@(Σ (_ ∷ _ ∷ _) Π _) ⊡ i = ⊡-mult i xs
+_ ⊡ zero = κ 1#
+xs@(Κ _ Π _) ⊡ suc i = ⊡-mult i xs
+xs@(Σ [] Π _) ⊡ suc i = ⊡-mult i xs
+(Σ (x Δ j ∷ []) Π i≤n) ⊡ suc i = x .poly ⊡ suc i Δ (i ℕ.* j) ∷↓ [] Π↓ i≤n
+xs@(Σ (_ ∷ _ ∷ _) Π _) ⊡ suc i = ⊡-mult i xs
 {-# INLINE _⊡_ #-}
