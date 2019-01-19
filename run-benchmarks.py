@@ -21,30 +21,46 @@ open AlmostCommutativeRing NatRing
 dense_preamble = """
 open import Relation.Binary.PropositionalEquality
 open import Data.Nat
+open import Agda.Builtin.FromNat
 open import Data.Nat.Solver using (module +-*-Solver)
 open +-*-Solver
+
+import Data.Nat.Literals
+open import Data.Unit using (⊤)
+
+instance
+  natLit : Number ℕ
+  natLit = Data.Nat.Literals.number
+
+instance
+  exprLit : ∀ {n} → Number (Polynomial n)
+  exprLit = record
+    { Constraint = λ _ → ⊤
+    ; fromNat = λ x → con x
+    }
 """
 
 expressions = [
-    ("v ^ d + w ^ d + x ^ d + y ^ d + z ^ d",[1,100,200,300,400,500]),
-    ("(k1 + v ^ 1 + w ^ 2 + x ^ 3 + y ^ 4 + z ^ 5) ^ d",list(range(1,9))),
     ("(v + w + x + y + z) ^ d", list(range(1,9))),
+    ("v ^ d + w ^ d + x ^ d + y ^ d + z ^ d",[1,100,200,300,400,500]),
+    ("(1 + v ^ 1 + w ^ 2 + x ^ 3 + y ^ 4 + z ^ 5) ^ d",list(range(1,9))),
 ]
 
-dense_expr_encoding = str.maketrans({'+' : ':+', '^' : ':^', '*' : ':*', 'k' : 'con '})
-sparse_expr_encoding = str.maketrans({'k': ''})
+import sympy
+
+def expand(expr):
+    return str(sympy.sympify(expr.replace('^', '**')).expand()).replace('**', ' ^ ').replace('*', ' * ')
+
+
+dense_expr_encoding = str.maketrans({'+' : ':+', '^' : ':^', '*' : ':*'})
 
 import subprocess
 import os
 import time
 import sys
 
-def line_by_line(command):
-    return subprocess.check_output(command, universal_newlines=True).split('\n')
-
 for expr_, degrees in expressions:
-    header = expr_.translate(sparse_expr_encoding)
-    print(header)
+    print(expr_)
     print('%3s | %-7s | %-7s |' % ('d', 'sparse', 'dense'))
     sparse_results = []
     dense_results = []
@@ -52,7 +68,6 @@ for expr_, degrees in expressions:
         print((('%3i | ' % degree)), end='')
         sys.stdout.flush()
         expr = expr_.replace('d', str(degree))
-        pretty_expr = expr.translate(sparse_expr_encoding)
         try:
             os.remove('src/Benchmarks.agdai')
         except:
@@ -61,10 +76,10 @@ for expr_, degrees in expressions:
             with open('src/Benchmarks.agda', 'w') as benchfile:
                 benchfile.write(preamble)
                 benchfile.write(sparse_preamble)
-                benchfile.write('lemma : ' + "∀ v w x y z → " + pretty_expr + " ≈ " + pretty_expr + '\n')
+                benchfile.write('lemma : ' + "∀ v w x y z → " + expr + " ≈ " + expand(expr) + '\n')
                 benchfile.write('lemma = solve NatRing')
             before = time.time()
-            subprocess.run(['agda', '--no-syntactic-equality', 'src/Benchmarks.agda'], capture_output=True, check=True)
+            subprocess.run(['agda', 'src/Benchmarks.agda'], capture_output=True, check=True)
             after = time.time()
             res = after-before
             print(('%7g | ' % res), end='')
@@ -80,10 +95,10 @@ for expr_, degrees in expressions:
             with open('src/Benchmarks.agda', 'w') as benchfile:
                 benchfile.write(preamble)
                 benchfile.write(dense_preamble)
-                benchfile.write('lemma : ' + "∀ v w x y z → " + pretty_expr + " ≡ " + pretty_expr + '\n')
-                benchfile.write('lemma = solve 5 (λ v w x y z → ' + expr.translate(dense_expr_encoding) + " := " + expr.translate(dense_expr_encoding) + ") refl")
+                benchfile.write('lemma : ' + "∀ v w x y z → " + expr + " ≡ " + expand(expr) + '\n')
+                benchfile.write('lemma = solve 5 (λ v w x y z → ' + expr.translate(dense_expr_encoding) + " := " + expand(expr).translate(dense_expr_encoding) + ") refl")
             before = time.time()
-            subprocess.run(['agda', '--no-syntactic-equality', 'src/Benchmarks.agda'], capture_output=True, check=True)
+            subprocess.run(['agda', 'src/Benchmarks.agda'], capture_output=True, check=True)
             after = time.time()
             res = after-before
             print(('%7g | ' % res))
@@ -112,6 +127,6 @@ for expr_, degrees in expressions:
     print('-' * width)
     print(' ' * 4, end='d = ')
     for x in range(len(degrees)):
-        print(('%-10i' % round((x / (len(degrees))) * max_deg)), end='')
+        print(('%-10i' % round((x / (len(degrees)) + 1) * max_deg)), end='')
     print()
     print()
