@@ -115,63 +115,56 @@ mutual
 ----------------------------------------------------------------------
 -- Multiplication
 ----------------------------------------------------------------------
-⊠-step : ∀ {i n} → Acc _<′_ n → FlatPoly i → i ≤′ n → Poly n → Poly n
+mutual
+  ⊠-step : ∀ {i n} → Acc _<′_ n → FlatPoly i → i ≤′ n → Poly n → Poly n
+  ⊠-step a (Κ x) _ = ⊠-Κ a x
+  ⊠-step a (Σ xs)  = ⊠-Σ a xs
 
-⊠-Κ : ∀ {n} → Acc _<′_ n → Carrier → Poly n → Poly n
+  ⊠-Κ : ∀ {n} → Acc _<′_ n → Carrier → Poly n → Poly n
+  ⊠-Κ (acc _ ) x (Κ y  Π i≤n) = Κ (x * y) Π i≤n
+  ⊠-Κ (acc wf) x (Σ xs Π i≤n) = ⊠-Κ-inj (wf _ i≤n) x xs Π↓ i≤n
 
-⊠-Σ : ∀ {i n} → Acc _<′_ n → Coeffs i → i <′ n → Poly n → Poly n
+  ⊠-Σ : ∀ {i n} → Acc _<′_ n → Coeffs i → i <′ n → Poly n → Poly n
+  ⊠-Σ (acc wf) xs i≤n (Σ ys Π j≤n) = ⊠-match  (acc wf) (inj-compare i≤n j≤n) xs ys
+  ⊠-Σ (acc wf) xs i≤n (Κ y Π _) = ⊠-Κ-inj (wf _ i≤n) y xs Π↓ i≤n
 
-⊠-Κ-inj : ∀ {i}  → Acc _<′_ i → Carrier → Coeffs i → Coeffs i
+  ⊠-Κ-inj : ∀ {i}  → Acc _<′_ i → Carrier → Coeffs i → Coeffs i
+  ⊠-Κ-inj a x = poly-map (⊠-Κ a x)
 
-⊠-Σ-inj : ∀ {i k}
-        → Acc _<′_ k
-        → i <′ k
-        → Coeffs i
-        → Poly k
-        → Poly k
+  ⊠-Σ-inj : ∀ {i k}
+          → Acc _<′_ k
+          → i <′ k
+          → Coeffs i
+          → Poly k
+          → Poly k
+  ⊠-Σ-inj (acc wf) i≤k x (Σ y Π j≤k) = ⊠-match (acc wf) (inj-compare i≤k j≤k) x y
+  ⊠-Σ-inj (acc wf) i≤k x (Κ y Π j≤k) = ⊠-Κ-inj (wf _ i≤k) y x Π↓ i≤k
 
-⊠-match : ∀ {i j n}
-        → Acc _<′_ n
-        → {i≤n : i <′ n}
-        → {j≤n : j <′ n}
-        → InjectionOrdering i≤n j≤n
-        → Coeffs i
-        → Coeffs j
-        → Poly n
+  ⊠-match : ∀ {i j n}
+          → Acc _<′_ n
+          → {i≤n : i <′ n}
+          → {j≤n : j <′ n}
+          → InjectionOrdering i≤n j≤n
+          → Coeffs i
+          → Coeffs j
+          → Poly n
+  ⊠-match (acc wf) (inj-eq i&j≤n)     xs ys = ⊠-coeffs (wf _ i&j≤n) xs ys               Π↓ i&j≤n
+  ⊠-match (acc wf) (inj-lt i≤j-1 j≤n) xs ys = poly-map (⊠-Σ-inj (wf _ j≤n) i≤j-1 xs) ys Π↓ j≤n
+  ⊠-match (acc wf) (inj-gt i≤n j≤i-1) xs ys = poly-map (⊠-Σ-inj (wf _ i≤n) j≤i-1 ys) xs Π↓ i≤n
 
-⊠-coeffs : ∀ {n} → Acc _<′_ n → Coeffs n → Coeffs n → Coeffs n
+  ⊠-coeffs : ∀ {n} → Acc _<′_ n → Coeffs n → Coeffs n → Coeffs n
+  ⊠-coeffs _ _ [] = []
+  ⊠-coeffs a xs (y ≠0 Δ j ∷ ys) = para (⊠-cons a y ys) xs ⍓ j
 
-⊠-cons : ∀ {n}
-        → Acc _<′_ n
-        → Poly n
-        → Coeffs n
-        → Fold n
-
-⊠-step a (Κ x) _ = ⊠-Κ a x
-⊠-step a (Σ xs)  = ⊠-Σ a xs
-
-⊠-Κ (acc _ ) x (Κ y  Π i≤n) = Κ (x * y) Π i≤n
-⊠-Κ (acc wf) x (Σ xs Π i≤n) = ⊠-Κ-inj (wf _ i≤n) x xs Π↓ i≤n
+  ⊠-cons : ∀ {n}
+          → Acc _<′_ n
+          → Poly n
+          → Coeffs n
+          → Fold n
+  ⊠-cons a y ys (x Π j≤n , xs) =
+    ⊠-step a x j≤n y , ⊞-coeffs (poly-map (⊠-step a x j≤n) ys) xs
 {-# INLINE ⊠-Κ #-}
-
-⊠-Σ (acc wf) xs i≤n (Σ ys Π j≤n) = ⊠-match  (acc wf) (inj-compare i≤n j≤n) xs ys
-⊠-Σ (acc wf) xs i≤n (Κ y Π _) = ⊠-Κ-inj (wf _ i≤n) y xs Π↓ i≤n
-
-⊠-Κ-inj a x = poly-map (⊠-Κ a x)
-
-⊠-Σ-inj (acc wf) i≤k x (Σ y Π j≤k) = ⊠-match (acc wf) (inj-compare i≤k j≤k) x y
-⊠-Σ-inj (acc wf) i≤k x (Κ y Π j≤k) = ⊠-Κ-inj (wf _ i≤k) y x Π↓ i≤k
-
-⊠-match (acc wf) (inj-eq i&j≤n)     xs ys = ⊠-coeffs (wf _ i&j≤n) xs ys               Π↓ i&j≤n
-⊠-match (acc wf) (inj-lt i≤j-1 j≤n) xs ys = poly-map (⊠-Σ-inj (wf _ j≤n) i≤j-1 xs) ys Π↓ j≤n
-⊠-match (acc wf) (inj-gt i≤n j≤i-1) xs ys = poly-map (⊠-Σ-inj (wf _ i≤n) j≤i-1 ys) xs Π↓ i≤n
-
-⊠-coeffs _ _ [] = []
-⊠-coeffs a xs (y ≠0 Δ j ∷ ys) = para (⊠-cons a y ys) xs ⍓ j
 {-# INLINE ⊠-coeffs #-}
-
-⊠-cons a y ys (x Π j≤n , xs) =
-  ⊠-step a x j≤n y , ⊞-coeffs (poly-map (⊠-step a x j≤n) ys) xs
 {-# INLINE ⊠-cons #-}
 
 infixl 7 _⊠_
