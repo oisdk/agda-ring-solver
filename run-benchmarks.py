@@ -36,12 +36,17 @@ sparse_expr_encoding = str.maketrans({'k': ''})
 
 import subprocess
 import os
+import time
 
 def line_by_line(command):
     return subprocess.check_output(command, universal_newlines=True).split('\n')
 
 for expr_, degrees in expressions:
+    header = expr_.translate(sparse_expr_encoding)
+    print(header)
+    print('%-3s | %-7s | %-7s |' % ('d', 'sparse', 'dense'))
     for degree in degrees:
+        print((('%3i | ' % degree)), end='')
         expr = expr_.replace('d', str(degree))
         pretty_expr = expr.translate(sparse_expr_encoding)
         try:
@@ -54,9 +59,10 @@ for expr_, degrees in expressions:
                 benchfile.write(sparse_preamble)
                 benchfile.write('lemma : ' + "∀ v w x y z → " + pretty_expr + " ≈ " + pretty_expr + '\n')
                 benchfile.write('lemma = solve NatRing')
-            print('%-7s | d = %3i | %s' % ('SPARSE', degree, expr_.translate(sparse_expr_encoding)))
-            for line in line_by_line(['time', 'agda', '--no-syntactic-equality', 'src/Benchmarks.agda']):
-                print(' ' * 8 + line)
+            before = time.time()
+            subprocess.run(['agda', '--no-syntactic-equality', 'src/Benchmarks.agda'], capture_output=True, check=True)
+            after = time.time()
+            print(('%7g | ' % (after-before)), end='')
         finally:
             os.remove('src/Benchmarks.agda')
         try:
@@ -69,8 +75,9 @@ for expr_, degrees in expressions:
                 benchfile.write(dense_preamble)
                 benchfile.write('lemma : ' + "∀ v w x y z → " + pretty_expr + " ≡ " + pretty_expr + '\n')
                 benchfile.write('lemma = solve 5 (λ v w x y z → ' + expr.translate(dense_expr_encoding) + " := " + expr.translate(dense_expr_encoding) + ") refl")
-            print('%-7s | d = %3i | %s' % ('DENSE', degree, expr_.translate(sparse_expr_encoding)))
-            for line in line_by_line(['time', 'agda', '--no-syntactic-equality', 'src/Benchmarks.agda']):
-                print(' ' * 8 + line)
+            before = time.time()
+            subprocess.run(['agda', '--no-syntactic-equality', 'src/Benchmarks.agda'], capture_output=True, check=True)
+            after = time.time()
+            print(('%7g | ' % (after-before)))
         finally:
             os.remove('src/Benchmarks.agda')
