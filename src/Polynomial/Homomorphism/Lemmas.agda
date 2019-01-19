@@ -104,11 +104,6 @@ pow-mult-+1 x i (suc j) =
     x ^ (i ℕ.+ suc (i ℕ.+ j ℕ.* suc i)) +1
   ∎
 
--- pow-mult : ∀ x i j
---          → (x ^ i) ^ j ≈ x ^ (j ℕ.* i)
--- pow-mult x i ℕ.zero = refl
--- pow-mult x i (suc j) = {!!}
-
 pow-cong-+1 : ∀ {x y} i → x ≈ y → x ^ i +1 ≈ y ^ i +1
 pow-cong-+1 ℕ.zero x≈y = x≈y
 pow-cong-+1 (suc i) x≈y = pow-cong-+1 i x≈y ⟨ *-cong ⟩ x≈y
