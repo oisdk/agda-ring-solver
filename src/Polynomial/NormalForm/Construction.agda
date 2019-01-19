@@ -10,8 +10,7 @@ module Polynomial.NormalForm.Construction
 open import Relation.Nullary         using (Dec; yes; no)
 open import Level                    using (lift; lower; _⊔_)
 open import Data.Unit                using (tt)
-open import Data.List                using (_∷_; []; List)
-open import FastFoldr
+open import Data.List                using (_∷_; []; List; foldr)
 open import Data.Nat            as ℕ using (ℕ; suc; zero)
 open import Data.Nat.Properties      using (z≤′n)
 open import Data.Product             using (_×_; _,_; map₁; curry; uncurry)

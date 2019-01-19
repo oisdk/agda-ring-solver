@@ -50,57 +50,52 @@ open RawCoeff coeffs
 -- _⊞_ {suc n} (x ∷ xs) [] = x ∷ xs
 -- _⊞_ {suc n} ((x , p) ∷ xs) ((y , q) ∷ ys) =
 --   ⊞-zip (ℕ.compare p q) x xs y ys
+mutual
+  infixl 6 _⊞_
+  _⊞_ : ∀ {n} → Poly n → Poly n → Poly n
+  (xs Π i≤n) ⊞ (ys Π j≤n) = ⊞-match (inj-compare i≤n j≤n) xs ys
 
-infixl 6 _⊞_
-_⊞_ : ∀ {n} → Poly n → Poly n → Poly n
+  ⊞-match : ∀ {i j n}
+        → {i≤n : i ≤′ n}
+        → {j≤n : j ≤′ n}
+        → InjectionOrdering i≤n j≤n
+        → FlatPoly i
+        → FlatPoly j
+        → Poly n
+  ⊞-match (inj-eq i&j≤n)     (Κ x)  (Κ y)  = Κ (x + y)         Π  i&j≤n
+  ⊞-match (inj-eq i&j≤n)     (Σ xs) (Σ ys) = ⊞-coeffs    xs ys Π↓ i&j≤n
+  ⊞-match (inj-lt i≤j-1 j≤n)  xs    (Σ ys) = ⊞-inj i≤j-1 xs ys Π↓ j≤n
+  ⊞-match (inj-gt i≤n j≤i-1) (Σ xs)  ys    = ⊞-inj j≤i-1 ys xs Π↓ i≤n
 
-⊞-match : ∀ {i j n}
-      → {i≤n : i ≤′ n}
-      → {j≤n : j ≤′ n}
-      → InjectionOrdering i≤n j≤n
-      → FlatPoly i
-      → FlatPoly j
-      → Poly n
+  ⊞-inj : ∀ {i k}
+        → (i ≤′ k)
+        → FlatPoly i
+        → Coeffs k
+        → Coeffs k
+  ⊞-inj i≤k xs [] = xs Π i≤k Δ zero ∷↓ []
+  ⊞-inj i≤k xs (y Π j≤k ≠0 Δ zero ∷ ys) = ⊞-match (inj-compare j≤k i≤k) y xs Δ zero ∷↓ ys
+  ⊞-inj i≤k xs (y Δ suc j ∷ ys) = xs Π i≤k Δ zero ∷↓ y Δ j ∷ ys
 
-⊞-inj : ∀ {i k}
-      → (i ≤′ k)
-      → FlatPoly i
-      → Coeffs k
-      → Coeffs k
+  ⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
+  ⊞-coeffs [] ys = ys
+  ⊞-coeffs (x Δ i ∷ xs) ys = ⊞-zip-r x i xs ys
 
-⊞-coeffs : ∀ {n} → Coeffs n → Coeffs n → Coeffs n
+  ⊞-zip : ∀ {p q n}
+        → ℕ.Ordering p q
+        → NonZero n
+        → Coeffs n
+        → NonZero n
+        → Coeffs n
+        → Coeffs n
+  ⊞-zip (ℕ.less    i k) x xs y ys = x Δ i ∷ ⊞-zip-r y k ys xs
+  ⊞-zip (ℕ.greater j k) x xs y ys = y Δ j ∷ ⊞-zip-r x k xs ys
+  ⊞-zip (ℕ.equal   i  ) x xs y ys = (x .poly ⊞ y .poly) Δ i ∷↓ ⊞-coeffs xs ys
 
-⊞-zip : ∀ {p q n}
-      → ℕ.Ordering p q
-      → NonZero n
-      → Coeffs n
-      → NonZero n
-      → Coeffs n
-      → Coeffs n
-
-⊞-zip-r : ∀ {n} → NonZero n → ℕ → Coeffs n → Coeffs n → Coeffs n
-
-(xs Π i≤n) ⊞ (ys Π j≤n) = ⊞-match (inj-compare i≤n j≤n) xs ys
-
-⊞-match (inj-eq i&j≤n)     (Κ x)  (Κ y)  = Κ (x + y)         Π  i&j≤n
-⊞-match (inj-eq i&j≤n)     (Σ xs) (Σ ys) = ⊞-coeffs    xs ys Π↓ i&j≤n
-⊞-match (inj-lt i≤j-1 j≤n)  xs    (Σ ys) = ⊞-inj i≤j-1 xs ys Π↓ j≤n
-⊞-match (inj-gt i≤n j≤i-1) (Σ xs)  ys    = ⊞-inj j≤i-1 ys xs Π↓ i≤n
-
-⊞-inj i≤k xs [] = xs Π i≤k Δ zero ∷↓ []
-⊞-inj i≤k xs (y Π j≤k ≠0 Δ zero ∷ ys) = ⊞-match (inj-compare j≤k i≤k) y xs Δ zero ∷↓ ys
-⊞-inj i≤k xs (y Δ suc j ∷ ys) = xs Π i≤k Δ zero ∷↓ y Δ j ∷ ys
-
-⊞-coeffs [] ys = ys
-⊞-coeffs (x Δ i ∷ xs) ys = ⊞-zip-r x i xs ys
-
-⊞-zip (ℕ.less    i k) x xs y ys = x Δ i ∷ ⊞-zip-r y k ys xs
-⊞-zip (ℕ.greater j k) x xs y ys = y Δ j ∷ ⊞-zip-r x k xs ys
-⊞-zip (ℕ.equal   i  ) x xs y ys = (x .poly ⊞ y .poly) Δ i ∷↓ ⊞-coeffs xs ys
+  ⊞-zip-r : ∀ {n} → NonZero n → ℕ → Coeffs n → Coeffs n → Coeffs n
+  ⊞-zip-r x i xs [] = x Δ i ∷ xs
+  ⊞-zip-r x i xs (y ∷ ys) = ⊞-zip (compare i (y .pow)) x xs (y .coeff) ys
 {-# INLINE ⊞-zip #-}
 
-⊞-zip-r x i xs [] = x Δ i ∷ xs
-⊞-zip-r x i xs (y ∷ ys) = ⊞-zip (compare i (y .pow)) x xs (y .coeff) ys
 
 ----------------------------------------------------------------------
 -- Negation
