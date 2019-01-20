@@ -37,12 +37,12 @@ open import Polynomial.Exponentiation rawRing
   ≈⟨ Π↓-hom (κ Raw.1# Δ 1 ∷↓ []) (Fin⇒≤ i) Ρ′ ⟩
     Σ⟦ κ Raw.1# Δ 1 ∷↓ [] ⟧ (ρ , Ρ)
   ≈⟨ ∷↓-hom (κ Raw.1#) 1 [] ρ Ρ  ⟩
-    (ρ * 0# + ⟦ κ Raw.1# ⟧ Ρ) * ρ
-  ≈⟨ ≪* (zeroʳ _ ⟨ +-cong ⟩ 1-homo) ⟩
-    (0# + 1#) * ρ
-  ≈⟨ ≪* +-identityˡ _ ⟩
-    1# * ρ
-  ≈⟨ *-identityˡ ρ ⟩
+    ρ * (ρ * 0# + ⟦ κ Raw.1# ⟧ Ρ)
+  ≈⟨ *≫ (zeroʳ _ ⟨ +-cong ⟩ 1-homo) ⟩
+    ρ * (0# + 1#)
+  ≈⟨ *≫ +-identityˡ _ ⟩
+    ρ * 1#
+  ≈⟨ *-identityʳ ρ ⟩
     ρ
   ≡⟨ drop-1⇒lookup i Ρ′ ⟩
     Vec.lookup i Ρ′

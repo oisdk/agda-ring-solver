@@ -12,6 +12,7 @@ open import Data.Vec.N-ary
 
 module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
   open AlmostCommutativeRing ring
+
   ⟦_⟧ : ∀ {n} → Expr Carrier n → Vec Carrier n → Carrier
   ⟦ Κ x ⟧ ρ = x
   ⟦ Ι x ⟧ ρ = lookup x ρ

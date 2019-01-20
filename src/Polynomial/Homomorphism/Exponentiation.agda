@@ -47,9 +47,9 @@ pow-eval-hom x (suc i) = (*-homo _ x) ⟨ trans ⟩ (≪* pow-eval-hom x i)
   ≈⟨ Π↓-hom (x ⊡ i +1 Δ (j ℕ.+ i ℕ.* j) ∷↓ []) i≤n ρ ⟩
     Σ⟦ x ⊡ i +1 Δ (j ℕ.+ i ℕ.* j) ∷↓ [] ⟧ (drop-1 i≤n ρ)
   ≈⟨ ∷↓-hom (x ⊡ i +1) (j ℕ.+ i ℕ.* j) [] ρ′ Ρ ⟩
-    (ρ′ * 0# + ⟦ x ⊡ i +1 ⟧ Ρ) * (ρ′ RawPow.^ (j ℕ.+ i ℕ.* j))
-  ≈⟨ ≪*  (zeroʳ ρ′ ⟨ +-cong ⟩ ⊡-+1-hom x i Ρ ⟨ trans ⟩ +-identityˡ _) ⟩
-    (⟦ x ⟧ Ρ RawPow.^ i +1) * (ρ′ RawPow.^ (j ℕ.+ i ℕ.* j))
+    (ρ′ RawPow.^ (j ℕ.+ i ℕ.* j)) * (ρ′ * 0# + ⟦ x ⊡ i +1 ⟧ Ρ)
+  ≈⟨ *≫ (zeroʳ ρ′ ⟨ +-cong ⟩ ⊡-+1-hom x i Ρ ⟨ trans ⟩ +-identityˡ _) ⟩
+    (ρ′ RawPow.^ (j ℕ.+ i ℕ.* j)) * (⟦ x ⟧ Ρ RawPow.^ i +1)
   ≈⟨ rearrange j ⟩
     ((ρ′ * 0# + ⟦ x ⟧ Ρ) *⟨ ρ′ ⟩^ j) RawPow.^ i +1
   ∎
@@ -57,25 +57,25 @@ pow-eval-hom x (suc i) = (*-homo _ x) ⟨ trans ⟩ (≪* pow-eval-hom x i)
   ρ′,Ρ = drop-1 i≤n ρ
   ρ′ = proj₁ ρ′,Ρ
   Ρ = proj₂ ρ′,Ρ
-  rearrange : ∀ j → (⟦ x ⟧ Ρ RawPow.^ i +1) * (ρ′ RawPow.^ (j ℕ.+ i ℕ.* j)) ≈ ((ρ′ * 0# + ⟦ x ⟧ Ρ) *⟨ ρ′ ⟩^ j) RawPow.^ i +1
+  rearrange : ∀ j → (ρ′ RawPow.^ (j ℕ.+ i ℕ.* j)) * (⟦ x ⟧ Ρ RawPow.^ i +1)≈ ((ρ′ * 0# + ⟦ x ⟧ Ρ) *⟨ ρ′ ⟩^ j) RawPow.^ i +1
   rearrange zero =
     begin
-      (⟦ x ⟧ Ρ RawPow.^ i +1) * (ρ′ RawPow.^ (i ℕ.* 0))
-    ≡⟨ ≡.cong (λ k → (⟦ x ⟧ Ρ RawPow.^ i +1) * (ρ′ RawPow.^ k)) (ℕ-Prop.*-zeroʳ i) ⟩
-      (⟦ x ⟧ Ρ RawPow.^ i +1) * 1#
-    ≈⟨ *-identityʳ _ ⟩
+      (ρ′ RawPow.^ (i ℕ.* 0)) * (⟦ x ⟧ Ρ RawPow.^ i +1)
+    ≡⟨ ≡.cong (λ k →  (ρ′ RawPow.^ k) * (⟦ x ⟧ Ρ RawPow.^ i +1)) (ℕ-Prop.*-zeroʳ i) ⟩
+      1# * (⟦ x ⟧ Ρ RawPow.^ i +1)
+    ≈⟨ *-identityˡ _ ⟩
       ⟦ x ⟧ Ρ RawPow.^ i +1
     ≈⟨ pow-cong-+1 i (sym ((≪+ zeroʳ _) ⟨ trans ⟩ +-identityˡ _)) ⟩
       (ρ′ * 0# + ⟦ x ⟧ Ρ) RawPow.^ i +1
     ∎
   rearrange j@(suc j′) =
     begin
-      (⟦ x ⟧ Ρ RawPow.^ i +1) * (ρ′ RawPow.^ (j ℕ.+ i ℕ.* j))
-    ≈⟨ *≫ sym ( pow-mult-+1 ρ′ j′ i) ⟩
-      (⟦ x ⟧ Ρ RawPow.^ i +1) * ((ρ′ RawPow.^ j′ +1) RawPow.^ i +1)
-    ≈⟨ sym (pow-distrib-+1 (⟦ x ⟧ Ρ) _ i) ⟩
-      (⟦ x ⟧ Ρ * (ρ′ RawPow.^ j′ +1)) RawPow.^ i +1
-    ≈⟨ pow-cong-+1 i (*-comm _ _ ⟨ trans ⟩ sym (*≫ ((≪+ zeroʳ _) ⟨ trans ⟩ +-identityˡ _))) ⟩
+      (ρ′ RawPow.^ (j ℕ.+ i ℕ.* j)) * (⟦ x ⟧ Ρ RawPow.^ i +1)
+    ≈⟨ ≪* sym ( pow-mult-+1 ρ′ j′ i) ⟩
+      ((ρ′ RawPow.^ j′ +1) RawPow.^ i +1) * (⟦ x ⟧ Ρ RawPow.^ i +1)
+    ≈⟨ sym (pow-distrib-+1 _ (⟦ x ⟧ Ρ) i) ⟩
+      ((ρ′ RawPow.^ j′ +1) * ⟦ x ⟧ Ρ) RawPow.^ i +1
+    ≈⟨ pow-cong-+1 i (sym (*≫ ((≪+ zeroʳ _) ⟨ trans ⟩ +-identityˡ _))) ⟩
       ((ρ′ * 0# + ⟦ x ⟧ Ρ) *⟨ ρ′ ⟩^ j) RawPow.^ i +1
     ∎
 

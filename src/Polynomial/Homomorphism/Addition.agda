@@ -90,8 +90,8 @@ mutual
     begin
       Σ⟦ (xs Π i≤k) Δ 0 ∷↓ [] ⟧ (ρ , Ρ)
     ≈⟨ ∷↓-hom (xs Π i≤k) 0 [] ρ Ρ ⟩
-      (ρ * 0# + ⟦ xs Π i≤k ⟧ Ρ) * ρ ^ 0
-    ≈⟨ *-identityʳ _ ⟩
+      ρ ^ 0 * (ρ * 0# + ⟦ xs Π i≤k ⟧ Ρ)
+    ≈⟨ *-identityˡ _ ⟩
       ρ * 0# + ⟦ xs Π i≤k ⟧ Ρ
     ≈⟨ (≪+ zeroʳ ρ) ⟨ trans ⟩ +-comm _ _ ⟩
       ⟦ xs Π i≤k ⟧ Ρ + 0#
@@ -99,9 +99,7 @@ mutual
   ⊞-inj-hom i≤k xs (y Π j≤k ≠0 Δ 0 ∷ ys) ρ Ρ =
     begin
       Σ⟦ ⊞-match (inj-compare j≤k i≤k) y xs Δ 0 ∷↓ ys ⟧ (ρ , Ρ)
-    ≈⟨ ∷↓-hom ((⊞-match (inj-compare j≤k i≤k) y xs)) 0 ys ρ Ρ ⟩
-      ((⊞-match (inj-compare j≤k i≤k) y xs , ys) ⟦∷⟧ (ρ , Ρ)) * ρ ^ 0
-    ≈⟨ *-identityʳ _ ⟩
+    ≈⟨ ∷↓-hom-0 ((⊞-match (inj-compare j≤k i≤k) y xs)) ys ρ Ρ ⟩
       ρ * Σ⟦ ys ⟧ (ρ , Ρ) + ⟦ ⊞-match (inj-compare j≤k i≤k) y xs ⟧ Ρ
     ≈⟨ +≫ ⊞-match-hom (inj-compare j≤k i≤k) y xs Ρ ⟩
       ρ * Σ⟦ ys ⟧ (ρ , Ρ) + (⟦ y Π j≤k ⟧ Ρ + ⟦ xs Π i≤k ⟧ Ρ)
@@ -115,9 +113,7 @@ mutual
       Σ⟦ ⊞-inj i≤k xs (y Δ suc j ∷ ys) ⟧ (ρ , Ρ)
     ≡⟨⟩
       Σ⟦ xs Π i≤k Δ 0 ∷↓ y Δ j ∷ ys ⟧ (ρ , Ρ)
-    ≈⟨ ∷↓-hom (xs Π i≤k) 0 (y Δ j ∷ ys) ρ Ρ ⟩
-      (ρ * Σ⟦ y Δ j ∷ ys ⟧ (ρ , Ρ) + ⟦ xs Π i≤k ⟧ Ρ) * ρ ^ 0
-    ≈⟨ *-identityʳ _ ⟩
+    ≈⟨ ∷↓-hom-0 (xs Π i≤k) (y Δ j ∷ ys) ρ Ρ ⟩
       ρ * Σ⟦ y Δ j ∷ ys ⟧ (ρ , Ρ) + ⟦ xs Π i≤k ⟧ Ρ
     ≈⟨ +-comm _ _ ⟩
       ⟦ xs Π i≤k ⟧ Ρ + ρ * Σ⟦ y Δ j ∷ ys ⟧ (ρ , Ρ)
@@ -127,8 +123,6 @@ mutual
         ≡⟨⟩
           ρ * (((poly y , ys) ⟦∷⟧ (ρ , Ρ)) *⟨ ρ ⟩^ j)
         ≈⟨ *≫ pow-opt _ ρ j ⟩
-          ρ * (((poly y , ys) ⟦∷⟧ (ρ , Ρ)) * ρ ^ j)
-        ≈⟨ *≫ *-comm _ (ρ ^ j) ⟩
           ρ * (ρ ^ j * ((poly y , ys) ⟦∷⟧ (ρ , Ρ)))
         ≈⟨ sym (*-assoc ρ _ _) ⟩
           ρ * ρ ^ j * ((poly y , ys) ⟦∷⟧ (ρ , Ρ))
@@ -161,8 +155,8 @@ mutual
     begin
       Σ⟦ x ⊞ y Δ i ∷↓ ⊞-coeffs xs ys ⟧ (ρ , Ρ)
     ≈⟨ ∷↓-hom (x ⊞ y) i (⊞-coeffs xs ys) ρ Ρ ⟩
-      (ρ * Σ⟦ ⊞-coeffs xs ys ⟧ (ρ , Ρ) + ⟦ x ⊞ y ⟧ Ρ) * ρ ^ i
-    ≈⟨ ≪* begin
+      ρ ^ i * (ρ * Σ⟦ ⊞-coeffs xs ys ⟧ (ρ , Ρ) + ⟦ x ⊞ y ⟧ Ρ)
+    ≈⟨ *≫ begin
            ρ * Σ⟦ ⊞-coeffs xs ys ⟧ (ρ , Ρ) + ⟦ x ⊞ y ⟧ Ρ
           ≈⟨ (*≫ ⊞-coeffs-hom xs ys (ρ , Ρ)) ⟨ +-cong ⟩ ⊞-hom x y Ρ  ⟩
             ρ * (xs′ + ys′) + (x′ + y′)
@@ -173,9 +167,9 @@ mutual
           ≈⟨ (+≫ +-assoc _ _ _) ⟨ trans ⟩ sym (+-assoc _ _ _) ⟩
             (ρ * xs′ + x′) + (ρ * ys′ + y′)
           ∎ ⟩
-     ((ρ * xs′ + x′) + (ρ * ys′ + y′)) * ρ ^ i
-    ≈⟨ distribʳ (ρ ^ i) _ _ ⟩
-      (ρ * xs′ + x′) * ρ ^ i + (ρ * ys′ + y′) * ρ ^ i
+     ρ ^ i * ((ρ * xs′ + x′) + (ρ * ys′ + y′))
+    ≈⟨ distribˡ (ρ ^ i) _ _ ⟩
+      ρ ^ i * (ρ * xs′ + x′) + ρ ^ i * (ρ * ys′ + y′)
     ≈⟨ sym (pow-opt _ ρ i ⟨ +-cong ⟩ pow-opt _ ρ i) ⟩
       (ρ * xs′ + x′) *⟨ ρ ⟩^ i + (ρ * ys′ + y′) *⟨ ρ ⟩^ i
     ∎
@@ -197,19 +191,19 @@ mutual
     begin
       (ρ * Σ⟦ ⊞-zip-r x k xs ys ⟧ (ρ , Ρ) + y′) *⟨ ρ ⟩^ j
     ≈⟨ pow-opt _ ρ j ⟩
-      (ρ * Σ⟦ ⊞-zip-r x k xs ys ⟧ (ρ , Ρ) + y′) * ρ ^ j
-    ≈⟨ ≪* ≪+ *≫ ⊞-zip-r-hom k x xs ys (ρ , Ρ) ⟩
-      (ρ * ((ρ * xs′ + x′) *⟨ ρ ⟩^ k + ys′) + y′) * ρ ^ j
-    ≈⟨ ≪* ≪+ distribˡ ρ _ _ ⟩
-      ((ρ * (ρ * xs′ + x′) *⟨ ρ ⟩^ k + ρ * ys′) + y′) * ρ ^ j
-    ≈⟨ ≪* +-assoc _ _ _ ⟩
-      (ρ * (ρ * xs′ + x′) *⟨ ρ ⟩^ k + (ρ * ys′ + y′)) * ρ ^ j
-    ≈⟨ distribʳ _ _ _ ⟩
-      (ρ * (ρ * xs′ + x′) *⟨ ρ ⟩^ k) * ρ ^ j + (ρ * ys′ + y′) * ρ ^ j
+      ρ ^ j * (ρ * Σ⟦ ⊞-zip-r x k xs ys ⟧ (ρ , Ρ) + y′)
+    ≈⟨ *≫ ≪+ *≫ ⊞-zip-r-hom k x xs ys (ρ , Ρ) ⟩
+      ρ ^ j * (ρ * ((ρ * xs′ + x′) *⟨ ρ ⟩^ k + ys′) + y′)
+    ≈⟨ *≫ ≪+ distribˡ ρ _ _ ⟩
+      ρ ^ j * ((ρ * (ρ * xs′ + x′) *⟨ ρ ⟩^ k + ρ * ys′) + y′)
+    ≈⟨ *≫ +-assoc _ _ _ ⟩
+      ρ ^ j * (ρ * (ρ * xs′ + x′) *⟨ ρ ⟩^ k + (ρ * ys′ + y′))
+    ≈⟨ distribˡ _ _ _ ⟩
+      ρ ^ j * (ρ * (ρ * xs′ + x′) *⟨ ρ ⟩^ k) + ρ ^ j * (ρ * ys′ + y′)
     ≈⟨ sym (pow-opt _ ρ j) ⟨ flip +-cong ⟩
          (begin
-            (ρ * ((ρ * Σ⟦ xs ⟧ (ρ , Ρ) + ⟦ poly x ⟧ Ρ) *⟨ ρ ⟩^ k) * ρ ^ j)
-          ≈⟨ *-comm _ _ ⟨ trans ⟩ (sym (*-assoc _ _ _) ⟨ trans ⟩ (≪* sym (pow-sucʳ ρ j))) ⟩
+            ρ ^ j * (ρ * ((ρ * Σ⟦ xs ⟧ (ρ , Ρ) + ⟦ poly x ⟧ Ρ) *⟨ ρ ⟩^ k))
+          ≈⟨ (sym (*-assoc _ _ _) ⟨ trans ⟩ (≪* sym (pow-sucʳ ρ j))) ⟩
             ρ ^ suc j * ((ρ * Σ⟦ xs ⟧ (ρ , Ρ) + ⟦ poly x ⟧ Ρ) *⟨ ρ ⟩^ k)
           ≈⟨ pow-add _ _ k j ⟩
             (ρ * Σ⟦ xs ⟧ (ρ , Ρ) + ⟦ poly x ⟧ Ρ) *⟨ ρ ⟩^ (k ℕ.+ suc j)

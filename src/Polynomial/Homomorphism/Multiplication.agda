@@ -184,10 +184,10 @@ mutual
     begin
       Σ⟦ para (⊠-cons a y ys) xs ⍓ j ⟧ (ρ , Ρ)
     ≈⟨ sym (pow-hom j (para (⊠-cons a y ys) xs) ρ Ρ) ⟨ trans ⟩ pow-opt _ ρ j ⟩
-      Σ⟦ para (⊠-cons a y ys) xs ⟧ (ρ , Ρ) * ρ ^ j
-    ≈⟨ ≪* ⊠-cons-hom a y ys xs ρ Ρ ⟩
-      xs′ * (ρ * ys′ + y′) * ρ ^ j
-    ≈⟨ *-assoc _ _ _ ⟨ trans ⟩ (*≫ sym (pow-opt _ ρ j))⟩
+      ρ ^ j * Σ⟦ para (⊠-cons a y ys) xs ⟧ (ρ , Ρ)
+    ≈⟨ *≫ ⊠-cons-hom a y ys xs ρ Ρ ⟩
+     ρ ^ j * (xs′ * (ρ * ys′ + y′))
+    ≈⟨ sym (*-assoc _ _ _) ⟨ trans ⟩ (≪* *-comm _ _) ⟨ trans ⟩ *-assoc _ _ _ ⟨ trans ⟩ (*≫ sym (pow-opt _ ρ j))⟩
       xs′ * ((ρ * ys′ + y′) *⟨ ρ ⟩^ j)
     ∎
 

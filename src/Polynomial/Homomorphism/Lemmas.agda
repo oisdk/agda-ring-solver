@@ -57,9 +57,9 @@ pow-add x y (suc i) j = go x y i j
       y ^ suc (i ℕ.+ suc j) +1 * x
     ∎
 
-pow-opt : ∀ x ρ i → x *⟨ ρ ⟩^ i ≈ x * ρ ^ i
-pow-opt x ρ ℕ.zero = sym (*-identityʳ x)
-pow-opt x ρ (suc i) = *-comm _ _
+pow-opt : ∀ x ρ i → x *⟨ ρ ⟩^ i ≈ ρ ^ i * x
+pow-opt x ρ ℕ.zero = sym (*-identityˡ x)
+pow-opt x ρ (suc i) = refl
 
 pow-hom : ∀ {n} i
         → (xs : Coeffs n)
@@ -125,24 +125,39 @@ pow-sucʳ : ∀ x i → x ^ suc i ≈ x ^ i * x
 pow-sucʳ x ℕ.zero = sym (*-identityˡ _)
 pow-sucʳ x (suc i) = refl
 
+
+∷↓-hom-0 : ∀ {n} (x : Poly n) → ∀ xs ρ ρs → Σ⟦ x Δ 0 ∷↓ xs ⟧ (ρ , ρs) ≈ (x , xs) ⟦∷⟧ (ρ , ρs)
+∷↓-hom-0 x xs ρ ρs with zero? x
+∷↓-hom-0 x xs ρ ρs | no ¬p = refl
+∷↓-hom-0 x xs ρ ρs | yes p =
+  begin
+    Σ⟦ xs ⍓ 1 ⟧ (ρ , ρs)
+  ≈⟨ sym (pow-hom 1 xs ρ ρs) ⟩
+    ρ * Σ⟦ xs ⟧ (ρ , ρs)
+  ≈⟨ sym (+-identityʳ _) ⟨ trans ⟩ (+≫ zero-hom x p ρs) ⟩
+    ρ * Σ⟦ xs ⟧ (ρ , ρs) + ⟦ x ⟧ ρs
+  ∎
+
+∷↓-hom-s : ∀ {n} (x : Poly n) → ∀ i xs ρ ρs → Σ⟦ x Δ suc i ∷↓ xs ⟧ (ρ , ρs) ≈ (ρ ^ i +1) * (x , xs) ⟦∷⟧ (ρ , ρs)
+∷↓-hom-s x i xs ρ ρs with zero? x
+∷↓-hom-s x i xs ρ ρs | no ¬p = refl
+∷↓-hom-s x i xs ρ ρs | yes p =
+  begin
+    Σ⟦ xs ⍓ (suc (suc i)) ⟧ (ρ , ρs)
+  ≈⟨ sym (pow-hom (suc (suc i)) xs ρ ρs) ⟩
+    (ρ ^ suc i +1) * Σ⟦ xs ⟧ (ρ , ρs)
+  ≈⟨ *-assoc _ _ _ ⟩
+    (ρ ^ i +1) * (ρ * Σ⟦ xs ⟧ (ρ , ρs))
+  ≈⟨ *≫ (sym (+-identityʳ _) ⟨ trans ⟩ (+≫ zero-hom x p ρs)) ⟩
+    ρ ^ i +1 * (ρ * Σ⟦ xs ⟧ (ρ , ρs) + ⟦ x ⟧ ρs)
+  ∎
+
 ∷↓-hom : ∀ {n}
        → (x : Poly n)
        → ∀ i xs ρ ρs
-       → Σ⟦ x Δ i ∷↓ xs ⟧ (ρ , ρs) ≈ ((x , xs) ⟦∷⟧ (ρ , ρs)) * ρ ^ i
-∷↓-hom x i xs ρ ρs with zero? x
-∷↓-hom x i xs ρ ρs | no ¬p = pow-opt _ ρ i
-∷↓-hom x i xs ρ ρs | yes p =
-  begin
-    Σ⟦ xs ⍓ suc i ⟧ (ρ , ρs)
-  ≈⟨ sym (pow-hom (suc i) xs ρ ρs) ⟩
-    ρ ^ suc i * Σ⟦ xs ⟧ (ρ , ρs)
-  ≈⟨ ≪* pow-suc ρ i ⟩
-    ρ * ρ ^ i * Σ⟦ xs ⟧ (ρ , ρs)
-  ≈⟨ (*-assoc _ _ _) ⟨ trans ⟩ (*≫ *-comm _ _) ⟨ trans ⟩ sym (*-assoc _ _ _)  ⟩
-    (ρ * Σ⟦ xs ⟧ (ρ , ρs)) * ρ ^ i
-  ≈⟨ ≪* sym ((+≫ sym (zero-hom x p ρs)) ⟨ trans ⟩ +-identityʳ _) ⟩
-    (ρ * Σ⟦ xs ⟧ (ρ , ρs) + ⟦ x ⟧ ρs) * ρ ^ i
-  ∎
+       → Σ⟦ x Δ i ∷↓ xs ⟧ (ρ , ρs) ≈ ρ ^ i * ((x , xs) ⟦∷⟧ (ρ , ρs))
+∷↓-hom x ℕ.zero xs ρ ρs = ∷↓-hom-0 x xs ρ ρs ⟨ trans ⟩ sym (*-identityˡ _)
+∷↓-hom x (suc i) xs ρ ρs = ∷↓-hom-s x i xs ρ ρs
 
 Σ-Π↑-hom : ∀ {i n m}
          → (xs : Coeffs i)
@@ -223,11 +238,11 @@ poly-foldR ρ ρs f e dist step base (x ≠0 Δ suc i ∷ xs) =
   in
   begin
     Σ⟦ y Δ suc i ∷↓ zs ⟧ (ρ , ρs)
-  ≈⟨ ∷↓-hom y (suc i) zs ρ ρs ⟩
-    ((y , zs) ⟦∷⟧ (ρ , ρs)) * ρ ^ suc i
-  ≈⟨ ≪* step x xs (poly-foldR ρ ρs f e dist step base xs) ⟩
-    e ((x , xs) ⟦∷⟧ (ρ , ρs)) * (ρ ^ i +1)
-  ≈⟨ *-comm _ _ ⟨ trans ⟩ dist _ _   ⟩
+  ≈⟨ ∷↓-hom-s y i zs ρ ρs ⟩
+    (ρ ^ i +1) * ((y , zs) ⟦∷⟧ (ρ , ρs))
+  ≈⟨ *≫ step x xs (poly-foldR ρ ρs f e dist step base xs) ⟩
+    (ρ ^ i +1) * e ((x , xs) ⟦∷⟧ (ρ , ρs))
+  ≈⟨ dist _ _   ⟩
     e (ρ ^ i +1 * ((x , xs) ⟦∷⟧ (ρ , ρs)))
   ∎
 poly-foldR ρ ρs f e dist step base (x ≠0 Δ ℕ.zero ∷ xs) =
@@ -238,12 +253,10 @@ poly-foldR ρ ρs f e dist step base (x ≠0 Δ ℕ.zero ∷ xs) =
   in
   begin
     Σ⟦ y Δ ℕ.zero ∷↓ zs ⟧ (ρ , ρs)
-  ≈⟨ ∷↓-hom y ℕ.zero zs ρ ρs ⟩
-    ((y , zs) ⟦∷⟧ (ρ , ρs)) * ρ ^ ℕ.zero
-  ≈⟨ ≪* step x xs (poly-foldR ρ ρs f e dist step base xs) ⟩
-    e ((x , xs) ⟦∷⟧ (ρ , ρs)) * 1#
-  ≈⟨ *-identityʳ _ ⟩
-    e (((x , xs) ⟦∷⟧ (ρ , ρs)) )
+  ≈⟨ ∷↓-hom-0 y zs ρ ρs ⟩
+    ((y , zs) ⟦∷⟧ (ρ , ρs))
+  ≈⟨ step x xs (poly-foldR ρ ρs f e dist step base xs) ⟩
+    e ((x , xs) ⟦∷⟧ (ρ , ρs))
   ∎
 
 poly-mapR : ∀ {n} ρ ρs
