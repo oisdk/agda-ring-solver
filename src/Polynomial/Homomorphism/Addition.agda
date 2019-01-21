@@ -9,8 +9,7 @@ module Polynomial.Homomorphism.Addition
 
 open import Function
 
-open import Data.Nat as ℕ using (ℕ; suc; zero)
-open import FastCompare   using (compare)
+open import Data.Nat as ℕ using (ℕ; suc; zero; compare)
 open import Data.Product  using (_,_; _×_; proj₂)
 open import Data.List     using (_∷_; [])
 open import Data.Vec      using (Vec)

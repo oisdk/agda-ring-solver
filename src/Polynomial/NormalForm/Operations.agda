@@ -10,8 +10,7 @@ module Polynomial.NormalForm.Operations
 
 open import Polynomial.Exponentiation (RawCoeff.coeffs coeffs)
 
-open import Data.Nat as ℕ          using (ℕ; suc; zero)
-open import FastCompare            using (compare)
+open import Data.Nat as ℕ          using (ℕ; suc; zero; compare)
 open import Data.Nat.Properties    using (z≤′n)
 open import Data.List              using (_∷_; [])
 open import Data.Fin               using (Fin)

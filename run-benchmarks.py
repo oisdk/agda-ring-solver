@@ -128,7 +128,7 @@ def print_graph(degrees, sparse_results, dense_results):
         print('%-10i' % round(deg), end='')
     print()
 
-for n in range(3, 9):
+for n in range(5, 9):
     varnames = ' '.join('x' + str(i) for i in range(1, n + 1))
     for expr_fn, degrees in expressions:
         expr_ = expr_fn(n)
