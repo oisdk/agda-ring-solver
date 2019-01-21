@@ -1,3 +1,7 @@
 *.agdai
 src/Benchmarks
 src/MAlonzo/*
+bin/*
+lib/*
+include/*
+pip-selfcheck.json
