@@ -74,11 +74,18 @@ data Expr : Set c where
 module Display where
   open import PrettyPrinting.Unparser
   toStruct : Expr → ShowExpr
-  toStruct (C x) = {!lit (showBase x)!}
-  toStruct (O x) = {!!}
+  toStruct (C x) = lit (showBase x)
+  toStruct (O x) = go x
+    where
+    go : Open → ShowExpr
+    go (V v) = lit v
+    go (K k) = lit (showBase k)
+    go (x ⊕ y) = bin " + " (op 6 left) (go x) (go y)
+    go (x ⊗ y) = bin " * " (op 6 left) (go x) (go y)
+    go (⊝ x) = pre "- " (op 1 left) (go x)
 
   prettyExpr : Expr → String
-  prettyExpr = {!!}
+  prettyExpr = showExpr ∘ toStruct
 
 normalise′ : Open → Expr
 normalise′ (V v) = O (V v)
@@ -273,24 +280,24 @@ tracedRing = record
 
 open import Data.List as List using (List; _∷_; [])
 
-record Explanation : Set c where
+record Explanation {a} (A : Set a) : Set (a ⊔ c) where
   constructor _≈⟨_⟩≈_
   field
-    lhs : Expr
+    lhs : A
     step : Step
-    rhs : Expr
+    rhs : A
 open Explanation
 
-toExplanation : ∀ {x y} → x ≈ⁱ y → Explanation
+toExplanation : ∀ {x y} → x ≈ⁱ y → Explanation Expr
 toExplanation {x} {y} x≈y = x ≈⟨ why x≈y ⟩≈ y
 
-showProof′ : ∀ {x y} → EqClosure _≈ⁱ_ x y → List Explanation
+showProof′ : ∀ {x y} → EqClosure _≈ⁱ_ x y → List (Explanation Expr)
 showProof′ ε = []
 showProof′ (inj₁ x ◅ xs) = toExplanation x ∷ showProof′ xs
 showProof′ (inj₂ y ◅ xs) = toExplanation y ∷ showProof′ xs
 
 
-isReversal : Explanation → Explanation → Bool
+isReversal : Explanation Expr → Explanation Expr → Bool
 isReversal (lhs₁ ≈⟨ step₁ ⟩≈ rhs₁) (lhs₂ ≈⟨ step₂ ⟩≈ rhs₂) = lhs₁ == rhs₂ ∨ step₁ == step₂ ∨ go step₁ step₂
   where
   go : Step → Step → Bool
@@ -310,13 +317,39 @@ isReversal (lhs₁ ≈⟨ step₁ ⟩≈ rhs₁) (lhs₂ ≈⟨ step₂ ⟩≈ r
   go _ _ = false
 
 
-showProof : ∀ {x y} → EqClosure _≈ⁱ_ x y → List Explanation
-showProof = List.foldr spotReverse [] ∘ List.mapMaybe interesting′ ∘ showProof′
+prettyStep : Step → String
+prettyStep ([sym] x) = "sym (" ++ prettyStep x ++ ")"
+prettyStep ([cong] x [+] x₂) = "(" ++ prettyStep x ++ ") + (" ++ prettyStep x₂ ++ ")"
+prettyStep ([cong] x [*] x₂) = "(" ++ prettyStep x ++ ") * (" ++ prettyStep x₂ ++ ")"
+prettyStep ([-cong] x) = "- (" ++ prettyStep x ++ ")"
+prettyStep ([refl] x) = "eval"
+prettyStep ([assoc] [+] x₁ x₂ x₃) = "+-assoc(" ++ Display.prettyExpr x₁ ++ ", " ++ Display.prettyExpr x₂ ++ ", " ++ Display.prettyExpr x₂ ++ ")"
+prettyStep ([assoc] [*] x₁ x₂ x₃) = "*-assoc(" ++ Display.prettyExpr x₁ ++ ", " ++ Display.prettyExpr x₂ ++ ", " ++ Display.prettyExpr x₂ ++ ")"
+prettyStep ([ident] [+] x₁) = "+-ident(" ++ Display.prettyExpr x₁ ++ ")"
+prettyStep ([ident] [*] x₁) = "*-ident(" ++ Display.prettyExpr x₁ ++ ")"
+prettyStep ([comm] [+] x₁ x₂) = "+-comm(" ++ Display.prettyExpr x₁ ++ ", " ++ Display.prettyExpr x₂ ++ ")"
+prettyStep ([comm] [*] x₁ x₂) = "+-comm(" ++ Display.prettyExpr x₁ ++ ", " ++ Display.prettyExpr x₂ ++ ")"
+prettyStep ([zero] x) = "*-zero(" ++ Display.prettyExpr x ++ ")"
+prettyStep ([distrib] x x₁ x₂) = "*-distrib(" ++ Display.prettyExpr x ++ ", " ++ Display.prettyExpr x₁ ++ ", " ++ Display.prettyExpr x₂ ++ ")"
+prettyStep ([-distrib] x x₁) = "-distrib(" ++ Display.prettyExpr x ++ ", " ++ Display.prettyExpr x₁ ++ ")"
+prettyStep ([-+comm] x x₁) = "-+-comm(" ++ Display.prettyExpr x ++ ", " ++ Display.prettyExpr x₁ ++ ")"
+
+showProof : ∀ {x y} → EqClosure _≈ⁱ_ x y → List String
+showProof = List.foldr unparse [] ∘ List.foldr spotReverse [] ∘ List.mapMaybe interesting′ ∘ showProof′
   where
-  spotReverse : Explanation → List Explanation → List Explanation
+  unparse : Explanation Expr → List String → List String
+  unparse (lhs₁ ≈⟨ step₁ ⟩≈ rhs₁) [] = Display.prettyExpr lhs₁ ∷ ("    ={ " ++ prettyStep step₁ ++ " }") ∷ Display.prettyExpr rhs₁ ∷ []
+  unparse (lhs₁ ≈⟨ step₁ ⟩≈ rhs₁) (y ∷ ys) = if r == y then l ∷ m ∷ y ∷ ys else l ∷ m ∷ r ∷ "    ={ eval }" ∷ y ∷ ys
+    where
+    l = Display.prettyExpr lhs₁
+    m = "    ={ " ++ prettyStep step₁ ++ " }"
+    r = Display.prettyExpr rhs₁
+
+  spotReverse : Explanation Expr → List (Explanation Expr) → List (Explanation Expr)
   spotReverse x [] = x ∷ []
+
   spotReverse x (y ∷ xs) = if isReversal x y then xs else x ∷ y ∷ xs
-  interesting′ : Explanation → Maybe (Explanation)
+  interesting′ : Explanation Expr → Maybe (Explanation Expr)
   interesting′ (lhs ≈⟨ stp ⟩≈ rhs) with interesting stp
   interesting′ (lhs ≈⟨ stp ⟩≈ rhs) | just x = just (lhs ≈⟨ x ⟩≈ rhs)
   interesting′ (lhs ≈⟨ stp ⟩≈ rhs) | nothing = nothing

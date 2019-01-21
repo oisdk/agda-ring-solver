@@ -20,6 +20,7 @@ diffSide right left = true
 diffSide right right = false
 
 record Op : Set where
+  constructor op
   field
     prec : ℕ
     assoc : Side
@@ -27,6 +28,7 @@ open Op
 
 data ShowExpr : Set where
   lit : String → ShowExpr
+  pre : String → Op → ShowExpr → ShowExpr
   bin : String → Op → ShowExpr → ShowExpr → ShowExpr
 
 showExpr : ShowExpr → String
@@ -39,7 +41,9 @@ showExpr expr = fromList (go expr [])
   getOp : ShowExpr → Maybe Op
   getOp (lit x) = nothing
   getOp (bin x x₁ x₂ x₃) = just x₁
+  getOp (pre _ x _) = just x
 
   go : ShowExpr → List Char → List Char
   go (lit x) a = toList x ++ a
+  go (pre t o y) = (toList t ++_) ∘ if-prns right o (getOp y) (go y)
   go (bin t o x y) = if-prns left o (getOp x) (go x) ∘ (toList t ++_) ∘ if-prns right o (getOp y) (go y)
