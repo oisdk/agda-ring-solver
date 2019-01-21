@@ -68,10 +68,15 @@ _Π↓_ : ∀ {i n} → Coeffs i → suc i ≤′ n → Poly n
 (x    Δ suc j ∷ xs)      Π↓ i≤n = Σ (x  Δ suc j ∷ xs) Π i≤n
 {-# INLINE _Π↓_ #-}
 
-PolyF : ℕ → Set (a )
+--------------------------------------------------------------------------------
+-- These folds allow us to abstract over the proofs later: we try to avoid
+-- using ∷↓ and Π↓ directly anywhere except here, so if we prove that this fold
+-- acts the same on a normalised or non-normalised polynomial, we can prove th
+-- same about any operation which uses it.
+PolyF : ℕ → Set a
 PolyF i = Poly i × Coeffs i
 
-Fold : ℕ → Set (a )
+Fold : ℕ → Set a
 Fold i = PolyF i → PolyF i
 
 para : ∀ {i} → Fold i → Coeffs i → Coeffs i

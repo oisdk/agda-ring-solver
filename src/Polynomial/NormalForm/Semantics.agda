@@ -37,6 +37,13 @@ x *⟨ ρ ⟩^ ℕ.zero = x
 x *⟨ ρ ⟩^ suc i = ρ ^ i +1 * x
 {-# INLINE _*⟨_⟩^_ #-}
 
+--------------------------------------------------------------------------------
+-- Evaluation
+--------------------------------------------------------------------------------
+-- Why do we have three functions here? Why are they so weird looking?
+--
+-- These three functions are the main bottleneck for all of the proofs: as such,
+-- slight changes can dramatically affect the length of proof code.
 mutual
   _⟦∷⟧_ : ∀ {n} → Poly n × Coeffs n → Carrier × Vec Carrier n → Carrier
   (x , xs) ⟦∷⟧ (ρ , ρs) = ρ * Σ⟦ xs ⟧ (ρ , ρs) + ⟦ x ⟧ ρs
@@ -50,3 +57,18 @@ mutual
   ⟦ Σ xs Π i≤n ⟧ Ρ = Σ⟦ xs ⟧ (drop-1 i≤n Ρ)
 {-# INLINE ⟦_⟧ #-}
 {-# INLINE Σ⟦_⟧ #-}
+--------------------------------------------------------------------------------
+-- Performance
+--------------------------------------------------------------------------------
+-- As you might imagine, the implementation of the functions above seriously
+-- affect performance. What you might not realise, though, is that the most
+-- important component is the *order of the arguments*. For instance, if
+-- we change:
+--
+--   (x , xs) ⟦∷⟧ (ρ , ρs) = ρ * Σ⟦ xs ⟧ (ρ , ρs) + ⟦ x ⟧ ρs
+--
+-- To:
+--
+--   (x , xs) ⟦∷⟧ (ρ , ρs) = ⟦ x ⟧ ρs +  Σ⟦ xs ⟧ (ρ , ρs) * ρ
+--
+-- We get a function that's several orders of magnitude slower!

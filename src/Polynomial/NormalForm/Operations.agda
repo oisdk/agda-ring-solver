@@ -188,6 +188,8 @@ _⊠_ (x Π i≤n) = ⊠-step (<′-wellFounded _) x i≤n
 ----------------------------------------------------------------------
 -- Exponentiation
 ----------------------------------------------------------------------
+-- We try very hard to never do things like multiply by 1
+-- unnecessarily. That's what all the weirdness here is for.
 ⊡-mult : ∀ {n} → ℕ → Poly n → Poly n
 ⊡-mult zero xs = xs
 ⊡-mult (suc n) xs = ⊡-mult n xs ⊠ xs
