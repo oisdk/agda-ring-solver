@@ -75,6 +75,7 @@ import os
 import time
 import sys
 import tempfile
+import datetime
 
 
 class cd:
@@ -158,6 +159,7 @@ for n in range(3, 9):
         print_graph(degrees, sparse_results, dense_results)
         print()
         with open('benchmark-logs', 'a') as logfile:
+            logfile.write(str(datetime.now()) + '\n')
             logfile.write(expr_ + '\n')
             logfile.write('d sparse dense\n')
             for d, sp, dn in zip(degrees, sparse_results, dense_results):
