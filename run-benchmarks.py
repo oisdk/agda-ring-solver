@@ -1,6 +1,6 @@
 library_file = """
-name: agda-algebra-benchmarks
-depend: standard-library, agda-algebra
+name: agda-ring-solver-benchmarks
+depend: standard-library, agda-ring-solver
 include: src
 """
 
@@ -51,7 +51,8 @@ def expr_2(n):
 
 
 def expr_3(n):
-    return '(1 + ' + ' + '.join('x%i ^ %i' % (i , i) for i in range(1, n + 1)) + ') ^ d'
+    return '(1 + ' + ' + '.join('x%i ^ %i' % (i, i)
+                                for i in range(1, n + 1)) + ') ^ d'
 
 
 expressions = [
@@ -92,16 +93,24 @@ class cd:
 
 def time_file_typecheck(contents):
     with tempfile.TemporaryDirectory() as benchdir, cd(benchdir):
-        with open('agda-algebra-benchmarks.agda-lib', 'w') as libfile:
+        with open('agda-ring-solver-benchmarks.agda-lib', 'w') as libfile:
             libfile.write(library_file)
         os.mkdir('src')
         with open('src/Benchmarks.agda', 'w') as benchfile:
             benchfile.write('module Benchmarks where\n')
             benchfile.write(contents)
         before = time.time()
-        subprocess.run(
-            ['agda', 'src/Benchmarks.agda'], capture_output=True, check=True)
-        return time.time() - before
+        try:
+            proc = subprocess.run(
+                ['agda', 'src/Benchmarks.agda'],
+                capture_output=True,
+                text=True)
+            res = time.time() - before
+            proc.check_returncode()
+            return res
+        except subprocess.CalledProcessError as err:
+            print('\n' + proc.stdout)
+            raise err
 
 
 def print_graph(degrees, sparse_results, dense_results):
@@ -123,10 +132,11 @@ def print_graph(degrees, sparse_results, dense_results):
     max_deg = max(degrees)
     print('-' * width)
     print(' ' * 4, end='d = ')
-    for x in range(1, len(degrees)+1):
+    for x in range(1, len(degrees) + 1):
         deg = (x * max_deg) / (len(degrees))
         print('%-10i' % round(deg), end='')
     print()
+
 
 for n in range(5, 9):
     varnames = ' '.join('x' + str(i) for i in range(1, n + 1))
@@ -163,5 +173,6 @@ for n in range(5, 9):
             logfile.write(expr_ + '\n')
             logfile.write('d sparse dense\n')
             for d, sp, dn in zip(degrees, sparse_results, dense_results):
-                logfile.write(d.__repr__() + ' ' + sp.__repr__() + ' ' + dn.__repr__() + '\n')
+                logfile.write(d.__repr__() + ' ' + sp.__repr__() + ' ' +
+                              dn.__repr__() + '\n')
             logfile.write('\n\n')
