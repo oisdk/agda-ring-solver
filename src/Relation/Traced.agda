@@ -296,27 +296,6 @@ showProof′ ε = []
 showProof′ (inj₁ x ◅ xs) = toExplanation x ∷ showProof′ xs
 showProof′ (inj₂ y ◅ xs) = toExplanation y ∷ showProof′ xs
 
-
-isReversal : Explanation Expr → Explanation Expr → Bool
-isReversal (lhs₁ ≈⟨ step₁ ⟩≈ rhs₁) (lhs₂ ≈⟨ step₂ ⟩≈ rhs₂) = lhs₁ == rhs₂ ∨ step₁ == step₂ ∨ go step₁ step₂
-  where
-  go : Step → Step → Bool
-  go ([comm] op₁ x₁ y₁) ([comm] op₂ x₂ y₂) = op₁ == op₂ ∧ x₁ == y₂ ∧ y₁ == x₂
-  go ([sym] x) ([sym] y) = go x y
-  go ([sym] x) y = x == y
-  -- go ([cong] x x₁ x₂) y = {!!}
-  -- go ([-cong] x) y = {!!}
-  -- go ([refl] x) y = {!!}
-  -- go ([assoc] x x₁ x₂ x₃) y = {!!}
-  -- go ([ident] x x₁) y = {!!}
-  -- go ([zero] x) y = {!!}
-  -- go ([distrib] x x₁ x₂) y = {!!}
-  -- go ([-distrib] x x₁) y = {!!}
-  -- go ([-+comm] x x₁) y = {!!}
-  go x ([sym] y) = x == y
-  go _ _ = false
-
-
 prettyStep : Step → String
 prettyStep ([sym] x) = "sym (" ++ prettyStep x ++ ")"
 prettyStep ([cong] x [+] x₂) = "(" ++ prettyStep x ++ ") + (" ++ prettyStep x₂ ++ ")"
@@ -347,8 +326,8 @@ showProof = List.foldr unparse [] ∘ List.foldr spotReverse [] ∘ List.mapMayb
 
   spotReverse : Explanation Expr → List (Explanation Expr) → List (Explanation Expr)
   spotReverse x [] = x ∷ []
+  spotReverse x (y ∷ xs) = if lhs x == rhs y then xs else x ∷ y ∷ xs
 
-  spotReverse x (y ∷ xs) = if isReversal x y then xs else x ∷ y ∷ xs
   interesting′ : Explanation Expr → Maybe (Explanation Expr)
   interesting′ (lhs ≈⟨ stp ⟩≈ rhs) with interesting stp
   interesting′ (lhs ≈⟨ stp ⟩≈ rhs) | just x = just (lhs ≈⟨ x ⟩≈ rhs)
