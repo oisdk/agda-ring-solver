@@ -115,18 +115,13 @@ instance
   _==_ ⦃ eqExpr ⦄ (O x) (C x₁) = false
   _==_ ⦃ eqExpr ⦄ (O x) (O x₁) = x == x₁
 
--- open import Agda.Builtin.FromNat using (Number; fromNat) public
+open import Agda.Builtin.FromNat using (Number; fromNat) public
 
--- -- instance
--- --   numberNat : Number ℕ
--- --   numberNat = Data.Nat.Literals.number
--- --     where import Data.Nat.Literals
-
--- instance
---   numberVar : {{nc : Number Carrier}} → Number Expr
---   numberVar {{nc}} = record
---     { Constraint = Number.Constraint nc
---     ; fromNat = λ n → C ( (Number.fromNat nc n)) }
+instance
+  numberVar : {{nc : Number Carrier}} → Number Expr
+  numberVar {{nc}} = record
+    { Constraint = Number.Constraint nc
+    ; fromNat = λ n → C ( (Number.fromNat nc n)) }
 
 data BinOp : Set where
   [+] : BinOp
@@ -333,3 +328,16 @@ showProof = List.foldr unparse [] ∘ List.foldr spotReverse [] ∘ List.mapMayb
   interesting′ (lhs ≈⟨ stp ⟩≈ rhs) | just x = just (lhs ≈⟨ x ⟩≈ rhs)
   interesting′ (lhs ≈⟨ stp ⟩≈ rhs) | nothing = nothing
 
+open import Agda.Builtin.FromString using (IsString; fromString) public
+import Data.String.Literals
+open import Data.Unit using (⊤)
+open import Level using (Lift)
+
+instance
+  stringString : IsString String
+  stringString = Data.String.Literals.isString
+
+instance
+  exprString : IsString Expr
+  exprString = record
+    { Constraint = λ _ → Lift _ ⊤ ; fromString = λ s → O (V s) }

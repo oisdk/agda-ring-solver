@@ -3,8 +3,8 @@
 open import Polynomial.Parameters
 
 module Polynomial.Solver
-  {r₁ r₂ r₃ r₄}
-  (homo : Homomorphism r₁ r₂ r₃ r₄)
+  {r₁ r₂ r₃}
+  (homo : Homomorphism r₁ r₂ r₃)
   where
 
 open import Data.Vec as Vec using (Vec)

@@ -30,21 +30,23 @@ module IntExamples where
   lemma : ∀ x y → x + y * 1 + 3 ≈ 3 + 1 + y + x + - 1
   lemma = solve Int.ring
 
-import Data.Nat.Show
+module TracedExamples where
+  import Data.Nat.Show
+  open import Data.List using (_∷_; [])
+  open import Agda.Builtin.Nat using (_==_)
+  open import Relation.Traced Nat.ring _==_ Data.Nat.Show.show public
+  open AlmostCommutativeRing tracedRing
+  open import Relation.Binary.PropositionalEquality as ≡ using (_≡_)
 
-open import Data.List as List using (List; _∷_; [])
-open import Agda.Builtin.Nat using (_==_)
-open import Relation.Traced Nat.ring _==_ Data.Nat.Show.show public
-open AlmostCommutativeRing tracedRing
-open import Data.String using (String; unlines)
+  lemma : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x
+  lemma = solve tracedRing
 
 
-lemma : ∀ x y → (x + y) ^ 2 ≈ x ^ 2 + C 2 * x * y + y ^ 2
-lemma = solve tracedRing
-
-explained : List String
-explained = showProof (lemma (O (V "x")) (O (V "y")))
-
-{-# DISPLAY V v = v #-}
-{-# DISPLAY K x = x #-}
-{-# DISPLAY O x = x #-}
+  explained
+    : showProof (lemma "x" "y") ≡ "x + (y + 3)"
+                                ∷ "    ={ +-comm(x, y + 3) }"
+                                ∷ "y + 3 + x"
+                                ∷ "    ={ +-comm(y, 3) }"
+                                ∷ "3 + y + x"
+                                ∷ []
+  explained = ≡.refl
