@@ -36,8 +36,8 @@ zero? : ∀ {n} → (p : Poly n) → Dec (Zero p)
 zero? (Σ []      Π _) = yes tt
 zero? (Σ (_ ∷ _) Π _) = no (λ z → z)
 zero? (Κ x       Π _) with Zero-C x
-zero? (Κ x       Π _) | true = yes tt
-zero? (Κ x       Π _) | false = no (λ z → z)
+... | true = yes tt
+... | false = no (λ z → z)
 {-# INLINE zero? #-}
 
 -- Exponentiate the first variable of a polynomial

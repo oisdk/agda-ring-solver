@@ -1,29 +1,31 @@
 module Examples where
+
+open import Agda.Builtin.FromNat
 open import Data.Nat using (ℕ)
+open import Data.Integer using (ℤ)
 
-module New where
-  open import Polynomial.Simple.AlmostCommutativeRing
-  open import Polynomial.Simple.Reflection
-  open import Data.Nat using (ℕ; suc; zero)
-  open import Data.Nat.Properties
-  open import Level using (0ℓ)
-  open import Data.Maybe
-  open import Relation.Binary.PropositionalEquality using (refl)
+instance
+  numberNat : Number ℕ
+  numberNat = Data.Nat.Literals.number
+    where import Data.Nat.Literals
 
-  NatRing : AlmostCommutativeRing 0ℓ 0ℓ
-  NatRing = fromCommutativeSemiring *-+-commutativeSemiring λ { zero → just refl ; (suc x) → nothing}
+instance
+  numberInt : Number ℤ
+  numberInt = Data.Integer.Literals.number
+    where import Data.Integer.Literals
 
-  open AlmostCommutativeRing NatRing
+open import Polynomial.Simple.AlmostCommutativeRing
+open import Polynomial.Simple.AlmostCommutativeRing.Instances
+open import Polynomial.Simple.Reflection
 
-  lemma₁ : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x
-  lemma₁ = solve NatRing
+module NatExamples where
+  open AlmostCommutativeRing Nat.ring
 
+  lemma : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x
+  lemma = solve Nat.ring
 
--- module Old where
---   open import Relation.Binary.PropositionalEquality
---   open import Data.Nat
---   open import Data.Nat.Solver using (module +-*-Solver)
---   open +-*-Solver
+module IntExamples where
+  open AlmostCommutativeRing Int.ring
 
---   lemma : _
---   lemma = solve 5 (λ v w x y z → (con 1 :+ v :^ 1 :+ w :^ 2 :+ x :^ 3 :+ y :^ 4 :+ z :^ 5) :^ d := (con 1 :+ v :^ 1 :+ w :^ 2 :+ x :^ 3 :+ y :^ 4 :+ z :^ 5) :^ d) refl
+  lemma : ∀ x y → x + y * 1 + 3 ≈ 3 + 1 + y + x + - 1
+  lemma = solve Int.ring
