@@ -35,7 +35,7 @@ open import Agda.Builtin.Nat using (_==_)
 open import Relation.Traced Nat.ring _==_ public
 open AlmostCommutativeRing tracedRing
 
-lemma : ∀ x y → x + y * C 1 + C 3 ≈ C 2 + C 1 + y + x
+lemma : ∀ x y → (x + y) ^ 2 ≈ x ^ 2 + C 2 * x * y + y ^ 2
 lemma = solve tracedRing
 
 explained : List Explanation

@@ -1,11 +1,13 @@
 open import Polynomial.Simple.AlmostCommutativeRing
 open import Relation.Binary
 open import Data.Bool using (Bool; false; true ; _∧_; _∨_; not; if_then_else_)
+open import Data.String using (String)
 
 module Relation.Traced
   {c ℓ}
   (base : AlmostCommutativeRing c ℓ)
   (eqBase : AlmostCommutativeRing.Carrier base → AlmostCommutativeRing.Carrier base → Bool)
+  (showBase : AlmostCommutativeRing.Carrier base → String)
   where
 
 open import Data.Sum
@@ -68,6 +70,15 @@ data Expr : Set c where
   O : Open → Expr
 {-# DISPLAY C x = x #-}
 {-# DISPLAY O x = x #-}
+
+module Display where
+  open import PrettyPrinting.Unparser
+  toStruct : Expr → ShowExpr
+  toStruct (C x) = {!lit (showBase x)!}
+  toStruct (O x) = {!!}
+
+  prettyExpr : Expr → String
+  prettyExpr = {!!}
 
 normalise′ : Open → Expr
 normalise′ (V v) = O (V v)
@@ -182,13 +193,15 @@ interesting ([cong] x x₁ x₂) | just res₁ | just res₂ = just ([cong] res�
 interesting ([cong] x x₁ x₂) | just res₁ | nothing  = just res₁
 interesting ([cong] x x₁ x₂) | nothing | just res₂ = just res₂
 interesting ([cong] x x₁ x₂) | nothing | nothing  = nothing
-interesting s@([comm] o (C x) (C y)) = nothing
-interesting s@([comm] [+] (C x) x₂) = if x == 0# then nothing else just s
-interesting s@([comm] [+] (O x) (C x₁)) = if x₁ == 0# then nothing else just s
-interesting s@([comm] [+] (O x) (O x₁)) = just s
-interesting s@([comm] [*] (C x) x₂) = if (x == 0# ∨ x == 1#) then nothing else just s
-interesting s@([comm] [*] (O x) (C x₁)) = if (x₁ == 0# ∨ x₁ == 1#) then nothing else just s
-interesting s@([comm] [*] (O x) (O x₁)) = just s
+interesting s@([comm] _ x y) with x == y
+interesting s@([comm] _ x y) | true = nothing
+interesting s@([comm] o (C x) (C y))    | false = nothing
+interesting s@([comm] [+] (C x) x₂)     | false = if x == 0# then nothing else just s
+interesting s@([comm] [+] (O x) (C x₁)) | false = if x₁ == 0# then nothing else just s
+interesting s@([comm] [+] (O x) (O x₁)) | false = just s
+interesting s@([comm] [*] (C x) x₂)     | false = if (x == 0# ∨ x == 1#) then nothing else just s
+interesting s@([comm] [*] (O x) (C x₁)) | false = if (x₁ == 0# ∨ x₁ == 1#) then nothing else just s
+interesting s@([comm] [*] (O x) (O x₁)) | false = just s
 interesting s@([distrib] (C _) (C _) (C _)) = nothing
 interesting s@([distrib] (C x) x₁ x₂) = if (x == 0# ∨ x == 1#) then nothing else just s
 interesting s@([distrib] x x₁ x₂) = just s
@@ -276,14 +289,33 @@ showProof′ ε = []
 showProof′ (inj₁ x ◅ xs) = toExplanation x ∷ showProof′ xs
 showProof′ (inj₂ y ◅ xs) = toExplanation y ∷ showProof′ xs
 
+
+isReversal : Explanation → Explanation → Bool
+isReversal (lhs₁ ≈⟨ step₁ ⟩≈ rhs₁) (lhs₂ ≈⟨ step₂ ⟩≈ rhs₂) = lhs₁ == rhs₂ ∨ step₁ == step₂ ∨ go step₁ step₂
+  where
+  go : Step → Step → Bool
+  go ([comm] op₁ x₁ y₁) ([comm] op₂ x₂ y₂) = op₁ == op₂ ∧ x₁ == y₂ ∧ y₁ == x₂
+  go ([sym] x) ([sym] y) = go x y
+  go ([sym] x) y = x == y
+  -- go ([cong] x x₁ x₂) y = {!!}
+  -- go ([-cong] x) y = {!!}
+  -- go ([refl] x) y = {!!}
+  -- go ([assoc] x x₁ x₂ x₃) y = {!!}
+  -- go ([ident] x x₁) y = {!!}
+  -- go ([zero] x) y = {!!}
+  -- go ([distrib] x x₁ x₂) y = {!!}
+  -- go ([-distrib] x x₁) y = {!!}
+  -- go ([-+comm] x x₁) y = {!!}
+  go x ([sym] y) = x == y
+  go _ _ = false
+
+
 showProof : ∀ {x y} → EqClosure _≈ⁱ_ x y → List Explanation
-showProof = List.foldr spotReverse [] ∘ List.mapMaybe interesting′ ∘ List.foldr spotReverse [] ∘ showProof′
+showProof = List.foldr spotReverse [] ∘ List.mapMaybe interesting′ ∘ showProof′
   where
   spotReverse : Explanation → List Explanation → List Explanation
   spotReverse x [] = x ∷ []
-  spotReverse x (y ∷ xs) with step x | step y
-  spotReverse x (y ∷ xs) | ([comm] op₁ l₁ r₁) | ([comm] op₂ l₂ r₂) = if op₁ == op₂ ∧ l₁ == r₂ ∧ r₁ == l₂ then xs else x ∷ y ∷ xs
-  spotReverse x (y ∷ xs) | res₁ | res₂ = if res₁ == res₂ then xs else x ∷ y ∷ xs
+  spotReverse x (y ∷ xs) = if isReversal x y then xs else x ∷ y ∷ xs
   interesting′ : Explanation → Maybe (Explanation)
   interesting′ (lhs ≈⟨ stp ⟩≈ rhs) with interesting stp
   interesting′ (lhs ≈⟨ stp ⟩≈ rhs) | just x = just (lhs ≈⟨ x ⟩≈ rhs)
