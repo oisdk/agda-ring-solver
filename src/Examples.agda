@@ -30,14 +30,17 @@ module IntExamples where
   lemma : ∀ x y → x + y * 1 + 3 ≈ 3 + 1 + y + x + - 1
   lemma = solve Int.ring
 
-module TracedExamples where
-  open import Data.List as List using (List)
-  open import Agda.Builtin.Nat using (_==_)
-  open import Relation.Traced Nat.ring _==_ public
-  open AlmostCommutativeRing tracedRing
+open import Data.List as List using (List; _∷_; [])
+open import Agda.Builtin.Nat using (_==_)
+open import Relation.Traced Nat.ring _==_ public
+open AlmostCommutativeRing tracedRing
 
-  lemma : ∀ x y → x + y * K 1 + K 3 ≈ K 2 + K 1 + y + x
-  lemma = solve tracedRing
+lemma : ∀ x y → x + y * C 1 + C 3 ≈ C 2 + C 1 + y + x
+lemma = solve tracedRing
 
-  explained : List Step
-  explained = showProof (lemma (V "x") (V "y"))
+explained : List Explanation
+explained = showProof (lemma (O (V "x")) (O (V "y")))
+
+{-# DISPLAY V v = v #-}
+{-# DISPLAY K x = x #-}
+{-# DISPLAY O x = x #-}
