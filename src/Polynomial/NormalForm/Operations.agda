@@ -72,10 +72,10 @@ mutual
         → Coeffs k
         → [Coeffs] k
   ⊞-inj i≤k xs (y Π j≤k ≠0 Δ zero & ys) = ⊞-match (inj-compare j≤k i≤k) y xs Δ zero ∷↓ ys
-  ⊞-inj i≤k xs (y Δ suc j & ys) = xs Π i≤k Δ zero ∷↓ y Δ j ∷ ys
+  ⊞-inj i≤k xs (y Δ suc j & ys) = xs Π i≤k Δ zero ∷↓ [ y Δ j & ys ]
 
   ⊞-coeffs : ∀ {n} → [Coeffs] n → [Coeffs] n → [Coeffs] n
-  ⊞-coeffs (x Δ i ∷ xs) ys = ⊞-zip-r x i xs ys
+  ⊞-coeffs [ x Δ i & xs ] ys = ⊞-zip-r x i xs ys
   ⊞-coeffs [] ys = ys
 
   ⊞-zip : ∀ {p q n}
@@ -85,13 +85,13 @@ mutual
         → NonZero n
         → [Coeffs] n
         → [Coeffs] n
-  ⊞-zip (ℕ.less    i k) x xs y ys = x Δ i ∷ ⊞-zip-r y k ys xs
-  ⊞-zip (ℕ.greater j k) x xs y ys = y Δ j ∷ ⊞-zip-r x k xs ys
+  ⊞-zip (ℕ.less    i k) x xs y ys = [ x Δ i & ⊞-zip-r y k ys xs ]
+  ⊞-zip (ℕ.greater j k) x xs y ys = [ y Δ j & ⊞-zip-r x k xs ys ]
   ⊞-zip (ℕ.equal   i  ) x xs y ys = (x .poly ⊞ y .poly) Δ i ∷↓ ⊞-coeffs xs ys
 
   ⊞-zip-r : ∀ {n} → NonZero n → ℕ → [Coeffs] n → [Coeffs] n → [Coeffs] n
-  ⊞-zip-r x i xs [] = x Δ i ∷ xs
-  ⊞-zip-r x i xs (y Δ j ∷ ys) = ⊞-zip (compare i j) x xs y ys
+  ⊞-zip-r x i xs [] = [ x Δ i & xs ]
+  ⊞-zip-r x i xs [ y Δ j & ys ] = ⊞-zip (compare i j) x xs y ys
 {-# INLINE ⊞-zip #-}
 
 ----------------------------------------------------------------------
@@ -103,7 +103,7 @@ mutual
 
 ⊟-step : ∀ {n} → Acc _<′_ n → Poly n → Poly n
 ⊟-step (acc wf) (Κ x  Π i≤n) = Κ (- x) Π i≤n
-⊟-step (acc wf) (Σ (x & xs) Π i≤n) = poly-map (⊟-step (wf _ i≤n)) (x ∷ xs) Π↓ i≤n
+⊟-step (acc wf) (Σ xs Π i≤n) = poly-map (⊟-step (wf _ i≤n)) xs Π↓ i≤n
 
 ⊟_ : ∀ {n} → Poly n → Poly n
 ⊟_ = ⊟-step (<′-wellFounded _)
@@ -126,7 +126,7 @@ mutual
   ⊠-Σ (acc wf) xs i≤n (Κ y Π _) = ⊠-Κ-inj (wf _ i≤n) y xs Π↓ i≤n
 
   ⊠-Κ-inj : ∀ {i}  → Acc _<′_ i → Carrier → Coeffs i → [Coeffs] i
-  ⊠-Κ-inj a x xs = poly-map (⊠-Κ a x) (toList xs)
+  ⊠-Κ-inj a x xs = poly-map (⊠-Κ a x) (xs)
 
   ⊠-Σ-inj : ∀ {i k}
           → Acc _<′_ k
@@ -146,18 +146,19 @@ mutual
           → Coeffs j
           → Poly n
   ⊠-match (acc wf) (inj-eq i&j≤n)     xs ys = ⊠-coeffs (wf _ i&j≤n) xs ys               Π↓ i&j≤n
-  ⊠-match (acc wf) (inj-lt i≤j-1 j≤n) xs ys = poly-map (⊠-Σ-inj (wf _ j≤n) i≤j-1 xs) (toList ys) Π↓ j≤n
-  ⊠-match (acc wf) (inj-gt i≤n j≤i-1) xs ys = poly-map (⊠-Σ-inj (wf _ i≤n) j≤i-1 ys) (toList xs) Π↓ i≤n
+  ⊠-match (acc wf) (inj-lt i≤j-1 j≤n) xs ys = poly-map (⊠-Σ-inj (wf _ j≤n) i≤j-1 xs) (ys) Π↓ j≤n
+  ⊠-match (acc wf) (inj-gt i≤n j≤i-1) xs ys = poly-map (⊠-Σ-inj (wf _ i≤n) j≤i-1 ys) (xs) Π↓ i≤n
 
   ⊠-coeffs : ∀ {n} → Acc _<′_ n → Coeffs n → Coeffs n → [Coeffs] n
-  ⊠-coeffs a (x & xs) (y ≠0 Δ j & ys) = para (⊠-cons a y ys) (x ∷ xs) ⍓ j
+  ⊠-coeffs a (xs) (y ≠0 Δ j & ys) = para (⊠-cons a y ys) (xs) ⍓ j
 
   ⊠-cons : ∀ {n}
           → Acc _<′_ n
           → Poly n
           → [Coeffs] n
           → Fold n
-  ⊠-cons a y ys (x Π j≤n , xs) =
+  ⊠-cons a y [] (x Π j≤n , xs) = ⊠-step a x j≤n y , xs
+  ⊠-cons a y [ ys ] (x Π j≤n , xs) =
     ⊠-step a x j≤n y , ⊞-coeffs (poly-map (⊠-step a x j≤n) ys) xs
 {-# INLINE ⊠-Κ #-}
 {-# INLINE ⊠-coeffs #-}
@@ -194,7 +195,7 @@ _⊠_ (x Π i≤n) = ⊠-step (<′-wellFounded _) x i≤n
 _⊡_+1 : ∀ {n} → Poly n → ℕ → Poly n
 (Κ x  Π i≤n) ⊡ i +1  = Κ (x ^ i +1) Π i≤n
 (Σ (x Δ j & []) Π i≤n) ⊡ i +1  = x .poly ⊡ i +1 Δ (j ℕ.+ i ℕ.* j) ∷↓ [] Π↓ i≤n
-xs@(Σ (_ & _ ∷ _) Π i≤n) ⊡ i +1  = ⊡-mult i xs
+xs@(Σ (_ & [ _ ]) Π i≤n) ⊡ i +1  = ⊡-mult i xs
 
 infixr 8 _⊡_
 _⊡_ : ∀ {n} → Poly n → ℕ → Poly n

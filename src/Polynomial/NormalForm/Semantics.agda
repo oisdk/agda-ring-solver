@@ -47,7 +47,7 @@ x *⟨ ρ ⟩^ suc i = ρ ^ i +1 * x
 mutual
   _⟦∷⟧_ : ∀ {n} → Poly n × [Coeffs] n → Carrier × Vec Carrier n → Carrier
   (x , []) ⟦∷⟧ (ρ , ρs) = ⟦ x ⟧ ρs
-  (x , (x₂ ∷ xs)) ⟦∷⟧ (ρ , ρs) = ρ * Σ⟦ x₂ & xs ⟧ (ρ , ρs) + ⟦ x ⟧ ρs
+  (x , [ xs ]) ⟦∷⟧ (ρ , ρs) = ρ * Σ⟦ xs ⟧ (ρ , ρs) + ⟦ x ⟧ ρs
 
   Σ⟦_⟧ : ∀ {n} → Coeffs n → (Carrier × Vec Carrier n) → Carrier
   Σ⟦ x ≠0 Δ i & xs ⟧ (ρ , ρs) = ((x , xs) ⟦∷⟧ (ρ , ρs)) *⟨ ρ ⟩^ i
