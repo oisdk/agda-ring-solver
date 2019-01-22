@@ -38,6 +38,27 @@ module README where
 -- As is the paper:
 --     https://github.com/oisdk/agda-algebra-report
 --
+--------------------------------------------------------------------------------
+-- There are 3 main contributions in this library:                            --
+--                                                                            --
+--   * A solver for polynomials over "almost commutative rings".              --
+--         Agda already has one these in the standard library, but this one   --
+--         is much more efficient. "Almost commutative rings" encapsulates a  --
+--         bunch of things, including ℕ.                                      --
+--                                                                            --
+--   * A reflection-based interface.                                          --
+--         Not many people used the old solver, mainly (I think) because the  --
+--         interface was difficult and irritating. This library provides a    --
+--         super-simple interface using reflection.                           --
+--                                                                            --
+--   * An implementation of "step-by-step solutions".                         --
+--         I don't know a huge amount about computer algebra systems, but I   --
+--         have used Wolfram Alpha countless times (especially when I was in  --
+--         school) to help with basic maths. I was able to get this solver to --
+--         produce step-by-step solutions, and learned something about the    --
+--         theory behind them along the way.                                  --
+--------------------------------------------------------------------------------
+--
 -- ███████╗██╗   ██╗██╗     ██╗          ██████╗ ██████╗ ██████╗ ███████╗
 -- ██╔════╝██║   ██║██║     ██║         ██╔════╝██╔═══██╗██╔══██╗██╔════╝
 -- █████╗  ██║   ██║██║     ██║         ██║     ██║   ██║██║  ██║█████╗   ███████████████████████████╗
@@ -61,21 +82,21 @@ module README where
 --                                                                                       ██║  ██║  ██║
 --------------------------------------------------------------------------------         ██║  ██║  ██║
 -- You can ignore this bit! We're just overloading the literals Agda uses for --         ██║  ██║  ██║
--- numbers This bit isn't necessary if you're just using ℕ, or if you         --         ██║  ██║  ██║
+-- numbers This bit isn't necessary if you're just using Nats, or if you      --         ██║  ██║  ██║
 -- construct your type directly. We only really do it here so that we can use --         ██║  ██║  ██║
 -- different numeric types in the same file.                                  --         ██║  ██║  ██║
                                                                               --         ██║  ██║  ██║
 open import Agda.Builtin.FromNat                                              --         ██║  ██║  ██║
-open import Data.Nat as ℕ using (ℕ)                                           --         ██║  ██║  ██║
-open import Data.Integer as ℤ using (ℤ)                                       --         ██║  ██║  ██║
+open import Agda.Builtin.Nat using (Nat)                                      --         ██║  ██║  ██║
+open import Agda.Builtin.Int using (Int)                                      --         ██║  ██║  ██║
                                                                               --         ██║  ██║  ██║
 instance                                                                      --         ██║  ██║  ██║
-  numberNat : Number ℕ                                                        --         ██║  ██║  ██║
+  numberNat : Number Nat                                                      --         ██║  ██║  ██║
   numberNat = Data.Nat.Literals.number                                        --         ██║  ██║  ██║
     where import Data.Nat.Literals                                            --         ██║  ██║  ██║
                                                                               --         ██║  ██║  ██║
 instance                                                                      --         ██║  ██║  ██║
-  numberInt : Number ℤ                                                        --         ██║  ██║  ██║
+  numberInt : Number Int                                                      --         ██║  ██║  ██║
   numberInt = Data.Integer.Literals.number                                    --         ██║  ██║  ██║
     where import Data.Integer.Literals                                        --         ██║  ██║  ██║
                                                                               --         ██║  ██║  ██║
@@ -125,12 +146,65 @@ module IntExamples where                                                      --
 --------------------------------------------------------------------------------         ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║
 module NatExamples where                                                      --         ██║  ██║  ██║
-  open AlmostCommutativeRing Nat.ring                                         --         ██║  ██║  ██║
-  -- The solver is flexible enoough to work with ℕ (even though it asks for   --     ██╗ ██║  ██║  ██║
-  -- rings!)                                                                  --   ████║ ██║  ██║  ██║
-  lemma : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x                               -- ██████████║  ██║  ██║
-  lemma = solve Nat.ring                                                      --   ████╔═██║  ██║  ██║
-                                                                              --     ██║ ██║  ██║  ██║
+  open AlmostCommutativeRing Nat.ring                                         --     ██╗ ██║  ██║  ██║
+  -- The solver is flexible enough to work with ℕ (even though it asks for    --   ████║ ██║  ██║  ██║
+  -- rings!)                                                                  -- ██████████║  ██║  ██║
+  lemma : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x                               --   ████╔═██║  ██║  ██║
+  lemma = solve Nat.ring                                                      --     ██║ ██║  ██║  ██║
+                                                                              --     ╚═╝ ██║  ██║  ██║
+--------------------------------------------------------------------------------         ██║  ██║  ██║
+--                                                                            --         ██║  ██║  ██║
+--             8888888 8888888888 8 8888        8 8 8888888888                --         ██║  ██║  ██║
+--                   8 8888       8 8888        8 8 8888                      --         ██║  ██║  ██║
+--                   8 8888       8 8888        8 8 8888                      --         ██║  ██║  ██║
+--                   8 8888       8 8888        8 8 8888                      --         ██║  ██║  ██║
+--                   8 8888       8 8888        8 8 888888888888              --         ██║  ██║  ██║
+--                   8 8888       8 8888        8 8 8888                      --         ██║  ██║  ██║
+--                   8 8888       8 8888888888888 8 8888                      --         ██║  ██║  ██║
+--                   8 8888       8 8888        8 8 8888                      --         ██║  ██║  ██║
+--                   8 8888       8 8888        8 8 8888                      --         ██║  ██║  ██║
+--                   8 8888       8 8888        8 8 888888888888              --         ██║  ██║  ██║
+--                                                                            --         ██║  ██║  ██║
+--                 ,o888888o.     8 8888         8 888888888o.                --         ██║  ██║  ██║
+--              . 8888     `88.   8 8888         8 8888    `^888.             --         ██║  ██║  ██║
+--             ,8 8888       `8b  8 8888         8 8888        `88.           --         ██║  ██║  ██║
+--             88 8888        `8b 8 8888         8 8888         `88           --         ██║  ██║  ██║
+--             88 8888         88 8 8888         8 8888          88           --         ██║  ██║  ██║
+--             88 8888         88 8 8888         8 8888          88           --         ██║  ██║  ██║
+--             88 8888        ,8P 8 8888         8 8888         ,88           --         ██║  ██║  ██║
+--             `8 8888       ,8P  8 8888         8 8888        ,88'           --         ██║  ██║  ██║
+--              ` 8888     ,88'   8 8888         8 8888    ,o88P'             --         ██║  ██║  ██║
+--                 `8888888P'     8 888888888888 8 888888888P'                --         ██║  ██║  ██║
+--                                                                            --         ██║  ██║  ██║
+--             `8.`888b                 ,8' .8.   `8.`8888.      ,8'          --         ██║  ██║  ██║
+--              `8.`888b               ,8' .888.   `8.`8888.    ,8'           --         ██║  ██║  ██║
+--               `8.`888b             ,8' :88888.   `8.`8888.  ,8'            --         ██║  ██║  ██║
+--                `8.`888b     .b    ,8' . `88888.   `8.`8888.,8'             --         ██║  ██║  ██║
+--                 `8.`888b    88b  ,8' .8. `88888.   `8.`88888'              --         ██║  ██║  ██║
+--                  `8.`888b .`888b,8' .8`8. `88888.   `8. 8888               --         ██║  ██║  ██║
+--                   `8.`888b8.`8888' .8' `8. `88888.   `8 8888               --         ██║  ██║  ██║
+--                    `8.`888`8.`88' .8'   `8. `88888.   8 8888               --         ██║  ██║  ██║
+--                     `8.`8' `8,`' .888888888. `88888.  8 8888               --         ██║  ██║  ██║
+--                      `8.`   `8' .8'       `8. `88888. 8 8888               --         ██║  ██║  ██║
+--                                                                            --         ██║  ██║  ██║
+--------------------------------------------------------------------------------         ██║  ██║  ██║
+-- Previously, you had to construct the expression you wanted to solve twice: --         ██║  ██║  ██║
+-- once in the type signature, and again using the special solver syntax.     --         ██║  ██║  ██║
+--                                                                            --         ██║  ██║  ██║
+-- This is difficult to learn, and error-prone: if I change an x + y          --         ██║  ██║  ██║
+-- somewhere to a y + x, I *also* have to change the proofs now! The          --         ██║  ██║  ██║
+-- reflection-based solver will automatically construct the new proof.        --         ██║  ██║  ██║
+--                                                                            --         ██║  ██║  ██║
+module OldSolver where                                                        --         ██║  ██║  ██║
+  open import Relation.Binary.PropositionalEquality                           --         ██║  ██║  ██║
+  open import Data.Nat                                                        --         ██║  ██║  ██║
+  open import Data.Nat.Solver using (module +-*-Solver)                       --         ██║  ██║  ██║
+  open +-*-Solver                                                             --         ██║  ██║  ██║
+                                                                              --     ██╗ ██║  ██║  ██║
+  lemma : ∀ x y → x + y * 1 + 3 ≡ 2 + 1 + y + x                               --   ████║ ██║  ██║  ██║
+  lemma = +-*-Solver.solve 2                                                  -- ██████████║  ██║  ██║
+    (λ x y → x :+ y :* con 1 :+ con 3 := con 2 :+ con 1 :+ y :+ x) refl       --   ████╔═██║  ██║  ██║
+--                                                                            --     ██║ ██║  ██║  ██║
 --------------------------------------------------------------------------------     ╚═╝ ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║
 --          d888888o.   8888888 8888888888 8 8888888888   8 888888888o        --         ██║  ██║  ██║
@@ -192,8 +266,16 @@ module TracedExamples where                                                   --
   explained = ≡.refl                                                          --              ██║  ██║
 --------------------------------------------------------------------------------              ██║  ██║
 --                                                                            --              ██║  ██║
--- 510 |    (1 + x₁¹ + x₂² + x₃³ + x₄⁴ + x₅⁵)ᵈ                                --              ██║  ██║
--- 495 |                                                                *     --              ██║  ██║
+-- The new solver uses a sparse representation, which is much faster than the --              ██║  ██║
+-- dense one the old solver used. The following graph shows the time (in      --              ██║  ██║
+-- seconds) to prove that:                                                    --              ██║  ██║
+--                                                                            --              ██║  ██║
+--     (1 + x₁¹ + x₂² + x₃³ + x₄⁴ + x₅⁵)ᵈ                                     --              ██║  ██║
+--                                                                            --              ██║  ██║
+-- is equal to its expanded form.                                             --              ██║  ██║
+--                                                                            --              ██║  ██║
+-- 510 |  * = old                                                             --              ██║  ██║
+-- 495 |  + = new                                                       *     --              ██║  ██║
 -- 480 |                                                                *     --              ██║  ██║
 -- 465 |                                                               *      --              ██║  ██║
 -- 450 |                                                               *      --              ██║  ██║
@@ -237,19 +319,42 @@ module TracedExamples where                                                   --
 --                               ██████╔═╝
 --                                 ██╔═╝
 --                                 ╚═╝
--- The solver uses an internal representation of Horner Normal Form:
--- information on it is available in:
+--
+-- * How does it work? Why is it fast?
+--       The solver works by converting expressions to "Horner Normal Form".
+--       This representation is special: x + y is represented in the same way
+--       as y + x. This is what lets us check that two expressions are equal.
+--       The implementation here is *sparse*, also, which is why it's faster
+--       than the old implementation.
+--
+--       Want to learn more? Then this is the place for you:
 import Polynomial.NormalForm
-
--- The homomorphism proofs are in:
+--
+-- * Prove it!
+--       The type of proofs we need are *homomorphisms*. They basically mean
+--       that the operations on the normal form correspond to the operations
+--       on expressions. Also, we don't use propositional equality: we use
+--       any equivalence relation the user supplies.
+--
+--       Don't believe me? Check it out:
 import Polynomial.Homomorphism
-
--- The "full" solver (which allows for different types of coefficients
--- and carriers) is available in
+--
+-- * How do I use it?
+--       Copy the examples above! For the full solver, check out:
 import Polynomial.Solver
-
--- However, the more commonly-used solver is in:
+--
+-- * Wait! Don't!
+--       The "full" solver lets you use different types for the coefficient
+--       and carrier. You probably don't want that, unless you need the extra
+--       efficiency. You'll want the *simple* solver:
 import Polynomial.Simple.Solver
-
--- The implementation of the reflection machinery is in:
+--
+-- * Is that all?
+--       No! As it happens, even the simple solver is complicated to use.
+--       You'll *actually* want to use the reflection-based interface:
 import Polynomial.Simple.Reflection
+--
+-- * And what about the step-by-step stuff?
+--       That all uses the same underlying solver as the other stuff, with a
+--       special *relation*. You can check that out here:
+import Relation.Traced
