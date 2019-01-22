@@ -56,9 +56,9 @@ def expr_3(n):
 
 
 expressions = [
+    (expr_3, list(range(1, 9))),
     (expr_1, list(range(1, 9))),
     (expr_2, [1, 100, 200, 300, 400, 500]),
-    (expr_3, list(range(1, 9))),
 ]
 
 import sympy

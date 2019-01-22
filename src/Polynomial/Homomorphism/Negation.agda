@@ -37,7 +37,7 @@ open import Polynomial.NormalForm homo
   begin
     ⟦ poly-map (⊟-step (wf _ i≤n)) xs Π↓ i≤n ⟧ ρ′
   ≈⟨ Π↓-hom (poly-map (⊟-step (wf _ i≤n)) xs) i≤n ρ′ ⟩
-    Σ⟦ poly-map (⊟-step  (wf _ i≤n)) xs ⟧ (ρ , ρs)
+    Σ?⟦ poly-map (⊟-step  (wf _ i≤n)) xs ⟧ (ρ , ρs)
   ≈⟨ poly-mapR ρ ρs (⊟-step (wf _ i≤n)) -_ (λ x y → *-comm x (- y) ⟨ trans ⟩ -‿*-distribˡ y x ⟨ trans ⟩ -‿cong (*-comm _ _)) (λ x y → sym (-‿+-comm x y)) (flip (⊟-step-hom (wf _ i≤n)) ρs) (sym neg-zero ) xs ⟩
     - Σ⟦ xs ⟧ (ρ , ρs)
   ∎
