@@ -40,16 +40,22 @@ zero? (Κ x Π _) with Zero-C x
 {-# INLINE zero? #-}
 
 -- Exponentiate the first variable of a polynomial
-infixr 8 _⍓_
+infixr 8 _⍓_ _[⍓]_
 _⍓_ : ∀ {n} → [Coeffs] n → ℕ → [Coeffs] n
+_[⍓]_ : ∀ {n} → Coeffs n → ℕ → Coeffs n
+
 [] ⍓ _ = []
-(x Δ j ∷ xs) ⍓ i = x Δ (j ℕ.+ i) ∷ xs
+[ xs ] ⍓ i = [ xs [⍓] i ]
+
+coeff (head (xs [⍓] i)) = coeff (head xs)
+pow (head (xs [⍓] i)) = pow (head xs) ℕ.+ i
+tail (xs [⍓] i) = tail xs
 
 infixr 5 _∷↓_
 _∷↓_ : ∀ {n} → PowInd (Poly n) → [Coeffs] n → [Coeffs] n
 x Δ i ∷↓ xs = case zero? x of
   λ { (yes p) → xs ⍓ suc i
-    ; (no ¬p) → _≠0 x {¬p} Δ i ∷ xs
+    ; (no ¬p) → [ _≠0 x {¬p} Δ i & xs ]
     }
 {-# INLINE _∷↓_ #-}
 
@@ -58,13 +64,12 @@ _Π↑_ : ∀ {n m} → Poly n → (suc n ≤′ m) → Poly m
 (xs Π i≤n) Π↑ n≤m = xs Π (≤′-step i≤n ⟨ ≤′-trans ⟩ n≤m)
 {-# INLINE _Π↑_ #-}
 
--- NormalForm.sing Π
 infixr 4 _Π↓_
 _Π↓_ : ∀ {i n} → [Coeffs] i → suc i ≤′ n → Poly n
 []                       Π↓ i≤n = Κ 0# Π z≤′n
-(x ≠0 Δ zero  ∷ [])      Π↓ i≤n = x Π↑ i≤n
-(x₁   Δ zero  ∷ x₂ ∷ xs) Π↓ i≤n = Σ (x₁ Δ zero  & x₂ ∷ xs) Π i≤n
-(x    Δ suc j ∷ xs)      Π↓ i≤n = Σ (x  Δ suc j & xs) Π i≤n
+[ x ≠0 Δ zero  & [] ]      Π↓ i≤n = x Π↑ i≤n
+[ x    Δ zero  & [ xs ] ] Π↓ i≤n = Σ (x Δ zero  & [ xs ]) Π i≤n
+[ x    Δ suc j & xs ]      Π↓ i≤n = Σ (x  Δ suc j & xs) Π i≤n
 {-# INLINE _Π↓_ #-}
 
 --------------------------------------------------------------------------------
@@ -78,10 +83,10 @@ PolyF i = Poly i × [Coeffs] i
 Fold : ℕ → Set a
 Fold i = PolyF i → PolyF i
 
-para : ∀ {i} → Fold i → [Coeffs] i → [Coeffs] i
-para f = foldr (λ { (x ≠0 Δ i) xs → case (f (x , xs)) of λ { (y , ys) → (y Δ i) ∷↓ ys }}) []
-{-# INLINE para #-}
+para : ∀ {i} → Fold i → Coeffs i → [Coeffs] i
+para f (x ≠0 Δ i & []) = case f (x , []) of λ { (y , ys) → y Δ i ∷↓ ys }
+para f (x ≠0 Δ i & [ xs ]) = case f (x , para f xs) of λ { (y , ys) → y Δ i ∷↓ ys }
 
-poly-map : ∀ {i} → (Poly i → Poly i) → [Coeffs] i → [Coeffs] i
+poly-map : ∀ {i} → (Poly i → Poly i) → Coeffs i → [Coeffs] i
 poly-map f = para (λ { (x , y) → (f x , y)})
 {-# INLINE poly-map #-}
