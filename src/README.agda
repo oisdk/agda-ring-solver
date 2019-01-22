@@ -31,6 +31,13 @@ module README where
 --     step-by-step solutions.
 --
 -- Which is (at time of writing) a work-in-progress.
+--
+-- This code is available on github:
+--     https://github.com/oisdk/agda-ring-solver
+--
+-- As is the paper:
+--     https://github.com/oisdk/agda-algebra-report
+
 
 -- To jump straight into some examples, look in:
 import Examples
