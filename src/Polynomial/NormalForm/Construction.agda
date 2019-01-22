@@ -41,14 +41,15 @@ zero? (Κ x Π _) with Zero-C x
 
 -- Exponentiate the first variable of a polynomial
 infixr 8 _⍓_
-_⍓_ : ∀ {n} → Coeffs n → ℕ → Coeffs n
-(x Δ j & xs) ⍓ i = x Δ (j ℕ.+ i) & xs
+_⍓_ : ∀ {n} → [Coeffs] n → ℕ → [Coeffs] n
+[] ⍓ _ = []
+(x Δ j ∷ xs) ⍓ i = x Δ (j ℕ.+ i) ∷ xs
 
 infixr 5 _∷↓_
-_∷↓_ : ∀ {n} → PowInd (Poly n) → Coeffs n → Coeffs n
+_∷↓_ : ∀ {n} → PowInd (Poly n) → [Coeffs] n → [Coeffs] n
 x Δ i ∷↓ xs = case zero? x of
   λ { (yes p) → xs ⍓ suc i
-    ; (no ¬p) → _≠0 x {¬p} Δ i & head xs ∷ tail xs
+    ; (no ¬p) → _≠0 x {¬p} Δ i ∷ xs
     }
 {-# INLINE _∷↓_ #-}
 
@@ -77,12 +78,10 @@ PolyF i = Poly i × [Coeffs] i
 Fold : ℕ → Set a
 Fold i = PolyF i → PolyF i
 
--- para : ∀ {i} → Fold i → Coeffs i → [Coeffs] i
--- para f (x & []) = case f (x , []) of { λ (y , ys) → (y Δ i) ∷↓ 
--- para f (x & x₂ ∷ xs) = {!!}
--- -- para f = foldr (λ { (x ≠0 Δ i) xs → case (f (x , xs)) of λ { (y , ys) → (y Δ i) ∷↓ ys }}) []
--- {-# INLINE para #-}
+para : ∀ {i} → Fold i → [Coeffs] i → [Coeffs] i
+para f = foldr (λ { (x ≠0 Δ i) xs → case (f (x , xs)) of λ { (y , ys) → (y Δ i) ∷↓ ys }}) []
+{-# INLINE para #-}
 
--- poly-map : ∀ {i} → (Poly i → Poly i) → Coeffs i → Coeffs i
--- poly-map f = para (λ { (x , y) → (f x , y)})
--- {-# INLINE poly-map #-}
+poly-map : ∀ {i} → (Poly i → Poly i) → [Coeffs] i → [Coeffs] i
+poly-map f = para (λ { (x , y) → (f x , y)})
+{-# INLINE poly-map #-}
