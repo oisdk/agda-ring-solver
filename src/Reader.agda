@@ -1,6 +1,6 @@
 module Reader where
 
--- The reader monad (mainly used for nice syntax with idiom brackets)
+-- The reader monad (mainly used for nice syntax with idiom brackets).
 
 open import Level
 
