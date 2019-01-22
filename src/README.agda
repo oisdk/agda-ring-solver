@@ -36,7 +36,7 @@ module README where
 --     https://github.com/oisdk/agda-ring-solver
 --
 -- As is the paper:
---     https://github.com/oisdk/agda-algebra-report
+--     https://github.com/oisdk/agda-ring-solver-report
 --
 --------------------------------------------------------------------------------
 -- There are 3 main contributions in this library:                            --
