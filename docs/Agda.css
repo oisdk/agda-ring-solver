@@ -31,4 +31,4 @@
 /* Standard attributes. */
 a { text-decoration: none }
 a[href]:hover { background-color: #B4EEB4 }
-pre { font-family: "Courier New", Courier, monospace; }
+pre { font-family: "Courier New", Courier, monospace; font-size: 8pt; }
