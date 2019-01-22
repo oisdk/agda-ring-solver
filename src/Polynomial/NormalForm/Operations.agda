@@ -113,6 +113,9 @@ mutual
 -- Multiplication
 ----------------------------------------------------------------------
 mutual
+  ⊠-step′ : ∀ {n} → Acc _<′_ n → Poly n → Poly n → Poly n
+  ⊠-step′ a (x Π i≤n) = ⊠-step a x i≤n
+
   ⊠-step : ∀ {i n} → Acc _<′_ n → FlatPoly i → i ≤′ n → Poly n → Poly n
   ⊠-step a (Κ x) _ = ⊠-Κ a x
   ⊠-step a (Σ xs)  = ⊠-Σ a xs
@@ -150,15 +153,16 @@ mutual
   ⊠-match (acc wf) (inj-gt i≤n j≤i-1) xs ys = poly-map (⊠-Σ-inj (wf _ i≤n) j≤i-1 ys) (xs) Π↓ i≤n
 
   ⊠-coeffs : ∀ {n} → Acc _<′_ n → Coeffs n → Coeffs n → [Coeffs] n
-  ⊠-coeffs a (xs) (y ≠0 Δ j & ys) = para (⊠-cons a y ys) (xs) ⍓ j
+  ⊠-coeffs a (xs) (y ≠0 Δ j & []) = poly-map (⊠-step′ a y) (xs) ⍓ j
+  ⊠-coeffs a (xs) (y ≠0 Δ j & [ ys ]) = para (⊠-cons a y ys) (xs) ⍓ j
 
   ⊠-cons : ∀ {n}
           → Acc _<′_ n
           → Poly n
-          → [Coeffs] n
+          → Coeffs n
           → Fold n
-  ⊠-cons a y [] (x Π j≤n , xs) = ⊠-step a x j≤n y , xs
-  ⊠-cons a y [ ys ] (x Π j≤n , xs) =
+  -- ⊠-cons a y [] (x Π j≤n , xs) = ⊠-step a x j≤n y , xs
+  ⊠-cons a y ys (x Π j≤n , xs) =
     ⊠-step a x j≤n y , ⊞-coeffs (poly-map (⊠-step a x j≤n) ys) xs
 {-# INLINE ⊠-Κ #-}
 {-# INLINE ⊠-coeffs #-}
@@ -166,7 +170,7 @@ mutual
 
 infixl 7 _⊠_
 _⊠_ : ∀ {n} → Poly n → Poly n → Poly n
-_⊠_ (x Π i≤n) = ⊠-step (<′-wellFounded _) x i≤n
+_⊠_ = ⊠-step′ (<′-wellFounded _)
 {-# INLINE _⊠_ #-}
 
 ----------------------------------------------------------------------
