@@ -88,12 +88,12 @@ open import Polynomial.Simple.Reflection                                      --
 --                                                                            --         ██║
 module IntExamples where                                                      --         ██║
   open AlmostCommutativeRing Int.ring                                         --         ██║
-  -- Everything is automatic: you just ask Agda to solve it and it does!      --     ██  ██║
-  lemma₁ : ∀ x y → x + y * 1 + 3 ≈ 3 + 1 + y + x + - 1                        --   ███   ██║
+  -- Everything is automatic: you just ask Agda to solve it and it does!      --     ██╗ ██║
+  lemma₁ : ∀ x y → x + y * 1 + 3 ≈ 3 + 1 + y + x + - 1                        --   ████║ ██║
   lemma₁ = solve Int.ring                                                     -- ██████████║
-                                                                              --   ███   ██║
-  lemma₂ : ∀ x y → (x + y) ^ 2 ≈ x ^ 2 + 2 * x * y + y ^ 2                    --     ██  ██║
-  lemma₂ = solve Int.ring                                                     --         ██║
+                                                                              --   ████╔═██║
+  lemma₂ : ∀ x y → (x + y) ^ 2 ≈ x ^ 2 + 2 * x * y + y ^ 2                    --     ██║ ██║
+  lemma₂ = solve Int.ring                                                     --     ╚═╝ ██║
 --                                                                            --         ██║
 --------------------------------------------------------------------------------         ██║
 --                                                                            --         ██║
@@ -112,12 +112,109 @@ module IntExamples where                                                      --
 --                                                                            --         ██║
 module NatExamples where                                                      --         ██║
   open AlmostCommutativeRing Nat.ring                                         --         ██║
-  -- The solver is flexible enoough to work with ℕ (even though it asks for   --     ██  ██║
-  -- rings!)                                                                  --   ███   ██║
+  -- The solver is flexible enoough to work with ℕ (even though it asks for   --     ██╗ ██║
+  -- rings!)                                                                  --   ████║ ██║
   lemma : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x                               -- ██████████║
-  lemma = solve Nat.ring                                                      --   ███   ██║
-                                                                              --     ██  ██║
-                                                                              --
+  lemma = solve Nat.ring                                                      --   ████╔═██║
+                                                                              --     ██║ ██║
+--------------------------------------------------------------------------------     ╚═╝ ██║
+--                                                                            --         ██║
+--          d888888o.   8888888 8888888888 8 8888888888   8 888888888o        --         ██║
+--        .`8888:' `88.       8 8888       8 8888         8 8888    `88.      --         ██║
+--        8.`8888.   Y8       8 8888       8 8888         8 8888     `88      --         ██║
+--        `8.`8888.           8 8888       8 8888         8 8888     ,88      --         ██║
+--         `8.`8888.          8 8888       8 888888888888 8 8888.   ,88'      --         ██║
+--          `8.`8888.         8 8888       8 8888         8 888888888P'       --         ██║
+--           `8.`8888.        8 8888       8 8888         8 8888              --         ██║
+--       8b   `8.`8888.       8 8888       8 8888         8 8888              --         ██║
+--       `8b.  ;8.`8888       8 8888       8 8888         8 8888              --         ██║
+--        `Y8888P ,88P'       8 8888       8 888888888888 8 8888              --         ██║
+--                                                                            --         ██║
+--                      8 888888888o   `8.`8888.      ,8'                     --         ██║
+--                      8 8888    `88.  `8.`8888.    ,8'                      --         ██║
+--                      8 8888     `88   `8.`8888.  ,8'                       --         ██║
+--                      8 8888     ,88    `8.`8888.,8'                        --         ██║
+--                      8 8888.   ,88'     `8.`88888'                         --         ██║
+--                      8 8888888888        `8. 8888                          --         ██║
+--                      8 8888    `88.       `8 8888                          --         ██║
+--                      8 8888      88        8 8888                          --         ██║
+--                      8 8888    ,88'        8 8888                          --         ██║
+--                      8 888888888P          8 8888                          --         ██║
+--                                                                            --         ██║
+--          d888888o.   8888888 8888888888 8 8888888888   8 888888888o        --         ██║
+--        .`8888:' `88.       8 8888       8 8888         8 8888    `88.      --         ██║
+--        8.`8888.   Y8       8 8888       8 8888         8 8888     `88      --         ██║
+--        `8.`8888.           8 8888       8 8888         8 8888     ,88      --         ██║
+--         `8.`8888.          8 8888       8 888888888888 8 8888.   ,88'      --         ██║
+--          `8.`8888.         8 8888       8 8888         8 888888888P'       --         ██║
+--           `8.`8888.        8 8888       8 8888         8 8888              --         ██║
+--       8b   `8.`8888.       8 8888       8 8888         8 8888              --         ██║
+--       `8b.  ;8.`8888       8 8888       8 8888         8 8888              --         ██║
+--        `Y8888P ,88P'       8 8888       8 888888888888 8 8888              --         ██║
+--                                                                            --         ██║
+--------------------------------------------------------------------------------         ██║
+-- Don't understand why something works? Wanna get it explained to you? Now   --         ██║
+-- you can! The solver can generate step-by-step, human-readable solutions    --         ██║
+-- for learning purposes.                                                     --         ██║
+--                                                                            --         ██║
+module TracedExamples where                                                   --         ██║
+  import Data.Nat.Show                                                        --         ██║
+  open import Data.List using (_∷_; [])                                       --         ██║
+  open import Agda.Builtin.Nat using (_==_)                                   --         ██║
+  open import Relation.Traced Nat.ring _==_ Data.Nat.Show.show public         --         ██║
+  open AlmostCommutativeRing tracedRing                                       --         ██║
+  open import Relation.Binary.PropositionalEquality as ≡ using (_≡_)          --         ██║
+                                                                              --         ██║
+  lemma : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x                               --         ██║
+  lemma = solve tracedRing                                                    --         ██║
+                                                                              --      ██╗██║
+  explained                                                                   --    ████║██║
+    : showProof (lemma "x" "y") ≡ "x + (y + 3)"                               --  █████████║
+                                ∷ "    ={ +-comm(x, y + 3) }"                 --    ████╔══╝
+                                ∷ "y + 3 + x"                                 --      ██║
+                                ∷ "    ={ +-comm(y, 3) }"                     --      ╚═╝
+                                ∷ "3 + y + x"                                 --
+                                ∷ []                                          --
+  explained = ≡.refl                                                          --
+--------------------------------------------------------------------------------
+-- 510 |                                                                        
+-- 495 |                                                                       *
+-- 480 |                                                                        
+-- 465 |                                                                        
+-- 450 |                                                                        
+-- 435 |                                                                        
+-- 420 |                                                                        
+-- 405 |                                                                        
+-- 390 |                                                                        
+-- 375 |                                                                        
+-- 360 |                                                                        
+-- 345 |                                                                        
+-- 330 |                                                                        
+-- 315 |                                                                        
+-- 300 |                                                                        
+-- 285 |                                                                        
+-- 270 |                                                                        
+-- 255 |                                                                        
+-- 240 |                                                                        
+-- 225 |                                                                        
+-- 210 |                                                                        
+-- 195 |                                                                        
+-- 180 |                                                                        
+-- 165 |                                                                        
+-- 150 |                                                                        
+-- 135 |                                                                        
+-- 120 |                                                                        
+-- 105 |                                                             *          
+--  90 |                                                                        
+--  75 |                                                                        
+--  60 |                                                                       +
+--  45 |                                                                        
+--  30 |                                                                        
+--  15 |                                                   *         +          
+--   0 | *         *         *         *         *         +                    
+--     --------------------------------------------------------------------------
+--       1         2         3         4         5         6         7         8
+
 -- -- The solver uses an internal representation of Horner Normal Form:
 -- -- information on it is available in:
 -- import Polynomial.NormalForm

@@ -50,7 +50,6 @@ module IntExamples where
   lemma₃ : ∀ x y → n * (y + x) ≈ 4 * x + 4 * y
   lemma₃ = solve Int.ring
 
-
 --------------------------------------------------------------------------------
 -- The solver also works with ℕ, even though it asks for rings!
 module NatExamples where
