@@ -147,8 +147,8 @@ module IntExamples where                                                      --
 --                                                                            --         ██║  ██║  ██║
 module NatExamples where                                                      --         ██║  ██║  ██║
   open AlmostCommutativeRing Nat.ring                                         --     ██╗ ██║  ██║  ██║
-  -- The solver is flexible enough to work with ℕ (even though it asks for    --   ████║ ██║  ██║  ██║
-  -- rings!)                                                                  -- ██████████║  ██║  ██║
+  -- The solver is flexible enough to work with Nats (even though it asks     --   ████║ ██║  ██║  ██║
+  -- for rings!)                                                              -- ██████████║  ██║  ██║
   lemma : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x                               --   ████╔═██║  ██║  ██║
   lemma = solve Nat.ring                                                      --     ██║ ██║  ██║  ██║
                                                                               --     ╚═╝ ██║  ██║  ██║
