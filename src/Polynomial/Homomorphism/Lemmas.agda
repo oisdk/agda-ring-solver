@@ -14,7 +14,7 @@ open import Data.Vec as Vec                            using (Vec; _∷_)
 open import Level                                      using (lift)
 open import Data.Fin                                   using (Fin)
 open import Relation.Binary.PropositionalEquality as ≡ using (_≡_)
-open import Data.Product                               using (_,_; proj₁; proj₂; map₁)
+open import Data.Product                               using (_,_; proj₁; proj₂; map₁; _×_)
 open import Data.Empty                                 using (⊥-elim)
 open import Data.Maybe                                 using (nothing; just)
 open import Data.Bool using (Bool;true;false)
@@ -64,16 +64,19 @@ pow-opt x ρ (suc i) = refl
 pow-hom : ∀ {n} i
         → (xs : Coeffs n)
         → ∀ ρ ρs
-        → Σ⟦ xs ⟧ (ρ , ρs) *⟨ ρ ⟩^ i ≈ Σ⟦ xs ⍓ i ⟧ (ρ , ρs)
-pow-hom ℕ.zero [] ρ ρs = refl
-pow-hom ℕ.zero (x Δ j ∷ xs) ρ ρs rewrite ℕ-Prop.+-identityʳ j = refl
-pow-hom (suc i) [] ρ ρs = zeroʳ _
-pow-hom (suc i) (x ≠0 Δ j ∷ xs) ρ ρs =
+        → Σ⟦ xs ⟧ (ρ , ρs) *⟨ ρ ⟩^ i ≈ Σ⟦ xs [⍓] i ⟧ (ρ , ρs)
+pow-hom ℕ.zero (x Δ j & xs) ρ ρs rewrite ℕ-Prop.+-identityʳ j = refl
+pow-hom (suc i) (x ≠0 Δ j & xs) ρ ρs =
   begin
     ρ ^ i +1 * (((x , xs) ⟦∷⟧ (ρ , ρs)) *⟨ ρ ⟩^ j)
   ≈⟨ pow-add _ ρ j i ⟩
     (((x , xs) ⟦∷⟧ (ρ , ρs)) *⟨ ρ ⟩^ (j ℕ.+ suc i))
   ∎
+
+
+pow-mul-cong : ∀ {x y} → x ≈ y → ∀ ρ i → x *⟨ ρ ⟩^ i ≈ y *⟨ ρ ⟩^ i
+pow-mul-cong x≈y ρ ℕ.zero = x≈y
+pow-mul-cong x≈y ρ (suc i₁) = *≫ x≈y
 
 pow-distrib-+1 : ∀ x y i → (x * y) ^ i +1 ≈ x ^ i +1 * y ^ i +1
 pow-distrib-+1 x y ℕ.zero = refl
@@ -113,8 +116,7 @@ pow-cong ℕ.zero x≈y = refl
 pow-cong (suc i) x≈y = pow-cong-+1 i x≈y
 
 zero-hom : ∀ {n} (p : Poly n) → Zero p → (ρs : Vec Carrier n) → 0# ≈ ⟦ p ⟧ ρs
-zero-hom (Σ (_ ∷ _) Π i≤n) ()
-zero-hom (Σ [] {()} Π i≤n) p≡0 ρs
+zero-hom (Σ _ Π _) ()
 zero-hom (Κ x  Π i≤n) p≡0 ρs = Zero-C⟶Zero-R x p≡0
 
 pow-suc : ∀ x i → x ^ suc i ≈ x * x ^ i
@@ -125,25 +127,38 @@ pow-sucʳ : ∀ x i → x ^ suc i ≈ x ^ i * x
 pow-sucʳ x ℕ.zero = sym (*-identityˡ _)
 pow-sucʳ x (suc i) = refl
 
+Σ?⟦_⟧ : ∀ {n} (xs : [Coeffs] n) → Carrier × Vec Carrier n → Carrier
+Σ?⟦ [] ⟧ _ = 0#
+Σ?⟦ [ x ] ⟧ = Σ⟦ x ⟧
 
-∷↓-hom-0 : ∀ {n} (x : Poly n) → ∀ xs ρ ρs → Σ⟦ x Δ 0 ∷↓ xs ⟧ (ρ , ρs) ≈ (x , xs) ⟦∷⟧ (ρ , ρs)
+Σ?-hom : ∀ {n} (xs : Coeffs n) → ∀ ρ → Σ?⟦ [ xs ] ⟧ ρ ≈ Σ⟦ xs ⟧ ρ
+Σ?-hom _ _ = refl
+
+pow′-hom : ∀ {n} i (xs : [Coeffs] n) → ∀ ρ ρs → ((Σ?⟦ xs ⟧ (ρ , ρs)) *⟨ ρ ⟩^ i) ≈ (Σ?⟦ xs ⍓ i ⟧ (ρ , ρs))
+pow′-hom i [ xs ] ρ ρs = pow-hom i xs ρ ρs
+pow′-hom zero [] ρ ρs = refl
+pow′-hom (suc i) [] ρ ρs = zeroʳ _
+
+∷↓-hom-0 : ∀ {n} (x : Poly n) → ∀ xs ρ ρs → Σ?⟦ x Δ 0 ∷↓ xs ⟧ (ρ , ρs) ≈ (x , xs) ⟦∷⟧ (ρ , ρs)
 ∷↓-hom-0 x xs ρ ρs with zero? x
 ∷↓-hom-0 x xs ρ ρs | no ¬p = refl
-∷↓-hom-0 x xs ρ ρs | yes p =
+∷↓-hom-0 x [] ρ ρs | yes p = zero-hom x p ρs
+∷↓-hom-0 x [ xs ] ρ ρs | yes p =
   begin
-    Σ⟦ xs ⍓ 1 ⟧ (ρ , ρs)
+    Σ⟦ xs [⍓] 1 ⟧ (ρ , ρs)
   ≈⟨ sym (pow-hom 1 xs ρ ρs) ⟩
     ρ * Σ⟦ xs ⟧ (ρ , ρs)
   ≈⟨ sym (+-identityʳ _) ⟨ trans ⟩ (+≫ zero-hom x p ρs) ⟩
     ρ * Σ⟦ xs ⟧ (ρ , ρs) + ⟦ x ⟧ ρs
   ∎
 
-∷↓-hom-s : ∀ {n} (x : Poly n) → ∀ i xs ρ ρs → Σ⟦ x Δ suc i ∷↓ xs ⟧ (ρ , ρs) ≈ (ρ ^ i +1) * (x , xs) ⟦∷⟧ (ρ , ρs)
+∷↓-hom-s : ∀ {n} (x : Poly n) → ∀ i xs ρ ρs → Σ?⟦ x Δ suc i ∷↓ xs ⟧ (ρ , ρs) ≈ (ρ ^ i +1) * (x , xs) ⟦∷⟧ (ρ , ρs)
 ∷↓-hom-s x i xs ρ ρs with zero? x
 ∷↓-hom-s x i xs ρ ρs | no ¬p = refl
-∷↓-hom-s x i xs ρ ρs | yes p =
+∷↓-hom-s x i [] ρ ρs | yes p = sym ((*≫ sym (zero-hom x p ρs)) ⟨ trans ⟩ zeroʳ _)
+∷↓-hom-s x i [ xs ] ρ ρs | yes p =
   begin
-    Σ⟦ xs ⍓ (suc (suc i)) ⟧ (ρ , ρs)
+    Σ⟦ xs [⍓] (suc (suc i)) ⟧ (ρ , ρs)
   ≈⟨ sym (pow-hom (suc (suc i)) xs ρ ρs) ⟩
     (ρ ^ suc i +1) * Σ⟦ xs ⟧ (ρ , ρs)
   ≈⟨ *-assoc _ _ _ ⟩
@@ -155,9 +170,16 @@ pow-sucʳ x (suc i) = refl
 ∷↓-hom : ∀ {n}
        → (x : Poly n)
        → ∀ i xs ρ ρs
-       → Σ⟦ x Δ i ∷↓ xs ⟧ (ρ , ρs) ≈ ρ ^ i * ((x , xs) ⟦∷⟧ (ρ , ρs))
+       → Σ?⟦ x Δ i ∷↓ xs ⟧ (ρ , ρs) ≈ ρ ^ i * ((x , xs) ⟦∷⟧ (ρ , ρs))
 ∷↓-hom x ℕ.zero xs ρ ρs = ∷↓-hom-0 x xs ρ ρs ⟨ trans ⟩ sym (*-identityˡ _)
 ∷↓-hom x (suc i) xs ρ ρs = ∷↓-hom-s x i xs ρ ρs
+
+⟦∷⟧-hom : ∀ {n}
+       → (x : Poly n)
+       → (xs : [Coeffs] n)
+       → ∀ ρ ρs → (x , xs) ⟦∷⟧ (ρ , ρs) ≈ ρ * Σ?⟦ xs ⟧ (ρ , ρs) + ⟦ x ⟧ ρs
+⟦∷⟧-hom x [] ρ ρs = sym ((≪+ zeroʳ _) ⟨ trans ⟩ +-identityˡ _)
+⟦∷⟧-hom x [ xs ] ρ ρs = refl
 
 Σ-Π↑-hom : ∀ {i n m}
          → (xs : Coeffs i)
@@ -196,22 +218,20 @@ trans-join-hom i≤j-1 j≤n (Κ x) _ = refl
 trans-join-hom i≤j-1 j≤n (Σ x) = trans-join-coeffs-hom i≤j-1 j≤n x
 
 Π↓-hom : ∀ {n m}
-       → (xs : Coeffs n)
+       → (xs : [Coeffs] n)
        → (sn≤m : suc n ≤′ m)
        → ∀ ρ
-       → ⟦ xs Π↓ sn≤m ⟧ ρ ≈ Σ⟦ xs ⟧ (drop-1 sn≤m ρ)
+       → ⟦ xs Π↓ sn≤m ⟧ ρ ≈ Σ?⟦ xs ⟧ (drop-1 sn≤m ρ)
 Π↓-hom []                       sn≤m _ = 0-homo
-Π↓-hom (x₁   Δ zero  ∷ x₂ ∷ xs) sn≤m _ = refl
-Π↓-hom (x    Δ suc j ∷ xs)      sn≤m _ = refl
-Π↓-hom (_≠0 x {x≠0} Δ zero  ∷ []) sn≤m ρs =
+Π↓-hom [ x₁   Δ zero  & [ xs ] ] sn≤m _ = refl
+Π↓-hom [ x    Δ suc j & xs ]      sn≤m _ = refl
+Π↓-hom [ _≠0 x {x≠0} Δ zero  & [] ] sn≤m ρs =
   let (ρ , ρs′) = drop-1 sn≤m ρs
   in
   begin
     ⟦ x Π↑ sn≤m ⟧ ρs
   ≈⟨ Π↑-hom x sn≤m ρs ⟩
     ⟦ x ⟧ ρs′
-  ≈⟨ sym ((≪+ zeroʳ ρ) ⟨ trans ⟩ +-identityˡ _) ⟩
-    ρ * 0# + ⟦ x ⟧ ρs′
   ∎
 
 drop-1⇒lookup : ∀ {n}
@@ -225,38 +245,63 @@ poly-foldR : ∀ {n} ρ ρs
         → ([f] : Fold n)
         → (f : Carrier → Carrier)
         → (∀ x y → x * f y ≈ f (x * y))
-        → (∀ y {ys} zs → Σ⟦ ys ⟧ (ρ , ρs) ≈ f (Σ⟦ zs ⟧ (ρ , ρs)) → [f] (y , ys) ⟦∷⟧ (ρ , ρs) ≈ f ((y , zs) ⟦∷⟧ (ρ , ρs)) )
+        → (∀ y {ys} zs → Σ?⟦ ys ⟧ (ρ , ρs) ≈ f (Σ?⟦ zs ⟧ (ρ , ρs)) → [f] (y , ys) ⟦∷⟧ (ρ , ρs) ≈ f ((y , zs) ⟦∷⟧ (ρ , ρs)) )
         → (f 0# ≈ 0#)
         → ∀ xs
-        → Σ⟦ para [f] xs ⟧ (ρ , ρs) ≈ f (Σ⟦ xs ⟧ (ρ , ρs))
-poly-foldR ρ ρs f e dist step base [] = sym base
-poly-foldR ρ ρs f e dist step base (x ≠0 Δ suc i ∷ xs) =
+        → Σ?⟦ para [f] xs ⟧ (ρ , ρs) ≈ f (Σ⟦ xs ⟧ (ρ , ρs))
+poly-foldR ρ ρs f e dist step base (x ≠0 Δ suc i & []) =
+  let y,ys = f (x , [])
+      y = proj₁ y,ys
+      ys = proj₂ y,ys
+  in
+  begin
+    Σ?⟦ y Δ suc i ∷↓ ys ⟧ (ρ , ρs)
+  ≈⟨ ∷↓-hom-s y i ys ρ ρs ⟩
+    (ρ ^ i +1) * ((y , ys) ⟦∷⟧ (ρ , ρs))
+  ≈⟨ *≫ step x [] (sym base) ⟩
+    (ρ ^ i +1) * e ((x , []) ⟦∷⟧ (ρ , ρs))
+  ≈⟨ dist _ _   ⟩
+    e (ρ ^ i +1 * ((x , []) ⟦∷⟧ (ρ , ρs)))
+  ∎
+poly-foldR ρ ρs f e dist step base (x ≠0 Δ suc i & [ xs ]) =
   let ys = para f xs
       y,zs = f (x , ys)
       y = proj₁ y,zs
       zs = proj₂ y,zs
   in
   begin
-    Σ⟦ y Δ suc i ∷↓ zs ⟧ (ρ , ρs)
+    Σ?⟦ y Δ suc i ∷↓ zs ⟧ (ρ , ρs)
   ≈⟨ ∷↓-hom-s y i zs ρ ρs ⟩
     (ρ ^ i +1) * ((y , zs) ⟦∷⟧ (ρ , ρs))
-  ≈⟨ *≫ step x xs (poly-foldR ρ ρs f e dist step base xs) ⟩
-    (ρ ^ i +1) * e ((x , xs) ⟦∷⟧ (ρ , ρs))
+  ≈⟨ *≫ step x [ xs ] (poly-foldR ρ ρs f e dist step base xs) ⟩
+    (ρ ^ i +1) * e ((x , [ xs ]) ⟦∷⟧ (ρ , ρs))
   ≈⟨ dist _ _   ⟩
-    e (ρ ^ i +1 * ((x , xs) ⟦∷⟧ (ρ , ρs)))
+    e (ρ ^ i +1 * ((x , [ xs ]) ⟦∷⟧ (ρ , ρs)))
   ∎
-poly-foldR ρ ρs f e dist step base (x ≠0 Δ ℕ.zero ∷ xs) =
+poly-foldR ρ ρs f e dist step base (x ≠0 Δ ℕ.zero & []) =
+  let y,zs = f (x , [])
+      y = proj₁ y,zs
+      zs = proj₂ y,zs
+  in
+  begin
+    Σ?⟦ y Δ ℕ.zero ∷↓ zs ⟧ (ρ , ρs)
+  ≈⟨ ∷↓-hom-0 y zs ρ ρs ⟩
+    ((y , zs) ⟦∷⟧ (ρ , ρs))
+  ≈⟨ step x [] (sym base) ⟩
+    e ((x , []) ⟦∷⟧ (ρ , ρs))
+  ∎
+poly-foldR ρ ρs f e dist step base (x ≠0 Δ ℕ.zero & [ xs ]) =
   let ys = para f xs
       y,zs = f (x , ys)
       y = proj₁ y,zs
       zs = proj₂ y,zs
   in
   begin
-    Σ⟦ y Δ ℕ.zero ∷↓ zs ⟧ (ρ , ρs)
+    Σ?⟦ y Δ ℕ.zero ∷↓ zs ⟧ (ρ , ρs)
   ≈⟨ ∷↓-hom-0 y zs ρ ρs ⟩
     ((y , zs) ⟦∷⟧ (ρ , ρs))
-  ≈⟨ step x xs (poly-foldR ρ ρs f e dist step base xs) ⟩
-    e ((x , xs) ⟦∷⟧ (ρ , ρs))
+  ≈⟨ step x [ xs ] (poly-foldR ρ ρs f e dist step base xs) ⟩
+    e ((x , [ xs ]) ⟦∷⟧ (ρ , ρs))
   ∎
 
 poly-mapR : ∀ {n} ρ ρs
@@ -267,17 +312,46 @@ poly-mapR : ∀ {n} ρ ρs
           → (∀ y → ⟦ [f] y ⟧ ρs ≈ f (⟦ y ⟧ ρs) )
           → (f 0# ≈ 0#)
           → ∀ xs
-          → Σ⟦ poly-map [f] xs ⟧ (ρ , ρs) ≈ f (Σ⟦ xs ⟧ (ρ , ρs))
+          → Σ?⟦ poly-map [f] xs ⟧ (ρ , ρs) ≈ f (Σ⟦ xs ⟧ (ρ , ρs))
 poly-mapR ρ ρs [f] f *-dist +-dist step′ base xs = poly-foldR ρ ρs (map₁ [f]) f *-dist step base xs
   where
-  step : ∀ y {ys} zs → Σ⟦ ys ⟧ (ρ , ρs) ≈ f (Σ⟦ zs ⟧ (ρ , ρs)) →(map₁ [f] (y , ys) ⟦∷⟧ (ρ , ρs)) ≈ f ((y , zs) ⟦∷⟧ (ρ , ρs))
-  step y {ys} zs ys≋zs =
+  step : ∀ y {ys} zs → Σ?⟦ ys ⟧ (ρ , ρs) ≈ f (Σ?⟦ zs ⟧ (ρ , ρs)) →(map₁ [f] (y , ys) ⟦∷⟧ (ρ , ρs)) ≈ f ((y , zs) ⟦∷⟧ (ρ , ρs))
+  step y {[]} [] ys≋zs = step′ y
+  step y {[]} [ zs ] ys≋zs =
     begin
-      map₁ [f] (y , ys) ⟦∷⟧ (ρ , ρs)
+      ⟦ [f] y ⟧ ρs
+    ≈⟨ step′ y ⟩
+      f (⟦ y ⟧ ρs)
+    ≈⟨ sym (+-identityˡ _) ⟩
+      0# + f (⟦ y ⟧ ρs)
+    ≈⟨ ≪+ sym (zeroʳ _) ⟩
+      ρ * 0# + f (⟦ y ⟧ ρs)
+    ≈⟨ ≪+ *≫ ys≋zs ⟩
+      ρ * f (Σ⟦ zs ⟧ (ρ , ρs)) + f (⟦ y ⟧ ρs)
+    ≈⟨ ≪+ (*-dist _ _) ⟩
+      f (ρ * Σ⟦ zs ⟧ (ρ , ρs)) + f (⟦ y ⟧ ρs)
+    ≈⟨ sym (+-dist _ _) ⟩
+      f (ρ * Σ⟦ zs ⟧ (ρ , ρs) + ⟦ y ⟧ ρs)
+    ∎
+  step y {[ ys ]} [] ys≋zs =
+    begin
+      ρ * Σ⟦ ys ⟧ (ρ , ρs) + ⟦ [f] y ⟧ ρs
+    ≈⟨ ≪+ *≫ (ys≋zs ⟨ trans ⟩ base) ⟩
+      ρ * 0# + ⟦ [f] y ⟧ ρs
+    ≈⟨ ≪+ zeroʳ _ ⟩
+      0# + ⟦ [f] y ⟧ ρs
+    ≈⟨ +-identityˡ _ ⟩
+      ⟦ [f] y ⟧ ρs
+    ≈⟨ step′ y ⟩
+      f (⟦ y ⟧ ρs)
+    ∎
+  step y {[ ys ]} [ zs ] ys≋zs =
+    begin
+      map₁ [f] (y , [ ys ]) ⟦∷⟧ (ρ , ρs)
     ≡⟨⟩
       ρ * Σ⟦ ys ⟧ (ρ , ρs) + ⟦ [f] y ⟧ ρs
     ≈⟨ ((*≫ ys≋zs) ⟨ trans ⟩ *-dist ρ _) ⟨ +-cong ⟩ step′ y ⟩
       f (ρ * Σ⟦ zs ⟧ (ρ , ρs)) + f (⟦ y ⟧ ρs)
     ≈⟨ sym (+-dist _ _) ⟩
-      f ((y , zs) ⟦∷⟧ (ρ , ρs))
+      f ((y , [ zs ]) ⟦∷⟧ (ρ , ρs))
     ∎
