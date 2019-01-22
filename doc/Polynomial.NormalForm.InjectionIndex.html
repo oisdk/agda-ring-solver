@@ -1,0 +1,228 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Polynomial.NormalForm.InjectionIndex</title><link rel="stylesheet" href="Agda.css"></head><body><pre><a id="1" class="Symbol">{-#</a> <a id="5" class="Keyword">OPTIONS</a> <a id="13" class="Option">--without-K</a> <a id="25" class="Option">--safe</a> <a id="32" class="Symbol">#-}</a>
+
+<a id="37" class="Comment">----------------------------------------------------------------------</a>
+<a id="108" class="Comment">-- Gaps</a>
+<a id="116" class="Comment">----------------------------------------------------------------------</a>
+<a id="187" class="Comment">-- Polynomials can be represented as lists of their coefficients,</a>
+<a id="253" class="Comment">-- stored in increasing powers of x:</a>
+<a id="290" class="Comment">--</a>
+<a id="293" class="Comment">--   3 + 2x² + 4x⁵ + 2x⁷</a>
+<a id="318" class="Comment">-- ≡⟨ making the missing xs explicit ⟩</a>
+<a id="357" class="Comment">--   3x⁰ + 0x¹ + 2x² + 0x³ + 0x⁴ + 4x⁵ + 0x⁶ + 2x⁷</a>
+<a id="408" class="Comment">-- ≡⟨ in list notation ⟩</a>
+<a id="433" class="Comment">--   [3,0,2,0,0,4,0,2]</a>
+<a id="456" class="Comment">--</a>
+<a id="459" class="Comment">-- This approach is wasteful with space. Instead, we will pair each</a>
+<a id="527" class="Comment">-- coefficient with the size of the preceding gap, meaning that the</a>
+<a id="595" class="Comment">-- above expression is instead written as:</a>
+<a id="638" class="Comment">--</a>
+<a id="641" class="Comment">--   [(3,0),(2,1),(4,2),(2,1)]</a>
+<a id="672" class="Comment">--</a>
+<a id="675" class="Comment">-- Which can be thought of as a representation of the expression:</a>
+<a id="741" class="Comment">--</a>
+<a id="744" class="Comment">--   x⁰ * (3 + x * x¹ * (2 + x * x² * (4 + x * x¹ * (2 + x * 0))))</a>
+<a id="811" class="Comment">--</a>
+<a id="814" class="Comment">-- To add multiple variables to a polynomial, you can *nest* them,</a>
+<a id="881" class="Comment">-- making the coefficients of the outer polynomial polynomials</a>
+<a id="944" class="Comment">-- themselves. However, this is *also* wasteful, in a similar way to</a>
+<a id="1013" class="Comment">-- above: the constant polynomial, for instance, will be represented</a>
+<a id="1082" class="Comment">-- as many nestings of constant polynomials around a final variable.</a>
+<a id="1151" class="Comment">-- However, this approach presents a difficulty: the polynomial will</a>
+<a id="1220" class="Comment">-- have the kind ℕ → Set (...). In other words, it&#39;s indexed by the</a>
+<a id="1288" class="Comment">-- number of variables it contains. The gap we store, then, has to</a>
+<a id="1355" class="Comment">-- be accomanied with some information about how it relates to that</a>
+<a id="1423" class="Comment">-- index.</a>
+<a id="1433" class="Comment">--</a>
+<a id="1436" class="Comment">-- The first approach I tried was to forget about storing the gaps,</a>
+<a id="1504" class="Comment">-- and instead store the number of variables in the nested coefficient,</a>
+<a id="1576" class="Comment">-- along with a proof that the number was smaller than the outer. The</a>
+<a id="1646" class="Comment">-- proof was _≤_ from Data.Nat:</a>
+<a id="1678" class="Comment">--</a>
+<a id="1681" class="Comment">-- data _≤_ : Rel ℕ 0ℓ where</a>
+<a id="1710" class="Comment">--   z≤n : ∀ {n}                 → zero  ≤ n</a>
+<a id="1755" class="Comment">--   s≤s : ∀ {m n} (m≤n : m ≤ n) → suc m ≤ suc n</a>
+<a id="1804" class="Comment">--</a>
+<a id="1807" class="Comment">-- While this worked, this will actually give you a worse complexity</a>
+<a id="1876" class="Comment">-- than the naive encoding without gaps.</a>
+<a id="1917" class="Comment">--</a>
+<a id="1920" class="Comment">-- For any of the binary operations, you need to be able to &quot;line up&quot;</a>
+<a id="1990" class="Comment">-- the two arguments in terms of the gaps. For addition, for instance,</a>
+<a id="2061" class="Comment">-- the argument with fewer variables should be added to the constant</a>
+<a id="2130" class="Comment">-- term of the argument with more. To do this, you need to compare the</a>
+<a id="2201" class="Comment">-- gaps.</a>
+<a id="2210" class="Comment">--</a>
+<a id="2213" class="Comment">-- To see why that&#39;s a problem, consider the following sequence of</a>
+<a id="2280" class="Comment">-- nestings:</a>
+<a id="2293" class="Comment">--</a>
+<a id="2296" class="Comment">--   (5 ≤ 6), (4 ≤ 5), (3 ≤ 4), (1 ≤ 3), (0 ≤ 1)</a>
+<a id="2345" class="Comment">--</a>
+<a id="2348" class="Comment">-- The outer polynomial has 6 variables, but it has a gap to its inner</a>
+<a id="2419" class="Comment">-- polynomial of 5, and so on. What we compare in this case is the</a>
+<a id="2486" class="Comment">-- number of variables in the tail: like repeatedly taking the length of</a>
+<a id="2559" class="Comment">-- the tail of a list, it&#39;s quadratic.</a>
+<a id="2598" class="Comment">--</a>
+<a id="2601" class="Comment">-- The second approach was to try and mimic the powers structure</a>
+<a id="2666" class="Comment">-- (which only compared the gaps, which is linear), and store the gaps</a>
+<a id="2737" class="Comment">-- in a proof like the following:</a>
+<a id="2771" class="Comment">--</a>
+<a id="2774" class="Comment">-- record _≤″_ (m n : ℕ) : Set where</a>
+<a id="2811" class="Comment">--   constructor less-than-or-equal</a>
+<a id="2847" class="Comment">--   field</a>
+<a id="2858" class="Comment">--     {k}   : ℕ</a>
+<a id="2875" class="Comment">--     proof : m + k ≡ n</a>
+<a id="2900" class="Comment">--</a>
+<a id="2903" class="Comment">-- Here, k is the size of the gap. The problem of this approach was</a>
+<a id="2971" class="Comment">-- twofold: it was difficult to show that comparisons on the k</a>
+<a id="3034" class="Comment">-- corresponded to comparisons on the m, and working with ≡ instead of</a>
+<a id="3105" class="Comment">-- some inductive structure was messy. However, it had the advantage</a>
+<a id="3174" class="Comment">-- of being erasable: both proofs of the correspondence and the</a>
+<a id="3238" class="Comment">-- equality proof itself. That said, I&#39;m not very familiar with the</a>
+<a id="3306" class="Comment">-- soundness of erasure, and in particular how it interacts with axiom</a>
+<a id="3377" class="Comment">-- K (which I&#39;d managed to avoid up until this point, but started to</a>
+<a id="3446" class="Comment">-- creep in).</a>
+<a id="3460" class="Comment">--</a>
+<a id="3463" class="Comment">-- I may have had more luck if I swapped the arguments too +:</a>
+<a id="3525" class="Comment">--</a>
+<a id="3528" class="Comment">-- record _≤″_ (m n : ℕ) : Set where</a>
+<a id="3565" class="Comment">--   constructor less-than-or-equal</a>
+<a id="3601" class="Comment">--   field</a>
+<a id="3612" class="Comment">--     {k}   : ℕ</a>
+<a id="3629" class="Comment">--     proof : k + m ≡ n</a>
+<a id="3654" class="Comment">--</a>
+<a id="3657" class="Comment">-- But I did not try it. The solution I ended up with was superior,</a>
+<a id="3725" class="Comment">-- regardless:</a>
+<a id="3740" class="Comment">--</a>
+<a id="3743" class="Comment">-- infix 4 _≤_</a>
+<a id="3758" class="Comment">-- data _≤_ (m : ℕ) : ℕ → Set where</a>
+<a id="3794" class="Comment">--   m≤m : m ≤ m</a>
+<a id="3811" class="Comment">--   ≤-s : ∀ {n} → (m≤n : m ≤ n) → m ≤ suc n</a>
+<a id="3856" class="Comment">--</a>
+<a id="3859" class="Comment">-- (This is a rewritten version of _≤′_ from Data.Nat.Base).</a>
+<a id="3920" class="Comment">--</a>
+<a id="3923" class="Comment">-- While this structure stores the same information as ≤, it does so</a>
+<a id="3992" class="Comment">-- by induction on the *gap*. This became apparent when I realised you</a>
+<a id="4063" class="Comment">-- could use it to write a comparison function which was linear in the</a>
+<a id="4134" class="Comment">-- size of the gap (even though it was comparing the length of the</a>
+<a id="4201" class="Comment">-- tail):</a>
+
+<a id="4212" class="Comment">-- data Ordering : ℕ → ℕ → Set where</a>
+<a id="4249" class="Comment">--   less    : ∀ {n m} → n ≤ m → Ordering n (suc m)</a>
+<a id="4301" class="Comment">--   greater : ∀ {n m} → m ≤ n → Ordering (suc n) m</a>
+<a id="4353" class="Comment">--   equal   : ∀ {n}           → Ordering n n</a>
+
+<a id="4400" class="Comment">-- ≤-compare : ∀ {i j n}</a>
+<a id="4425" class="Comment">--           → (i≤n : i ≤ n)</a>
+<a id="4454" class="Comment">--           → (j≤n : j ≤ n)</a>
+<a id="4483" class="Comment">--           → Ordering i j</a>
+<a id="4511" class="Comment">-- ≤-compare m≤m m≤m = equal</a>
+<a id="4540" class="Comment">-- ≤-compare m≤m (≤-s m≤n) = greater m≤n</a>
+<a id="4581" class="Comment">-- ≤-compare (≤-s m≤n) m≤m = less m≤n</a>
+<a id="4619" class="Comment">-- ≤-compare (≤-s i≤n) (≤-s j≤n) = ≤-compare i≤n j≤n</a>
+<a id="4672" class="Comment">--</a>
+<a id="4675" class="Comment">-- A few things to note here:</a>
+<a id="4705" class="Comment">--</a>
+<a id="4708" class="Comment">-- 1. The ≤-compare function is one of those reassuring ones for which</a>
+<a id="4779" class="Comment">--    Agda can completely fill in the type for me.</a>
+<a id="4830" class="Comment">-- 2. This function looks somewhat similar to the one for comparing ℕ</a>
+<a id="4900" class="Comment">--    in Data.Nat, and as a result, the &quot;matching&quot; logic for degree</a>
+<a id="4968" class="Comment">--    and number of variables began too look similar.</a>
+<a id="5022" class="Comment">--</a>
+<a id="5025" class="Comment">-- While this approach allowed me too write all the functions I</a>
+<a id="5089" class="Comment">-- needed, I hit another roadblock when it came time to prove the</a>
+<a id="5155" class="Comment">-- ring homomorphism. The first thing I realised I needed to prove was</a>
+<a id="5226" class="Comment">-- basically the following:</a>
+<a id="5254" class="Comment">--</a>
+<a id="5257" class="Comment">--   ∀ {i j n}</a>
+<a id="5272" class="Comment">--   → (i≤n : i ≤ n)</a>
+<a id="5293" class="Comment">--   → (j≤n : j ≤ n)</a>
+<a id="5314" class="Comment">--   → ∀ xs Ρ</a>
+<a id="5328" class="Comment">--   → Σ⟦ xs ⟧ (drop-1 i≤n Ρ) ≈ Σ⟦ xs ⟧ (drop-1 j≤n Ρ)</a>
+<a id="5383" class="Comment">--</a>
+<a id="5386" class="Comment">-- In effect, if the inequalities are over the same numbers, then</a>
+<a id="5452" class="Comment">-- they&#39;ll behave the same way when used in evaluation.</a>
+<a id="5508" class="Comment">--</a>
+<a id="5511" class="Comment">-- The above is really just a consequence of ≤ being irrelevant:</a>
+<a id="5576" class="Comment">--</a>
+<a id="5579" class="Comment">--   ∀ {i n}</a>
+<a id="5592" class="Comment">--   → (x : i ≤ n)</a>
+<a id="5611" class="Comment">--   → (y : i ≤ n)</a>
+<a id="5630" class="Comment">--   → x ≡ y</a>
+<a id="5643" class="Comment">--</a>
+<a id="5646" class="Comment">-- Trying to prove this convinced me that it might not even be possible</a>
+<a id="5718" class="Comment">-- without K. On top of that, I also noticed that I would need to</a>
+<a id="5784" class="Comment">-- prove things like:</a>
+<a id="5806" class="Comment">--</a>
+<a id="5809" class="Comment">--   ∀ {i j n}</a>
+<a id="5824" class="Comment">--   → (i≤j : i ≤ j)</a>
+<a id="5845" class="Comment">--   → (j≤n : j ≤ n)</a>
+<a id="5866" class="Comment">--   → (x : FlatPoly i)</a>
+<a id="5890" class="Comment">--   → (Ρ : Vec Carrier n)</a>
+<a id="5917" class="Comment">--   → ⟦ x Π (i≤j ⟨ ≤′-trans ⟩ j≤n) ⟧ Ρ ≈ ⟦ x Π i≤j ⟧ (drop j≤n Ρ)</a>
+<a id="5984" class="Comment">--</a>
+<a id="5987" class="Comment">-- Effectively, I needed to prove that transitivity was a</a>
+<a id="6045" class="Comment">-- homomorphism.</a>
+<a id="6062" class="Comment">--</a>
+<a id="6065" class="Comment">-- I realised that I had not run into these difficulties with the</a>
+<a id="6131" class="Comment">-- comparison function I was using for the exponent gaps: why? Well</a>
+<a id="6199" class="Comment">-- that function provides a proof about its *arguments* whereas the</a>
+<a id="6267" class="Comment">-- one I wrote above only provides a proof about the i and j.</a>
+<a id="6329" class="Comment">--</a>
+<a id="6332" class="Comment">-- data Ordering : Rel ℕ 0ℓ where</a>
+<a id="6366" class="Comment">--   less    : ∀ m k → Ordering m (suc (m + k))</a>
+<a id="6414" class="Comment">--   equal   : ∀ m   → Ordering m m</a>
+<a id="6450" class="Comment">--   greater : ∀ m k → Ordering (suc (m + k)) m</a>
+<a id="6498" class="Comment">--</a>
+<a id="6501" class="Comment">-- If I tried to mimick the above as closely as possible, I would also</a>
+<a id="6572" class="Comment">-- need an analogue to +: of course this was ≤′-trans, so I was going</a>
+<a id="6642" class="Comment">-- to get my transitivity proof as well as everything else. The result</a>
+<a id="6713" class="Comment">-- is as follows.</a>
+
+<a id="6732" class="Keyword">module</a> <a id="6739" href="Polynomial.NormalForm.InjectionIndex.html" class="Module">Polynomial.NormalForm.InjectionIndex</a> <a id="6776" class="Keyword">where</a>
+
+<a id="6783" class="Keyword">open</a> <a id="6788" class="Keyword">import</a> <a id="6795" href="Data.Nat.html" class="Module">Data.Nat</a> <a id="6804" class="Symbol">as</a> <a id="6807" class="Module">ℕ</a> <a id="6809" class="Keyword">using</a> <a id="6815" class="Symbol">(</a><a id="6816" href="Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="6817" class="Symbol">;</a> <a id="6819" href="Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a><a id="6822" class="Symbol">;</a> <a id="6824" href="Agda.Builtin.Nat.html#115" class="InductiveConstructor">zero</a><a id="6828" class="Symbol">)</a>
+<a id="6830" class="Keyword">open</a> <a id="6835" class="Keyword">import</a> <a id="6842" href="Data.Nat.html" class="Module">Data.Nat</a> <a id="6851" class="Keyword">using</a> <a id="6857" class="Symbol">(</a><a id="6858" href="Data.Nat.Base.html#2376" class="Datatype Operator">_≤′_</a><a id="6862" class="Symbol">;</a> <a id="6864" href="Data.Nat.Base.html#2407" class="InductiveConstructor">≤′-refl</a><a id="6871" class="Symbol">;</a> <a id="6873" href="Data.Nat.Base.html#2450" class="InductiveConstructor">≤′-step</a><a id="6880" class="Symbol">;</a> <a id="6882" href="Data.Nat.Base.html#2496" class="Function Operator">_&lt;′_</a><a id="6886" class="Symbol">)</a> <a id="6888" class="Keyword">public</a>
+<a id="6895" class="Keyword">open</a> <a id="6900" class="Keyword">import</a> <a id="6907" href="Data.Nat.Properties.html" class="Module">Data.Nat.Properties</a> <a id="6927" class="Keyword">using</a> <a id="6933" class="Symbol">(</a><a id="6934" href="Data.Nat.Properties.html#7403" class="Function">≤′-trans</a><a id="6942" class="Symbol">)</a> <a id="6944" class="Keyword">public</a>
+<a id="6951" class="Keyword">open</a> <a id="6956" class="Keyword">import</a> <a id="6963" href="Function.html" class="Module">Function</a>
+
+<a id="6973" class="Keyword">data</a> <a id="InjectionOrdering"></a><a id="6978" href="Polynomial.NormalForm.InjectionIndex.html#6978" class="Datatype">InjectionOrdering</a> <a id="6996" class="Symbol">{</a><a id="6997" href="Polynomial.NormalForm.InjectionIndex.html#6997" class="Bound">n</a> <a id="6999" class="Symbol">:</a> <a id="7001" href="Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="7002" class="Symbol">}</a> <a id="7004" class="Symbol">:</a> <a id="7006" class="Symbol">∀</a> <a id="7008" class="Symbol">{</a><a id="7009" href="Polynomial.NormalForm.InjectionIndex.html#7009" class="Bound">i</a> <a id="7011" href="Polynomial.NormalForm.InjectionIndex.html#7011" class="Bound">j</a><a id="7012" class="Symbol">}</a>
+                      <a id="7036" class="Symbol">→</a> <a id="7038" class="Symbol">(</a><a id="7039" href="Polynomial.NormalForm.InjectionIndex.html#7039" class="Bound">i≤n</a> <a id="7043" class="Symbol">:</a> <a id="7045" href="Polynomial.NormalForm.InjectionIndex.html#7009" class="Bound">i</a> <a id="7047" href="Data.Nat.Base.html#2376" class="Datatype Operator">≤′</a> <a id="7050" href="Polynomial.NormalForm.InjectionIndex.html#6997" class="Bound">n</a><a id="7051" class="Symbol">)</a>
+                      <a id="7075" class="Symbol">→</a> <a id="7077" class="Symbol">(</a><a id="7078" href="Polynomial.NormalForm.InjectionIndex.html#7078" class="Bound">j≤n</a> <a id="7082" class="Symbol">:</a> <a id="7084" href="Polynomial.NormalForm.InjectionIndex.html#7011" class="Bound">j</a> <a id="7086" href="Data.Nat.Base.html#2376" class="Datatype Operator">≤′</a> <a id="7089" href="Polynomial.NormalForm.InjectionIndex.html#6997" class="Bound">n</a><a id="7090" class="Symbol">)</a>
+                      <a id="7114" class="Symbol">→</a> <a id="7116" class="PrimitiveType">Set</a>
+                      <a id="7142" class="Keyword">where</a>
+  <a id="InjectionOrdering.inj-lt"></a><a id="7150" href="Polynomial.NormalForm.InjectionIndex.html#7150" class="InductiveConstructor">inj-lt</a> <a id="7157" class="Symbol">:</a> <a id="7159" class="Symbol">∀</a> <a id="7161" class="Symbol">{</a><a id="7162" href="Polynomial.NormalForm.InjectionIndex.html#7162" class="Bound">i</a> <a id="7164" href="Polynomial.NormalForm.InjectionIndex.html#7164" class="Bound">j-1</a><a id="7167" class="Symbol">}</a>
+     <a id="7174" class="Symbol">→</a> <a id="7176" class="Symbol">(</a><a id="7177" href="Polynomial.NormalForm.InjectionIndex.html#7177" class="Bound">i≤j-1</a> <a id="7183" class="Symbol">:</a> <a id="7185" href="Polynomial.NormalForm.InjectionIndex.html#7162" class="Bound">i</a> <a id="7187" href="Data.Nat.Base.html#2376" class="Datatype Operator">≤′</a> <a id="7190" href="Polynomial.NormalForm.InjectionIndex.html#7164" class="Bound">j-1</a><a id="7193" class="Symbol">)</a>
+     <a id="7200" class="Symbol">→</a> <a id="7202" class="Symbol">(</a><a id="7203" href="Polynomial.NormalForm.InjectionIndex.html#7203" class="Bound">j≤n</a> <a id="7207" class="Symbol">:</a> <a id="7209" href="Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="7213" href="Polynomial.NormalForm.InjectionIndex.html#7164" class="Bound">j-1</a> <a id="7217" href="Data.Nat.Base.html#2376" class="Datatype Operator">≤′</a> <a id="7220" href="Polynomial.NormalForm.InjectionIndex.html#6997" class="Bound">n</a><a id="7221" class="Symbol">)</a>
+     <a id="7228" class="Symbol">→</a> <a id="7230" href="Polynomial.NormalForm.InjectionIndex.html#6978" class="Datatype">InjectionOrdering</a> <a id="7248" class="Symbol">(</a><a id="7249" href="Data.Nat.Base.html#2450" class="InductiveConstructor">≤′-step</a> <a id="7257" href="Polynomial.NormalForm.InjectionIndex.html#7177" class="Bound">i≤j-1</a> <a id="7263" href="Function.html#2548" class="Function Operator">⟨</a> <a id="7265" href="Data.Nat.Properties.html#7403" class="Function">≤′-trans</a> <a id="7274" href="Function.html#2548" class="Function Operator">⟩</a> <a id="7276" href="Polynomial.NormalForm.InjectionIndex.html#7203" class="Bound">j≤n</a><a id="7279" class="Symbol">)</a> <a id="7281" href="Polynomial.NormalForm.InjectionIndex.html#7203" class="Bound">j≤n</a>
+  <a id="InjectionOrdering.inj-gt"></a><a id="7287" href="Polynomial.NormalForm.InjectionIndex.html#7287" class="InductiveConstructor">inj-gt</a> <a id="7294" class="Symbol">:</a> <a id="7296" class="Symbol">∀</a> <a id="7298" class="Symbol">{</a><a id="7299" href="Polynomial.NormalForm.InjectionIndex.html#7299" class="Bound">i-1</a> <a id="7303" href="Polynomial.NormalForm.InjectionIndex.html#7303" class="Bound">j</a><a id="7304" class="Symbol">}</a>
+     <a id="7311" class="Symbol">→</a> <a id="7313" class="Symbol">(</a><a id="7314" href="Polynomial.NormalForm.InjectionIndex.html#7314" class="Bound">i≤n</a> <a id="7318" class="Symbol">:</a> <a id="7320" href="Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="7324" href="Polynomial.NormalForm.InjectionIndex.html#7299" class="Bound">i-1</a> <a id="7328" href="Data.Nat.Base.html#2376" class="Datatype Operator">≤′</a> <a id="7331" href="Polynomial.NormalForm.InjectionIndex.html#6997" class="Bound">n</a><a id="7332" class="Symbol">)</a>
+     <a id="7339" class="Symbol">→</a> <a id="7341" class="Symbol">(</a><a id="7342" href="Polynomial.NormalForm.InjectionIndex.html#7342" class="Bound">j≤i-1</a> <a id="7348" class="Symbol">:</a> <a id="7350" href="Polynomial.NormalForm.InjectionIndex.html#7303" class="Bound">j</a> <a id="7352" href="Data.Nat.Base.html#2376" class="Datatype Operator">≤′</a> <a id="7355" href="Polynomial.NormalForm.InjectionIndex.html#7299" class="Bound">i-1</a><a id="7358" class="Symbol">)</a>
+     <a id="7365" class="Symbol">→</a> <a id="7367" href="Polynomial.NormalForm.InjectionIndex.html#6978" class="Datatype">InjectionOrdering</a> <a id="7385" href="Polynomial.NormalForm.InjectionIndex.html#7314" class="Bound">i≤n</a> <a id="7389" class="Symbol">(</a><a id="7390" href="Data.Nat.Base.html#2450" class="InductiveConstructor">≤′-step</a> <a id="7398" href="Polynomial.NormalForm.InjectionIndex.html#7342" class="Bound">j≤i-1</a> <a id="7404" href="Function.html#2548" class="Function Operator">⟨</a> <a id="7406" href="Data.Nat.Properties.html#7403" class="Function">≤′-trans</a> <a id="7415" href="Function.html#2548" class="Function Operator">⟩</a> <a id="7417" href="Polynomial.NormalForm.InjectionIndex.html#7314" class="Bound">i≤n</a><a id="7420" class="Symbol">)</a>
+  <a id="InjectionOrdering.inj-eq"></a><a id="7424" href="Polynomial.NormalForm.InjectionIndex.html#7424" class="InductiveConstructor">inj-eq</a> <a id="7431" class="Symbol">:</a> <a id="7433" class="Symbol">∀</a> <a id="7435" class="Symbol">{</a><a id="7436" href="Polynomial.NormalForm.InjectionIndex.html#7436" class="Bound">i</a><a id="7437" class="Symbol">}</a> <a id="7439" class="Symbol">→</a> <a id="7441" class="Symbol">(</a><a id="7442" href="Polynomial.NormalForm.InjectionIndex.html#7442" class="Bound">i≤n</a> <a id="7446" class="Symbol">:</a> <a id="7448" href="Polynomial.NormalForm.InjectionIndex.html#7436" class="Bound">i</a> <a id="7450" href="Data.Nat.Base.html#2376" class="Datatype Operator">≤′</a> <a id="7453" href="Polynomial.NormalForm.InjectionIndex.html#6997" class="Bound">n</a><a id="7454" class="Symbol">)</a> <a id="7456" class="Symbol">→</a> <a id="7458" href="Polynomial.NormalForm.InjectionIndex.html#6978" class="Datatype">InjectionOrdering</a> <a id="7476" href="Polynomial.NormalForm.InjectionIndex.html#7442" class="Bound">i≤n</a> <a id="7480" href="Polynomial.NormalForm.InjectionIndex.html#7442" class="Bound">i≤n</a>
+
+<a id="inj-compare"></a><a id="7485" href="Polynomial.NormalForm.InjectionIndex.html#7485" class="Function">inj-compare</a> <a id="7497" class="Symbol">:</a> <a id="7499" class="Symbol">∀</a> <a id="7501" class="Symbol">{</a><a id="7502" href="Polynomial.NormalForm.InjectionIndex.html#7502" class="Bound">i</a> <a id="7504" href="Polynomial.NormalForm.InjectionIndex.html#7504" class="Bound">j</a> <a id="7506" href="Polynomial.NormalForm.InjectionIndex.html#7506" class="Bound">n</a><a id="7507" class="Symbol">}</a>
+    <a id="7513" class="Symbol">→</a> <a id="7515" class="Symbol">(</a><a id="7516" href="Polynomial.NormalForm.InjectionIndex.html#7516" class="Bound">x</a> <a id="7518" class="Symbol">:</a> <a id="7520" href="Polynomial.NormalForm.InjectionIndex.html#7502" class="Bound">i</a> <a id="7522" href="Data.Nat.Base.html#2376" class="Datatype Operator">≤′</a> <a id="7525" href="Polynomial.NormalForm.InjectionIndex.html#7506" class="Bound">n</a><a id="7526" class="Symbol">)</a>
+    <a id="7532" class="Symbol">→</a> <a id="7534" class="Symbol">(</a><a id="7535" href="Polynomial.NormalForm.InjectionIndex.html#7535" class="Bound">y</a> <a id="7537" class="Symbol">:</a> <a id="7539" href="Polynomial.NormalForm.InjectionIndex.html#7504" class="Bound">j</a> <a id="7541" href="Data.Nat.Base.html#2376" class="Datatype Operator">≤′</a> <a id="7544" href="Polynomial.NormalForm.InjectionIndex.html#7506" class="Bound">n</a><a id="7545" class="Symbol">)</a>
+    <a id="7551" class="Symbol">→</a> <a id="7553" href="Polynomial.NormalForm.InjectionIndex.html#6978" class="Datatype">InjectionOrdering</a> <a id="7571" href="Polynomial.NormalForm.InjectionIndex.html#7516" class="Bound">x</a> <a id="7573" href="Polynomial.NormalForm.InjectionIndex.html#7535" class="Bound">y</a>
+<a id="7575" href="Polynomial.NormalForm.InjectionIndex.html#7485" class="Function">inj-compare</a> <a id="7587" href="Data.Nat.Base.html#2407" class="InductiveConstructor">≤′-refl</a> <a id="7595" href="Data.Nat.Base.html#2407" class="InductiveConstructor">≤′-refl</a> <a id="7603" class="Symbol">=</a> <a id="7605" href="Polynomial.NormalForm.InjectionIndex.html#7424" class="InductiveConstructor">inj-eq</a> <a id="7612" href="Data.Nat.Base.html#2407" class="InductiveConstructor">≤′-refl</a>
+<a id="7620" href="Polynomial.NormalForm.InjectionIndex.html#7485" class="Function">inj-compare</a> <a id="7632" href="Data.Nat.Base.html#2407" class="InductiveConstructor">≤′-refl</a> <a id="7640" class="Symbol">(</a><a id="7641" href="Data.Nat.Base.html#2450" class="InductiveConstructor">≤′-step</a> <a id="7649" href="Polynomial.NormalForm.InjectionIndex.html#7649" class="Bound">y</a><a id="7650" class="Symbol">)</a> <a id="7652" class="Symbol">=</a> <a id="7654" href="Polynomial.NormalForm.InjectionIndex.html#7287" class="InductiveConstructor">inj-gt</a> <a id="7661" href="Data.Nat.Base.html#2407" class="InductiveConstructor">≤′-refl</a> <a id="7669" href="Polynomial.NormalForm.InjectionIndex.html#7649" class="Bound">y</a>
+<a id="7671" href="Polynomial.NormalForm.InjectionIndex.html#7485" class="Function">inj-compare</a> <a id="7683" class="Symbol">(</a><a id="7684" href="Data.Nat.Base.html#2450" class="InductiveConstructor">≤′-step</a> <a id="7692" href="Polynomial.NormalForm.InjectionIndex.html#7692" class="Bound">x</a><a id="7693" class="Symbol">)</a> <a id="7695" href="Data.Nat.Base.html#2407" class="InductiveConstructor">≤′-refl</a> <a id="7703" class="Symbol">=</a> <a id="7705" href="Polynomial.NormalForm.InjectionIndex.html#7150" class="InductiveConstructor">inj-lt</a> <a id="7712" href="Polynomial.NormalForm.InjectionIndex.html#7692" class="Bound">x</a> <a id="7714" href="Data.Nat.Base.html#2407" class="InductiveConstructor">≤′-refl</a>
+<a id="7722" href="Polynomial.NormalForm.InjectionIndex.html#7485" class="Function">inj-compare</a> <a id="7734" class="Symbol">(</a><a id="7735" href="Data.Nat.Base.html#2450" class="InductiveConstructor">≤′-step</a> <a id="7743" href="Polynomial.NormalForm.InjectionIndex.html#7743" class="Bound">x</a><a id="7744" class="Symbol">)</a> <a id="7746" class="Symbol">(</a><a id="7747" href="Data.Nat.Base.html#2450" class="InductiveConstructor">≤′-step</a> <a id="7755" href="Polynomial.NormalForm.InjectionIndex.html#7755" class="Bound">y</a><a id="7756" class="Symbol">)</a> <a id="7758" class="Symbol">=</a> <a id="7760" href="Function.html#3533" class="Function Operator">case</a> <a id="7765" href="Polynomial.NormalForm.InjectionIndex.html#7485" class="Function">inj-compare</a> <a id="7777" href="Polynomial.NormalForm.InjectionIndex.html#7743" class="Bound">x</a> <a id="7779" href="Polynomial.NormalForm.InjectionIndex.html#7755" class="Bound">y</a> <a id="7781" href="Function.html#3533" class="Function Operator">of</a>
+    <a id="7788" class="Symbol">λ</a> <a id="7790" class="Symbol">{</a> <a id="7792" class="Symbol">(</a><a id="7793" href="Polynomial.NormalForm.InjectionIndex.html#7150" class="InductiveConstructor">inj-lt</a> <a id="7800" href="Polynomial.NormalForm.InjectionIndex.html#7800" class="Bound">i≤j-1</a> <a id="7806" class="DottedPattern Symbol">.</a><a id="7807" href="Polynomial.NormalForm.InjectionIndex.html#7755" class="DottedPattern Bound">y</a><a id="7808" class="Symbol">)</a> <a id="7810" class="Symbol">→</a> <a id="7812" href="Polynomial.NormalForm.InjectionIndex.html#7150" class="InductiveConstructor">inj-lt</a> <a id="7819" href="Polynomial.NormalForm.InjectionIndex.html#7800" class="Bound">i≤j-1</a> <a id="7825" class="Symbol">(</a><a id="7826" href="Data.Nat.Base.html#2450" class="InductiveConstructor">≤′-step</a> <a id="7834" href="Polynomial.NormalForm.InjectionIndex.html#7755" class="Bound">y</a><a id="7835" class="Symbol">)</a>
+      <a id="7843" class="Symbol">;</a> <a id="7845" class="Symbol">(</a><a id="7846" href="Polynomial.NormalForm.InjectionIndex.html#7287" class="InductiveConstructor">inj-gt</a> <a id="7853" class="DottedPattern Symbol">.</a><a id="7854" href="Polynomial.NormalForm.InjectionIndex.html#7743" class="DottedPattern Bound">x</a> <a id="7856" href="Polynomial.NormalForm.InjectionIndex.html#7856" class="Bound">j≤i-1</a><a id="7861" class="Symbol">)</a> <a id="7863" class="Symbol">→</a> <a id="7865" href="Polynomial.NormalForm.InjectionIndex.html#7287" class="InductiveConstructor">inj-gt</a> <a id="7872" class="Symbol">(</a><a id="7873" href="Data.Nat.Base.html#2450" class="InductiveConstructor">≤′-step</a> <a id="7881" href="Polynomial.NormalForm.InjectionIndex.html#7743" class="Bound">x</a><a id="7882" class="Symbol">)</a> <a id="7884" href="Polynomial.NormalForm.InjectionIndex.html#7856" class="Bound">j≤i-1</a>
+      <a id="7896" class="Symbol">;</a> <a id="7898" class="Symbol">(</a><a id="7899" href="Polynomial.NormalForm.InjectionIndex.html#7424" class="InductiveConstructor">inj-eq</a> <a id="7906" class="DottedPattern Symbol">.</a><a id="7907" href="Polynomial.NormalForm.InjectionIndex.html#7743" class="DottedPattern Bound">x</a><a id="7908" class="Symbol">)</a> <a id="7910" class="Symbol">→</a> <a id="7912" href="Polynomial.NormalForm.InjectionIndex.html#7424" class="InductiveConstructor">inj-eq</a> <a id="7919" class="Symbol">(</a><a id="7920" href="Data.Nat.Base.html#2450" class="InductiveConstructor">≤′-step</a> <a id="7928" href="Polynomial.NormalForm.InjectionIndex.html#7743" class="Bound">x</a><a id="7929" class="Symbol">)</a>
+      <a id="7937" class="Symbol">}</a>
+
+<a id="7940" class="Keyword">open</a> <a id="7945" class="Keyword">import</a> <a id="7952" href="Data.Fin.html" class="Module">Data.Fin</a> <a id="7961" class="Symbol">as</a> <a id="7964" class="Module">Fin</a> <a id="7968" class="Keyword">using</a> <a id="7974" class="Symbol">(</a><a id="7975" href="Data.Fin.Base.html#951" class="Datatype">Fin</a><a id="7978" class="Symbol">)</a>
+
+<a id="space"></a><a id="7981" href="Polynomial.NormalForm.InjectionIndex.html#7981" class="Function">space</a> <a id="7987" class="Symbol">:</a> <a id="7989" class="Symbol">∀</a> <a id="7991" class="Symbol">{</a><a id="7992" href="Polynomial.NormalForm.InjectionIndex.html#7992" class="Bound">n</a><a id="7993" class="Symbol">}</a> <a id="7995" class="Symbol">→</a> <a id="7997" href="Data.Fin.Base.html#951" class="Datatype">Fin</a> <a id="8001" href="Polynomial.NormalForm.InjectionIndex.html#7992" class="Bound">n</a> <a id="8003" class="Symbol">→</a> <a id="8005" href="Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a>
+<a id="8007" href="Polynomial.NormalForm.InjectionIndex.html#7981" class="Function">space</a> <a id="8013" href="Polynomial.NormalForm.InjectionIndex.html#8013" class="Bound">f</a> <a id="8015" class="Symbol">=</a> <a id="8017" href="Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="8021" class="Symbol">(</a><a id="8022" href="Polynomial.NormalForm.InjectionIndex.html#8038" class="Function">go</a> <a id="8025" href="Polynomial.NormalForm.InjectionIndex.html#8013" class="Bound">f</a><a id="8026" class="Symbol">)</a>
+  <a id="8030" class="Keyword">where</a>
+  <a id="8038" href="Polynomial.NormalForm.InjectionIndex.html#8038" class="Function">go</a> <a id="8041" class="Symbol">:</a> <a id="8043" class="Symbol">∀</a> <a id="8045" class="Symbol">{</a><a id="8046" href="Polynomial.NormalForm.InjectionIndex.html#8046" class="Bound">n</a><a id="8047" class="Symbol">}</a> <a id="8049" class="Symbol">→</a> <a id="8051" href="Data.Fin.Base.html#951" class="Datatype">Fin</a> <a id="8055" href="Polynomial.NormalForm.InjectionIndex.html#8046" class="Bound">n</a> <a id="8057" class="Symbol">→</a> <a id="8059" href="Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a>
+  <a id="8063" href="Polynomial.NormalForm.InjectionIndex.html#8038" class="Function">go</a> <a id="8066" class="Symbol">{</a><a id="8067" href="Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="8071" href="Polynomial.NormalForm.InjectionIndex.html#8071" class="Bound">n</a><a id="8072" class="Symbol">}</a> <a id="8074" href="Data.Fin.Base.html#973" class="InductiveConstructor">Fin.zero</a> <a id="8083" class="Symbol">=</a> <a id="8085" href="Polynomial.NormalForm.InjectionIndex.html#8071" class="Bound">n</a>
+  <a id="8089" href="Polynomial.NormalForm.InjectionIndex.html#8038" class="Function">go</a> <a id="8092" class="Symbol">(</a><a id="8093" href="Data.Fin.Base.html#1004" class="InductiveConstructor">Fin.suc</a> <a id="8101" href="Polynomial.NormalForm.InjectionIndex.html#8101" class="Bound">x</a><a id="8102" class="Symbol">)</a> <a id="8104" class="Symbol">=</a> <a id="8106" href="Polynomial.NormalForm.InjectionIndex.html#8038" class="Function">go</a> <a id="8109" href="Polynomial.NormalForm.InjectionIndex.html#8101" class="Bound">x</a>
+
+<a id="Fin⇒≤"></a><a id="8112" href="Polynomial.NormalForm.InjectionIndex.html#8112" class="Function">Fin⇒≤</a> <a id="8118" class="Symbol">:</a> <a id="8120" class="Symbol">∀</a> <a id="8122" class="Symbol">{</a><a id="8123" href="Polynomial.NormalForm.InjectionIndex.html#8123" class="Bound">n</a><a id="8124" class="Symbol">}</a> <a id="8126" class="Symbol">(</a><a id="8127" href="Polynomial.NormalForm.InjectionIndex.html#8127" class="Bound">x</a> <a id="8129" class="Symbol">:</a> <a id="8131" href="Data.Fin.Base.html#951" class="Datatype">Fin</a> <a id="8135" href="Polynomial.NormalForm.InjectionIndex.html#8123" class="Bound">n</a><a id="8136" class="Symbol">)</a> <a id="8138" class="Symbol">→</a> <a id="8140" href="Polynomial.NormalForm.InjectionIndex.html#7981" class="Function">space</a> <a id="8146" href="Polynomial.NormalForm.InjectionIndex.html#8127" class="Bound">x</a> <a id="8148" href="Data.Nat.Base.html#2376" class="Datatype Operator">≤′</a> <a id="8151" href="Polynomial.NormalForm.InjectionIndex.html#8123" class="Bound">n</a>
+<a id="8153" href="Polynomial.NormalForm.InjectionIndex.html#8112" class="Function">Fin⇒≤</a> <a id="8159" href="Data.Fin.Base.html#973" class="InductiveConstructor">Fin.zero</a> <a id="8168" class="Symbol">=</a> <a id="8170" href="Data.Nat.Base.html#2407" class="InductiveConstructor">≤′-refl</a>
+<a id="8178" href="Polynomial.NormalForm.InjectionIndex.html#8112" class="Function">Fin⇒≤</a> <a id="8184" class="Symbol">(</a><a id="8185" href="Data.Fin.Base.html#1004" class="InductiveConstructor">Fin.suc</a> <a id="8193" href="Polynomial.NormalForm.InjectionIndex.html#8193" class="Bound">x</a><a id="8194" class="Symbol">)</a> <a id="8196" class="Symbol">=</a> <a id="8198" href="Data.Nat.Base.html#2450" class="InductiveConstructor">≤′-step</a> <a id="8206" class="Symbol">(</a><a id="8207" href="Polynomial.NormalForm.InjectionIndex.html#8112" class="Function">Fin⇒≤</a> <a id="8213" href="Polynomial.NormalForm.InjectionIndex.html#8193" class="Bound">x</a><a id="8214" class="Symbol">)</a>
+</pre></body></html>

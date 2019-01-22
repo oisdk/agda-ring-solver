@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Polynomial.Parameters</title><link rel="stylesheet" href="Agda.css"></head><body><pre><a id="1" class="Symbol">{-#</a> <a id="5" class="Keyword">OPTIONS</a> <a id="13" class="Option">--without-K</a> <a id="25" class="Option">--safe</a> <a id="32" class="Symbol">#-}</a>
+
+<a id="37" class="Comment">-- This module packages up all the stuff that&#39;s passed to the other</a>
+<a id="105" class="Comment">-- modules in a convenient form.</a>
+<a id="138" class="Keyword">module</a> <a id="145" href="Polynomial.Parameters.html" class="Module">Polynomial.Parameters</a> <a id="167" class="Keyword">where</a>
+
+<a id="174" class="Keyword">open</a> <a id="179" class="Keyword">import</a> <a id="186" href="Function.html" class="Module">Function</a>
+<a id="195" class="Keyword">open</a> <a id="200" class="Keyword">import</a> <a id="207" href="Algebra.html" class="Module">Algebra</a>
+<a id="215" class="Keyword">open</a> <a id="220" class="Keyword">import</a> <a id="227" href="Relation.Unary.html" class="Module">Relation.Unary</a>
+<a id="242" class="Keyword">open</a> <a id="247" class="Keyword">import</a> <a id="254" href="Level.html" class="Module">Level</a>
+<a id="260" class="Keyword">open</a> <a id="265" class="Keyword">import</a> <a id="272" href="Algebra.Solver.Ring.AlmostCommutativeRing.html" class="Module">Algebra.Solver.Ring.AlmostCommutativeRing</a>
+<a id="314" class="Keyword">open</a> <a id="319" class="Keyword">import</a> <a id="326" href="Data.Bool.html" class="Module">Data.Bool</a> <a id="336" class="Keyword">using</a> <a id="342" class="Symbol">(</a><a id="343" href="Agda.Builtin.Bool.html#67" class="Datatype">Bool</a><a id="347" class="Symbol">;</a> <a id="349" href="Data.Bool.Base.html#795" class="Function">T</a><a id="350" class="Symbol">)</a>
+
+<a id="353" class="Comment">-- This record stores all the stuff we need for the coefficients:</a>
+<a id="419" class="Comment">--</a>
+<a id="422" class="Comment">--  * A raw ring</a>
+<a id="439" class="Comment">--  * A (decidable) predicate on &quot;zeroeness&quot;</a>
+<a id="484" class="Comment">--</a>
+<a id="487" class="Comment">-- It&#39;s used for defining the operations on the horner normal form.</a>
+<a id="555" class="Keyword">record</a> <a id="RawCoeff"></a><a id="562" href="Polynomial.Parameters.html#562" class="Record">RawCoeff</a> <a id="571" href="Polynomial.Parameters.html#571" class="Bound">ℓ</a> <a id="573" class="Symbol">:</a> <a id="575" class="PrimitiveType">Set</a> <a id="579" class="Symbol">(</a><a id="580" href="Agda.Primitive.html#627" class="Primitive">suc</a> <a id="584" href="Polynomial.Parameters.html#571" class="Bound">ℓ</a><a id="585" class="Symbol">)</a> <a id="587" class="Keyword">where</a>
+  <a id="595" class="Keyword">field</a>
+    <a id="RawCoeff.coeffs"></a><a id="605" href="Polynomial.Parameters.html#605" class="Field">coeffs</a>  <a id="613" class="Symbol">:</a> <a id="615" href="Algebra.html#12169" class="Record">RawRing</a> <a id="623" href="Polynomial.Parameters.html#571" class="Bound">ℓ</a>
+    <a id="RawCoeff.Zero-C"></a><a id="629" href="Polynomial.Parameters.html#629" class="Field">Zero-C</a>  <a id="637" class="Symbol">:</a> <a id="639" href="Algebra.html#12255" class="Field">RawRing.Carrier</a> <a id="655" href="Polynomial.Parameters.html#605" class="Field">coeffs</a> <a id="662" class="Symbol">→</a> <a id="664" href="Agda.Builtin.Bool.html#67" class="Datatype">Bool</a>
+
+  <a id="672" class="Keyword">open</a> <a id="677" href="Algebra.html#12169" class="Module">RawRing</a> <a id="685" href="Polynomial.Parameters.html#605" class="Field">coeffs</a> <a id="692" class="Keyword">public</a>
+
+<a id="700" class="Comment">-- This record stores the full information we need for converting</a>
+<a id="766" class="Comment">-- to the final ring.</a>
+<a id="788" class="Keyword">record</a> <a id="Homomorphism"></a><a id="795" href="Polynomial.Parameters.html#795" class="Record">Homomorphism</a> <a id="808" href="Polynomial.Parameters.html#808" class="Bound">ℓ₁</a> <a id="811" href="Polynomial.Parameters.html#811" class="Bound">ℓ₂</a> <a id="814" href="Polynomial.Parameters.html#814" class="Bound">ℓ₃</a> <a id="817" class="Symbol">:</a> <a id="819" class="PrimitiveType">Set</a> <a id="823" class="Symbol">(</a><a id="824" href="Agda.Primitive.html#627" class="Primitive">suc</a> <a id="828" class="Symbol">(</a><a id="829" href="Polynomial.Parameters.html#808" class="Bound">ℓ₁</a> <a id="832" href="Agda.Primitive.html#657" class="Primitive Operator">⊔</a> <a id="834" href="Polynomial.Parameters.html#811" class="Bound">ℓ₂</a> <a id="837" href="Agda.Primitive.html#657" class="Primitive Operator">⊔</a> <a id="839" href="Polynomial.Parameters.html#814" class="Bound">ℓ₃</a><a id="841" class="Symbol">))</a> <a id="844" class="Keyword">where</a>
+  <a id="852" class="Keyword">field</a>
+    <a id="Homomorphism.coeffs"></a><a id="862" href="Polynomial.Parameters.html#862" class="Field">coeffs</a> <a id="869" class="Symbol">:</a> <a id="871" href="Polynomial.Parameters.html#562" class="Record">RawCoeff</a> <a id="880" href="Polynomial.Parameters.html#808" class="Bound">ℓ₁</a>
+  <a id="885" class="Keyword">module</a> <a id="Raw"></a><a id="892" href="Polynomial.Parameters.html#892" class="Module">Raw</a> <a id="896" class="Symbol">=</a> <a id="898" href="Polynomial.Parameters.html#562" class="Module">RawCoeff</a> <a id="907" href="Polynomial.Parameters.html#862" class="Field">coeffs</a>
+  <a id="916" class="Keyword">field</a>
+    <a id="Homomorphism.ring"></a><a id="926" href="Polynomial.Parameters.html#926" class="Field">ring</a>     <a id="935" class="Symbol">:</a> <a id="937" href="Algebra.Solver.Ring.AlmostCommutativeRing.html#1140" class="Record">AlmostCommutativeRing</a> <a id="959" href="Polynomial.Parameters.html#811" class="Bound">ℓ₂</a> <a id="962" href="Polynomial.Parameters.html#814" class="Bound">ℓ₃</a>
+    <a id="Homomorphism.morphism"></a><a id="969" href="Polynomial.Parameters.html#969" class="Field">morphism</a> <a id="978" class="Symbol">:</a> <a id="980" href="Polynomial.Parameters.html#605" class="Function">Raw.coeffs</a> <a id="991" href="Algebra.Solver.Ring.AlmostCommutativeRing.html#2261" class="Record Operator">-Raw-AlmostCommutative⟶</a> <a id="1015" href="Polynomial.Parameters.html#926" class="Field">ring</a>
+  <a id="1022" class="Keyword">open</a> <a id="1027" href="Algebra.Solver.Ring.AlmostCommutativeRing.html#2261" class="Module Operator">_-Raw-AlmostCommutative⟶_</a> <a id="1053" href="Polynomial.Parameters.html#969" class="Field">morphism</a> <a id="1062" class="Keyword">renaming</a> <a id="1071" class="Symbol">(</a>⟦_⟧ <a id="1076" class="Symbol">to</a> ⟦_⟧ᵣ<a id="1083" class="Symbol">)</a> <a id="1085" class="Keyword">public</a>
+  <a id="1094" class="Keyword">open</a> <a id="1099" href="Algebra.Solver.Ring.AlmostCommutativeRing.html#1140" class="Module">AlmostCommutativeRing</a> <a id="1121" href="Polynomial.Parameters.html#926" class="Field">ring</a> <a id="1126" class="Keyword">public</a>
+  <a id="1135" class="Keyword">field</a>
+    <a id="Homomorphism.Zero-C⟶Zero-R"></a><a id="1145" href="Polynomial.Parameters.html#1145" class="Field">Zero-C⟶Zero-R</a> <a id="1159" class="Symbol">:</a> <a id="1161" class="Symbol">∀</a> <a id="1163" href="Polynomial.Parameters.html#1163" class="Bound">x</a> <a id="1165" class="Symbol">→</a> <a id="1167" href="Data.Bool.Base.html#795" class="Function">T</a> <a id="1169" class="Symbol">(</a><a id="1170" href="Polynomial.Parameters.html#629" class="Function">Raw.Zero-C</a> <a id="1181" href="Polynomial.Parameters.html#1163" class="Bound">x</a><a id="1182" class="Symbol">)</a> <a id="1184" class="Symbol">→</a> <a id="1186" href="Algebra.Solver.Ring.AlmostCommutativeRing.html#1469" class="Function">0#</a> <a id="1189" href="Algebra.Solver.Ring.AlmostCommutativeRing.html#1299" class="Function Operator">≈</a>  <a id="1192" href="Algebra.Solver.Ring.AlmostCommutativeRing.html#2551" class="Function Operator">⟦</a> <a id="1194" href="Polynomial.Parameters.html#1163" class="Bound">x</a> <a id="1196" href="Algebra.Solver.Ring.AlmostCommutativeRing.html#2551" class="Function Operator">⟧ᵣ</a>
+</pre></body></html>
