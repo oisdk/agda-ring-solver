@@ -24,6 +24,7 @@ open import Data.Nat         using (ℕ; suc; zero)
 open import Function         using (_∘_)
 open import Data.Maybe       using (Maybe; just; nothing)
 open import Data.Bool        using (T)
+open import Data.Product     using (_×_; _,_)
 
 infixl 6 _Δ_
 record PowInd {c} (C : Set c) : Set c where
@@ -67,8 +68,16 @@ mutual
   --
   -- This is sparse Horner normal form.
 
-  Coeffs : ℕ → Set a
-  Coeffs n = List (PowInd (NonZero n))
+  infixr 5 _&_
+  record Coeffs  (n : ℕ) : Set a where
+    inductive
+    constructor _&_
+    field
+      head : PowInd (NonZero n)
+      tail : [Coeffs] n
+
+  [Coeffs] : ℕ → Set a
+  [Coeffs] n = List (PowInd (NonZero n))
 
   -- We disallow zeroes in the coefficient list. This condition alone
   -- is enough to ensure a unique representation for any polynomial.
@@ -83,17 +92,16 @@ mutual
   -- This predicate is used (in its negation) to ensure that no
   -- coefficient is zero, preventing any trailing zeroes.
   Zero : ∀ {n} → Poly n → Set
-  Zero (Κ x       Π _) = T (Zero-C x)
-  Zero (Σ []      Π _) = ⊤
-  Zero (Σ (_ ∷ _) Π _) = ⊥
+  Zero (Κ x Π _) = T (Zero-C x)
+  Zero (Σ _ Π _) = ⊥
 
   -- This predicate is used to ensure that all polynomials are in
   -- normal form: if a particular level is constant, than it can
   -- be collapsed into the level below it.
   Norm : ∀ {i} → Coeffs i → Set
-  Norm []                  = ⊥
-  Norm (_ Δ zero  ∷ [])    = ⊥
-  Norm (_ Δ zero  ∷ _ ∷ _) = ⊤
-  Norm (_ Δ suc _ ∷ _)     = ⊤
+  Norm (_ Δ zero  & [])    = ⊥
+  Norm (_ Δ zero  & _ ∷ _) = ⊤
+  Norm (_ Δ suc _ & _)     = ⊤
 open NonZero public
 open Poly public
+open Coeffs public

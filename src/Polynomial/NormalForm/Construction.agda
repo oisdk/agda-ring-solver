@@ -33,9 +33,8 @@ open RawCoeff coeffs
 
 -- Decision procedure for Zero
 zero? : ∀ {n} → (p : Poly n) → Dec (Zero p)
-zero? (Σ []      Π _) = yes tt
-zero? (Σ (_ ∷ _) Π _) = no (λ z → z)
-zero? (Κ x       Π _) with Zero-C x
+zero? (Σ _ Π _) = no (λ z → z)
+zero? (Κ x Π _) with Zero-C x
 ... | true = yes tt
 ... | false = no (λ z → z)
 {-# INLINE zero? #-}
@@ -43,14 +42,13 @@ zero? (Κ x       Π _) with Zero-C x
 -- Exponentiate the first variable of a polynomial
 infixr 8 _⍓_
 _⍓_ : ∀ {n} → Coeffs n → ℕ → Coeffs n
-[] ⍓ i = []
-(x Δ j ∷ xs) ⍓ i = x Δ (j ℕ.+ i) ∷ xs
+(x Δ j & xs) ⍓ i = x Δ (j ℕ.+ i) & xs
 
 infixr 5 _∷↓_
 _∷↓_ : ∀ {n} → PowInd (Poly n) → Coeffs n → Coeffs n
 x Δ i ∷↓ xs = case zero? x of
   λ { (yes p) → xs ⍓ suc i
-    ; (no ¬p) → _≠0 x {¬p} Δ i ∷ xs
+    ; (no ¬p) → _≠0 x {¬p} Δ i & head xs ∷ tail xs
     }
 {-# INLINE _∷↓_ #-}
 
@@ -61,11 +59,11 @@ _Π↑_ : ∀ {n m} → Poly n → (suc n ≤′ m) → Poly m
 
 -- NormalForm.sing Π
 infixr 4 _Π↓_
-_Π↓_ : ∀ {i n} → Coeffs i → suc i ≤′ n → Poly n
+_Π↓_ : ∀ {i n} → [Coeffs] i → suc i ≤′ n → Poly n
 []                       Π↓ i≤n = Κ 0# Π z≤′n
 (x ≠0 Δ zero  ∷ [])      Π↓ i≤n = x Π↑ i≤n
-(x₁   Δ zero  ∷ x₂ ∷ xs) Π↓ i≤n = Σ (x₁ Δ zero  ∷ x₂ ∷ xs) Π i≤n
-(x    Δ suc j ∷ xs)      Π↓ i≤n = Σ (x  Δ suc j ∷ xs) Π i≤n
+(x₁   Δ zero  ∷ x₂ ∷ xs) Π↓ i≤n = Σ (x₁ Δ zero  & x₂ ∷ xs) Π i≤n
+(x    Δ suc j ∷ xs)      Π↓ i≤n = Σ (x  Δ suc j & xs) Π i≤n
 {-# INLINE _Π↓_ #-}
 
 --------------------------------------------------------------------------------
@@ -74,15 +72,17 @@ _Π↓_ : ∀ {i n} → Coeffs i → suc i ≤′ n → Poly n
 -- acts the same on a normalised or non-normalised polynomial, we can prove th
 -- same about any operation which uses it.
 PolyF : ℕ → Set a
-PolyF i = Poly i × Coeffs i
+PolyF i = Poly i × [Coeffs] i
 
 Fold : ℕ → Set a
 Fold i = PolyF i → PolyF i
 
-para : ∀ {i} → Fold i → Coeffs i → Coeffs i
-para f = foldr (λ { (x ≠0 Δ i) xs → case (f (x , xs)) of λ { (y , ys) → (y Δ i) ∷↓ ys }}) []
-{-# INLINE para #-}
+-- para : ∀ {i} → Fold i → Coeffs i → [Coeffs] i
+-- para f (x & []) = case f (x , []) of { λ (y , ys) → (y Δ i) ∷↓ 
+-- para f (x & x₂ ∷ xs) = {!!}
+-- -- para f = foldr (λ { (x ≠0 Δ i) xs → case (f (x , xs)) of λ { (y , ys) → (y Δ i) ∷↓ ys }}) []
+-- {-# INLINE para #-}
 
-poly-map : ∀ {i} → (Poly i → Poly i) → Coeffs i → Coeffs i
-poly-map f = para (λ { (x , y) → (f x , y)})
-{-# INLINE poly-map #-}
+-- poly-map : ∀ {i} → (Poly i → Poly i) → Coeffs i → Coeffs i
+-- poly-map f = para (λ { (x , y) → (f x , y)})
+-- {-# INLINE poly-map #-}
