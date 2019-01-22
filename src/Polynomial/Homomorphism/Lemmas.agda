@@ -73,6 +73,10 @@ pow-hom (suc i) (x ≠0 Δ j & xs) ρ ρs =
     (((x , xs) ⟦∷⟧ (ρ , ρs)) *⟨ ρ ⟩^ (j ℕ.+ suc i))
   ∎
 
+pow-mul-cong : ∀ {x y} → x ≈ y → ∀ ρ i → x *⟨ ρ ⟩^ i ≈ y *⟨ ρ ⟩^ i
+pow-mul-cong x≈y ρ ℕ.zero = x≈y
+pow-mul-cong x≈y ρ (suc i₁) = *≫ x≈y
+
 pow-distrib-+1 : ∀ x y i → (x * y) ^ i +1 ≈ x ^ i +1 * y ^ i +1
 pow-distrib-+1 x y ℕ.zero = refl
 pow-distrib-+1 x y (suc i) =
@@ -163,6 +167,13 @@ pow-sucʳ x (suc i) = refl
        → Σ?⟦ x Δ i ∷↓ xs ⟧ (ρ , ρs) ≈ ρ ^ i * ((x , xs) ⟦∷⟧ (ρ , ρs))
 ∷↓-hom x ℕ.zero xs ρ ρs = ∷↓-hom-0 x xs ρ ρs ⟨ trans ⟩ sym (*-identityˡ _)
 ∷↓-hom x (suc i) xs ρ ρs = ∷↓-hom-s x i xs ρ ρs
+
+⟦∷⟧-hom : ∀ {n}
+       → (x : Poly n)
+       → (xs : [Coeffs] n)
+       → ∀ ρ ρs → (x , xs) ⟦∷⟧ (ρ , ρs) ≈ ρ * Σ?⟦ xs ⟧ (ρ , ρs) + ⟦ x ⟧ ρs
+⟦∷⟧-hom x [] ρ ρs = sym ((≪+ zeroʳ _) ⟨ trans ⟩ +-identityˡ _)
+⟦∷⟧-hom x [ xs ] ρ ρs = refl
 
 Σ-Π↑-hom : ∀ {i n m}
          → (xs : Coeffs i)
