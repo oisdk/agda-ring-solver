@@ -2,11 +2,12 @@ open import Polynomial.Simple.AlmostCommutativeRing
 open import Relation.Binary
 open import Data.Bool using (Bool; false; true ; _∧_; _∨_; not; if_then_else_)
 open import Data.String using (String)
+open import EqBool
 
 module Relation.Traced
   {c ℓ}
   (base : AlmostCommutativeRing c ℓ)
-  (eqBase : AlmostCommutativeRing.Carrier base → AlmostCommutativeRing.Carrier base → Bool)
+  ⦃ eqBase : HasEqBool (AlmostCommutativeRing.Carrier base) ⦄
   (showBase : AlmostCommutativeRing.Carrier base → String)
   where
 
@@ -24,96 +25,9 @@ open import Data.String.Unsafe renaming (_==_ to eqBoolString)
 open import Data.Maybe
 open import Data.Nat using (ℕ)
 
+
 open AlmostCommutativeRing base
-
-record EqBool {a} (A : Set a) : Set a where
-  field _==_ : A → A → Bool
-
-open EqBool {{...}}
-
-instance
-  eqNat : EqBool ℕ
-  _==_ {{eqNat}} = ℕ==
-    where open import Agda.Builtin.Nat renaming (_==_ to ℕ==)
-
-instance
-  eqCarrier : EqBool Carrier
-  _==_ {{eqCarrier}} = eqBase
-
-instance
-  eqString : EqBool String
-  _==_ {{eqString}} = eqBoolString
-
-infixl 6 _⊕_
-infixl 7 _⊗_
-data Open : Set c where
-  V   : (v : String) → Open
-  K   : (k : Carrier) → Open
-  _⊕_ : (x : Open) → (y : Open) → Open
-  _⊗_ : (x : Open) → (y : Open) → Open
-  ⊝_  : (x : Open) → Open
-{-# DISPLAY V v = v #-}
-{-# DISPLAY K x = x #-}
-
-
-instance
-  eqOpen : EqBool Open
-  _==_ ⦃ eqOpen ⦄ (V v) (V y) = v == y
-  _==_ ⦃ eqOpen ⦄ (K k) (K y) = k == y
-  _==_ ⦃ eqOpen ⦄ (x₁ ⊕ y₁) (x₂ ⊕ y₂) = x₁ == x₂ ∧ y₁ == y₂
-  _==_ ⦃ eqOpen ⦄ (x₁ ⊗ y₁) (x₂ ⊗ y₂) = x₁ == x₂ ∧ y₁ == y₂
-  _==_ ⦃ eqOpen ⦄ (⊝ x) (⊝ y) = x == y
-  _==_ ⦃ eqOpen ⦄ _ _ = false
-
-data Expr : Set c where
-  C : Carrier → Expr
-  O : Open → Expr
-{-# DISPLAY C x = x #-}
-{-# DISPLAY O x = x #-}
-
-module Display where
-  open import PrettyPrinting.Unparser
-  toStruct : Expr → ShowExpr
-  toStruct (C x) = lit (showBase x)
-  toStruct (O x) = go x
-    where
-    go : Open → ShowExpr
-    go (V v) = lit v
-    go (K k) = lit (showBase k)
-    go (x ⊕ y) = bin " + " (op 6 left) (go x) (go y)
-    go (x ⊗ y) = bin " * " (op 6 left) (go x) (go y)
-    go (⊝ x) = pre "- " (op 1 left) (go x)
-
-  prettyExpr : Expr → String
-  prettyExpr = showExpr ∘ toStruct
-
-normalise′ : Open → Expr
-normalise′ (V v) = O (V v)
-normalise′ (K k) = C k
-normalise′ (x ⊕ y) with normalise′ x | normalise′ y
-normalise′ (x ⊕ y) | C x₁ | C x₂ = C (x₁ + x₂)
-normalise′ (x ⊕ y) | C x₁ | O x₂ = if x₁ == 0# then O x₂ else O (K x₁ ⊕ x₂)
-normalise′ (x ⊕ y) | O x₁ | C x₂ = if x₂ == 0# then O x₁ else O (x₁ ⊕ K x₂)
-normalise′ (x ⊕ y) | O x₁ | O x₂ = O (x₁ ⊕ x₂)
-normalise′ (x ⊗ y) with normalise′ x | normalise′ y
-normalise′ (x ⊗ y) | C x₁ | C x₂ = C (x₁ + x₂)
-normalise′ (x ⊗ y) | C x₁ | O x₂ = if x₁ == 0# then C 0# else if x₁ == 1# then O x₂ else O (K x₁ ⊗ x₂)
-normalise′ (x ⊗ y) | O x₁ | C x₂ = if x₂ == 0# then C 0# else if x₂ == 1# then O x₁ else O (x₁ ⊗ K x₂)
-normalise′ (x ⊗ y) | O x₁ | O x₂ = O (x₁ ⊗ x₂)
-normalise′ (⊝ x) with normalise′ x
-normalise′ (⊝ x) | C x₁ = C (- x₁)
-normalise′ (⊝ x) | O x₁ = O (⊝ x₁)
-
-normalise : Expr → Expr
-normalise (C x) = C x
-normalise (O x) = normalise′ x
-
-instance
-  eqExpr : EqBool Expr
-  _==_ ⦃ eqExpr ⦄ (C x) (C x₁) = x == x₁
-  _==_ ⦃ eqExpr ⦄ (C x) (O x₁) = false
-  _==_ ⦃ eqExpr ⦄ (O x) (C x₁) = false
-  _==_ ⦃ eqExpr ⦄ (O x) (O x₁) = x == x₁
+open import Polynomial.Expr.Normalising rawRing showBase
 
 open import Agda.Builtin.FromNat using (Number; fromNat) public
 
@@ -128,7 +42,7 @@ data BinOp : Set where
   [*] : BinOp
 
 instance
-  eqBinOp : EqBool BinOp
+  eqBinOp : HasEqBool BinOp
   _==_ ⦃ eqBinOp ⦄ [+] [+] = true
   _==_ ⦃ eqBinOp ⦄ [+] [*] = false
   _==_ ⦃ eqBinOp ⦄ [*] [+] = false
@@ -162,7 +76,7 @@ data Step : Set c where
   [-+comm]   : Expr → Expr → Step
 
 instance
-  eqStep : EqBool Step
+  eqStep : HasEqBool Step
   _==_ {{eqStep}} ([sym] x) ([sym] y) = x == y
   _==_ {{eqStep}} ([cong] x x₁ x₂) ([cong] y y₁ y₂) = x == y ∧ x₁ == y₁ ∧ x₂ == y₂
   _==_ {{eqStep}} ([-cong] x) ([-cong] y) = x == y
@@ -297,27 +211,27 @@ prettyStep ([cong] x [+] x₂) = "(" ++ prettyStep x ++ ") + (" ++ prettyStep x�
 prettyStep ([cong] x [*] x₂) = "(" ++ prettyStep x ++ ") * (" ++ prettyStep x₂ ++ ")"
 prettyStep ([-cong] x) = "- (" ++ prettyStep x ++ ")"
 prettyStep ([refl] x) = "eval"
-prettyStep ([assoc] [+] x₁ x₂ x₃) = "+-assoc(" ++ Display.prettyExpr x₁ ++ ", " ++ Display.prettyExpr x₂ ++ ", " ++ Display.prettyExpr x₂ ++ ")"
-prettyStep ([assoc] [*] x₁ x₂ x₃) = "*-assoc(" ++ Display.prettyExpr x₁ ++ ", " ++ Display.prettyExpr x₂ ++ ", " ++ Display.prettyExpr x₂ ++ ")"
-prettyStep ([ident] [+] x₁) = "+-ident(" ++ Display.prettyExpr x₁ ++ ")"
-prettyStep ([ident] [*] x₁) = "*-ident(" ++ Display.prettyExpr x₁ ++ ")"
-prettyStep ([comm] [+] x₁ x₂) = "+-comm(" ++ Display.prettyExpr x₁ ++ ", " ++ Display.prettyExpr x₂ ++ ")"
-prettyStep ([comm] [*] x₁ x₂) = "*-comm(" ++ Display.prettyExpr x₁ ++ ", " ++ Display.prettyExpr x₂ ++ ")"
-prettyStep ([zero] x) = "*-zero(" ++ Display.prettyExpr x ++ ")"
-prettyStep ([distrib] x x₁ x₂) = "*-distrib(" ++ Display.prettyExpr x ++ ", " ++ Display.prettyExpr x₁ ++ ", " ++ Display.prettyExpr x₂ ++ ")"
-prettyStep ([-distrib] x x₁) = "-distrib(" ++ Display.prettyExpr x ++ ", " ++ Display.prettyExpr x₁ ++ ")"
-prettyStep ([-+comm] x x₁) = "-+-comm(" ++ Display.prettyExpr x ++ ", " ++ Display.prettyExpr x₁ ++ ")"
+prettyStep ([assoc] [+] x₁ x₂ x₃) = "+-assoc(" ++ prettyExpr x₁ ++ ", " ++ prettyExpr x₂ ++ ", " ++ prettyExpr x₂ ++ ")"
+prettyStep ([assoc] [*] x₁ x₂ x₃) = "*-assoc(" ++ prettyExpr x₁ ++ ", " ++ prettyExpr x₂ ++ ", " ++ prettyExpr x₂ ++ ")"
+prettyStep ([ident] [+] x₁) = "+-ident(" ++ prettyExpr x₁ ++ ")"
+prettyStep ([ident] [*] x₁) = "*-ident(" ++ prettyExpr x₁ ++ ")"
+prettyStep ([comm] [+] x₁ x₂) = "+-comm(" ++ prettyExpr x₁ ++ ", " ++ prettyExpr x₂ ++ ")"
+prettyStep ([comm] [*] x₁ x₂) = "*-comm(" ++ prettyExpr x₁ ++ ", " ++ prettyExpr x₂ ++ ")"
+prettyStep ([zero] x) = "*-zero(" ++ prettyExpr x ++ ")"
+prettyStep ([distrib] x x₁ x₂) = "*-distrib(" ++ prettyExpr x ++ ", " ++ prettyExpr x₁ ++ ", " ++ prettyExpr x₂ ++ ")"
+prettyStep ([-distrib] x x₁) = "-distrib(" ++ prettyExpr x ++ ", " ++ prettyExpr x₁ ++ ")"
+prettyStep ([-+comm] x x₁) = "-+-comm(" ++ prettyExpr x ++ ", " ++ prettyExpr x₁ ++ ")"
 
 showProof : ∀ {x y} → EqClosure _≈ⁱ_ x y → List String
 showProof = List.foldr unparse [] ∘ List.foldr spotReverse [] ∘ List.mapMaybe interesting′ ∘ showProof′
   where
   unparse : Explanation Expr → List String → List String
-  unparse (lhs₁ ≈⟨ step₁ ⟩≈ rhs₁) [] = Display.prettyExpr lhs₁ ∷ ("    ={ " ++ prettyStep step₁ ++ " }") ∷ Display.prettyExpr rhs₁ ∷ []
+  unparse (lhs₁ ≈⟨ step₁ ⟩≈ rhs₁) [] = prettyExpr lhs₁ ∷ ("    ={ " ++ prettyStep step₁ ++ " }") ∷ prettyExpr rhs₁ ∷ []
   unparse (lhs₁ ≈⟨ step₁ ⟩≈ rhs₁) (y ∷ ys) = if r == y then l ∷ m ∷ y ∷ ys else l ∷ m ∷ r ∷ "    ={ eval }" ∷ y ∷ ys
     where
-    l = Display.prettyExpr lhs₁
+    l = prettyExpr lhs₁
     m = "    ={ " ++ prettyStep step₁ ++ " }"
-    r = Display.prettyExpr rhs₁
+    r = prettyExpr rhs₁
 
   spotReverse : Explanation Expr → List (Explanation Expr) → List (Explanation Expr)
   spotReverse x [] = x ∷ []

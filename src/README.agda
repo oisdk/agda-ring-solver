@@ -248,8 +248,8 @@ module OldSolver where                                                        --
 module TracedExamples where                                                   --         ██║  ██║  ██║
   import Data.Nat.Show                                                        --         ██║  ██║  ██║
   open import Data.List using (_∷_; [])                                       --         ██║  ██║  ██║
-  open import Agda.Builtin.Nat using (_==_)                                   --         ██║  ██║  ██║
-  open import Relation.Traced Nat.ring _==_ Data.Nat.Show.show public         --         ██║  ██║  ██║
+  open import EqBool                                                          --         ██║  ██║  ██║
+  open import Relation.Traced Nat.ring  Data.Nat.Show.show public             --         ██║  ██║  ██║
   open AlmostCommutativeRing tracedRing                                       --         ██║  ██║  ██║
   open import Relation.Binary.PropositionalEquality as ≡ using (_≡_)          --         ██║  ██║  ██║
                                                                               --         ██║  ██║  ██║
@@ -257,7 +257,7 @@ module TracedExamples where                                                   --
   lemma = solve tracedRing                                                    --         ██║  ██║  ██║
                                                                               --      ██╗██║  ██║  ██║
   explained                                                                   --    ████║██║  ██║  ██║
-    : showProof (lemma "x" "y") ≡ "x + (y + 3)"                               --  █████████║  ██║  ██║
+    : showProof (lemma "x" "y") ≡ "x + y + 3"                                 --  █████████║  ██║  ██║
                                 ∷ "    ={ +-comm(x, y + 3) }"                 --    ████╔══╝  ██║  ██║
                                 ∷ "y + 3 + x"                                 --      ██║     ██║  ██║
                                 ∷ "    ={ +-comm(y, 3) }"                     --      ╚═╝     ██║  ██║
