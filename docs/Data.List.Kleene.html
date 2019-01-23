@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Data.List.Kleene</title><link rel="stylesheet" href="Agda.css"></head><body><pre><a id="1" class="Keyword">module</a> <a id="8" href="Data.List.Kleene.html" class="Module">Data.List.Kleene</a> <a id="25" class="Keyword">where</a>
+
+<a id="32" class="Comment">-- This module provides a different definition of lists based on the kleene</a>
+<a id="108" class="Comment">-- star and plus.</a>
+
+<a id="127" class="Keyword">mutual</a>
+  <a id="136" class="Keyword">data</a> <a id="_⋆"></a><a id="141" href="Data.List.Kleene.html#141" class="Datatype Operator">_⋆</a> <a id="144" class="Symbol">{</a><a id="145" href="Data.List.Kleene.html#145" class="Bound">a</a><a id="146" class="Symbol">}</a> <a id="148" class="Symbol">(</a><a id="149" href="Data.List.Kleene.html#149" class="Bound">A</a> <a id="151" class="Symbol">:</a> <a id="153" class="PrimitiveType">Set</a> <a id="157" href="Data.List.Kleene.html#145" class="Bound">a</a><a id="158" class="Symbol">)</a> <a id="160" class="Symbol">:</a> <a id="162" class="PrimitiveType">Set</a> <a id="166" href="Data.List.Kleene.html#145" class="Bound">a</a> <a id="168" class="Keyword">where</a>
+    <a id="_⋆.[]"></a><a id="178" href="Data.List.Kleene.html#178" class="InductiveConstructor">[]</a>  <a id="182" class="Symbol">:</a> <a id="184" href="Data.List.Kleene.html#149" class="Bound">A</a> <a id="186" href="Data.List.Kleene.html#141" class="Datatype Operator">⋆</a>
+    <a id="_⋆.[_]"></a><a id="192" href="Data.List.Kleene.html#192" class="InductiveConstructor Operator">[_]</a> <a id="196" class="Symbol">:</a> <a id="198" href="Data.List.Kleene.html#149" class="Bound">A</a> <a id="200" href="Data.List.Kleene.html#233" class="Record Operator">⁺</a> <a id="202" class="Symbol">→</a> <a id="204" href="Data.List.Kleene.html#149" class="Bound">A</a> <a id="206" href="Data.List.Kleene.html#141" class="Datatype Operator">⋆</a>
+
+  <a id="211" class="Keyword">infixr</a> <a id="218" class="Number">5</a> <a id="220" href="Data.List.Kleene.html#296" class="InductiveConstructor Operator">_&amp;_</a>
+  <a id="226" class="Keyword">record</a> <a id="_⁺"></a><a id="233" href="Data.List.Kleene.html#233" class="Record Operator">_⁺</a> <a id="236" class="Symbol">{</a><a id="237" href="Data.List.Kleene.html#237" class="Bound">a</a><a id="238" class="Symbol">}</a> <a id="240" class="Symbol">(</a><a id="241" href="Data.List.Kleene.html#241" class="Bound">A</a> <a id="243" class="Symbol">:</a> <a id="245" class="PrimitiveType">Set</a> <a id="249" href="Data.List.Kleene.html#237" class="Bound">a</a><a id="250" class="Symbol">)</a> <a id="252" class="Symbol">:</a> <a id="254" class="PrimitiveType">Set</a> <a id="258" href="Data.List.Kleene.html#237" class="Bound">a</a> <a id="260" class="Keyword">where</a>
+    <a id="270" class="Keyword">inductive</a>
+    <a id="284" class="Keyword">constructor</a> <a id="_⁺._&amp;_"></a><a id="296" href="Data.List.Kleene.html#296" class="InductiveConstructor Operator">_&amp;_</a>
+    <a id="304" class="Keyword">field</a>
+      <a id="_⁺.head"></a><a id="316" href="Data.List.Kleene.html#316" class="Field">head</a> <a id="321" class="Symbol">:</a> <a id="323" href="Data.List.Kleene.html#241" class="Bound">A</a>
+      <a id="_⁺.tail"></a><a id="331" href="Data.List.Kleene.html#331" class="Field">tail</a> <a id="336" class="Symbol">:</a> <a id="338" href="Data.List.Kleene.html#241" class="Bound">A</a> <a id="340" href="Data.List.Kleene.html#141" class="Datatype Operator">⋆</a>
+<a id="342" class="Keyword">open</a> <a id="347" href="Data.List.Kleene.html#233" class="Module Operator">_⁺</a> <a id="350" class="Keyword">public</a>
+</pre></body></html>

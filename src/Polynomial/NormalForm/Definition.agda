@@ -24,6 +24,7 @@ open import Function         using (_∘_)
 open import Data.Maybe       using (Maybe; just; nothing)
 open import Data.Bool        using (T)
 open import Data.Product     using (_×_; _,_)
+open import Data.List.Kleene public
 
 infixl 6 _Δ_
 record PowInd {c} (C : Set c) : Set c where
@@ -33,20 +34,6 @@ record PowInd {c} (C : Set c) : Set c where
     coeff : C
     pow   : ℕ
 open PowInd public
-
-mutual
-  data _⋆ {a} (A : Set a) : Set a where
-    []  : A ⋆
-    [_] : A ⁺ → A ⋆
-
-  infixr 5 _&_
-  record _⁺ {a} (A : Set a) : Set a where
-    inductive
-    constructor _&_
-    field
-      head : A
-      tail : A ⋆
-open _⁺ public
 
 open RawCoeff coeffs
 
