@@ -131,8 +131,15 @@ pow-sucʳ x (suc i) = refl
 Σ?⟦ [] ⟧ _ = 0#
 Σ?⟦ [ x ] ⟧ = Σ⟦ x ⟧
 
+_⟦∷⟧?_ : ∀ {n} (x : Poly n × [Coeffs] n) → Carrier × Vec Carrier n → Carrier
+(x , xs) ⟦∷⟧? (ρ , ρs) = ρ * Σ?⟦ xs ⟧ (ρ , ρs) + ⟦ x ⟧ ρs
+
 Σ?-hom : ∀ {n} (xs : Coeffs n) → ∀ ρ → Σ?⟦ [ xs ] ⟧ ρ ≈ Σ⟦ xs ⟧ ρ
 Σ?-hom _ _ = refl
+
+⟦∷⟧?-hom : ∀ {n} (x : Poly n) → ∀ xs ρ ρs → (x , xs) ⟦∷⟧? (ρ , ρs) ≈ (x , xs) ⟦∷⟧ (ρ , ρs)
+⟦∷⟧?-hom x [ xs ] ρ ρs = refl
+⟦∷⟧?-hom x [] ρ ρs =  (≪+ zeroʳ _) ⟨ trans ⟩ +-identityˡ _
 
 pow′-hom : ∀ {n} i (xs : [Coeffs] n) → ∀ ρ ρs → ((Σ?⟦ xs ⟧ (ρ , ρs)) *⟨ ρ ⟩^ i) ≈ (Σ?⟦ xs ⍓ i ⟧ (ρ , ρs))
 pow′-hom i [ xs ] ρ ρs = pow-hom i xs ρ ρs

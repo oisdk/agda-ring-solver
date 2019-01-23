@@ -34,6 +34,20 @@ record PowInd {c} (C : Set c) : Set c where
     pow   : ℕ
 open PowInd public
 
+mutual
+  data _⋆ {a} (A : Set a) : Set a where
+    []  : A ⋆
+    [_] : A ⁺ → A ⋆
+
+  infixr 5 _&_
+  record _⁺ {a} (A : Set a) : Set a where
+    inductive
+    constructor _&_
+    field
+      head : A
+      tail : A ⋆
+open _⁺ public
+
 open RawCoeff coeffs
 
 mutual
@@ -67,17 +81,10 @@ mutual
   --
   -- This is sparse Horner normal form.
 
-  data [Coeffs] (n : ℕ) : Set a where
-    []  : [Coeffs] n
-    [_] : Coeffs n → [Coeffs] n
-
-  infixr 5 _&_
-  record Coeffs  (n : ℕ) : Set a where
-    inductive
-    constructor _&_
-    field
-      head : PowInd (NonZero n)
-      tail : [Coeffs] n
+  [Coeffs] : ℕ → Set a
+  [Coeffs] n = PowInd (NonZero n) ⋆
+  Coeffs : ℕ → Set a
+  Coeffs n = PowInd (NonZero n) ⁺
 
   -- We disallow zeroes in the coefficient list. This condition alone
   -- is enough to ensure a unique representation for any polynomial.
@@ -104,4 +111,3 @@ mutual
   Norm (_ Δ suc _ & _)     = ⊤
 open NonZero public
 open Poly public
-open Coeffs public
