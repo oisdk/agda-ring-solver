@@ -56,9 +56,9 @@ def expr_3(n):
 
 
 expressions = [
-    (expr_3, list(range(1, 9))),
-    (expr_1, list(range(1, 9))),
-    (expr_2, [1, 100, 200, 300, 400, 500]),
+    (expr_1, list(range(8, 9))),
+    (expr_3, list(range(7, 8))),
+    # (expr_2, [1, 100, 200, 300, 400, 500]),
 ]
 
 import sympy
@@ -160,8 +160,9 @@ for n in range(5, 9):
             expr_ast = 'lemma = solve %i (λ %s → %s := %s ) refl' % (
                 n, varnames, expr.translate(dense_expr_encoding),
                 expand(expr).translate(dense_expr_encoding))
-            res = time_file_typecheck('\n'.join((dense_preamble, typesig,
-                                                 expr_ast)))
+            res = 2
+            # res = time_file_typecheck('\n'.join((dense_preamble, typesig,
+            #                                      expr_ast)))
             print(('%7g | ' % res))
             sys.stdout.flush()
             dense_results.append(res)
