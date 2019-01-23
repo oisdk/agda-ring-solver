@@ -69,27 +69,27 @@ mutual
   ⊞-inj : ∀ {i k}
         → (i ≤′ k)
         → FlatPoly i
-        → Coeffs k
-        → [Coeffs] k
+        → Coeff k ⁺
+        → Coeff k ⋆
   ⊞-inj i≤k xs (y Π j≤k ≠0 Δ zero & ys) = ⊞-match (inj-compare j≤k i≤k) y xs Δ zero ∷↓ ys
   ⊞-inj i≤k xs (y Δ suc j & ys) = xs Π i≤k Δ zero ∷↓ [ y Δ j & ys ]
 
-  ⊞-coeffs : ∀ {n} → [Coeffs] n → [Coeffs] n → [Coeffs] n
+  ⊞-coeffs : ∀ {n} → Coeff n ⋆ → Coeff n ⋆ → Coeff n ⋆
   ⊞-coeffs [ x Δ i & xs ] ys = ⊞-zip-r x i xs ys
   ⊞-coeffs [] ys = ys
 
   ⊞-zip : ∀ {p q n}
         → ℕ.Ordering p q
         → NonZero n
-        → [Coeffs] n
+        → Coeff n ⋆
         → NonZero n
-        → [Coeffs] n
-        → [Coeffs] n
+        → Coeff n ⋆
+        → Coeff n ⋆
   ⊞-zip (ℕ.less    i k) x xs y ys = [ x Δ i & ⊞-zip-r y k ys xs ]
   ⊞-zip (ℕ.greater j k) x xs y ys = [ y Δ j & ⊞-zip-r x k xs ys ]
   ⊞-zip (ℕ.equal   i  ) x xs y ys = (x .poly ⊞ y .poly) Δ i ∷↓ ⊞-coeffs xs ys
 
-  ⊞-zip-r : ∀ {n} → NonZero n → ℕ → [Coeffs] n → [Coeffs] n → [Coeffs] n
+  ⊞-zip-r : ∀ {n} → NonZero n → ℕ → Coeff n ⋆ → Coeff n ⋆ → Coeff n ⋆
   ⊞-zip-r x i xs [] = [ x Δ i & xs ]
   ⊞-zip-r x i xs [ y Δ j & ys ] = ⊞-zip (compare i j) x xs y ys
 {-# INLINE ⊞-zip #-}
@@ -124,17 +124,17 @@ mutual
   ⊠-Κ (acc _ ) x (Κ y  Π i≤n) = Κ (x * y) Π i≤n
   ⊠-Κ (acc wf) x (Σ xs Π i≤n) = ⊠-Κ-inj (wf _ i≤n) x xs Π↓ i≤n
 
-  ⊠-Σ : ∀ {i n} → Acc _<′_ n → Coeffs i → i <′ n → Poly n → Poly n
+  ⊠-Σ : ∀ {i n} → Acc _<′_ n → Coeff i ⁺ → i <′ n → Poly n → Poly n
   ⊠-Σ (acc wf) xs i≤n (Σ ys Π j≤n) = ⊠-match  (acc wf) (inj-compare i≤n j≤n) xs ys
   ⊠-Σ (acc wf) xs i≤n (Κ y Π _) = ⊠-Κ-inj (wf _ i≤n) y xs Π↓ i≤n
 
-  ⊠-Κ-inj : ∀ {i}  → Acc _<′_ i → Carrier → Coeffs i → [Coeffs] i
+  ⊠-Κ-inj : ∀ {i}  → Acc _<′_ i → Carrier → Coeff i ⁺ → Coeff i ⋆
   ⊠-Κ-inj a x xs = poly-map (⊠-Κ a x) (xs)
 
   ⊠-Σ-inj : ∀ {i k}
           → Acc _<′_ k
           → i <′ k
-          → Coeffs i
+          → Coeff i ⁺
           → Poly k
           → Poly k
   ⊠-Σ-inj (acc wf) i≤k x (Σ y Π j≤k) = ⊠-match (acc wf) (inj-compare i≤k j≤k) x y
@@ -145,21 +145,21 @@ mutual
           → {i≤n : i <′ n}
           → {j≤n : j <′ n}
           → InjectionOrdering i≤n j≤n
-          → Coeffs i
-          → Coeffs j
+          → Coeff i ⁺
+          → Coeff j ⁺
           → Poly n
   ⊠-match (acc wf) (inj-eq i&j≤n)     xs ys = ⊠-coeffs (wf _ i&j≤n) xs ys               Π↓ i&j≤n
   ⊠-match (acc wf) (inj-lt i≤j-1 j≤n) xs ys = poly-map (⊠-Σ-inj (wf _ j≤n) i≤j-1 xs) (ys) Π↓ j≤n
   ⊠-match (acc wf) (inj-gt i≤n j≤i-1) xs ys = poly-map (⊠-Σ-inj (wf _ i≤n) j≤i-1 ys) (xs) Π↓ i≤n
 
-  ⊠-coeffs : ∀ {n} → Acc _<′_ n → Coeffs n → Coeffs n → [Coeffs] n
+  ⊠-coeffs : ∀ {n} → Acc _<′_ n → Coeff n ⁺ → Coeff n ⁺ → Coeff n ⋆
   ⊠-coeffs a (xs) (y ≠0 Δ j & []) = poly-map (⊠-step′ a y) (xs) ⍓ j
   ⊠-coeffs a (xs) (y ≠0 Δ j & [ ys ]) = para (⊠-cons a y ys) (xs) ⍓ j
 
   ⊠-cons : ∀ {n}
           → Acc _<′_ n
           → Poly n
-          → Coeffs n
+          → Coeff n ⁺
           → Fold n
   -- ⊠-cons a y [] (x Π j≤n , xs) = ⊠-step a x j≤n y , xs
   ⊠-cons a y ys (x Π j≤n , xs) =

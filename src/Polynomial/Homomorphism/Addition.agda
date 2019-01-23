@@ -81,7 +81,7 @@ mutual
   ⊞-inj-hom : ∀ {i k}
             → (i≤k : i ≤′ k)
             → (x : FlatPoly i)
-            → (ys : Coeffs k)
+            → (ys : Coeff k ⁺)
             → (ρ : Carrier)
             → (Ρ : Vec Carrier k)
             → Σ?⟦ ⊞-inj i≤k x ys ⟧ (ρ , Ρ) ≈ ⟦ x Π i≤k ⟧ Ρ + Σ⟦ ys ⟧ (ρ , Ρ)
@@ -132,8 +132,8 @@ mutual
     ∎
 
   ⊞-coeffs-hom : ∀ {n}
-              → (xs : [Coeffs] n)
-              → (ys : [Coeffs] n)
+              → (xs : Coeff n ⋆)
+              → (ys : Coeff n ⋆)
               → Π[ ⦇ Σ?⟦ ⊞-coeffs xs ys ⟧ ≈ ⦇ Σ?⟦ xs ⟧ + Σ?⟦ ys ⟧ ⦈ ⦈ ]
   ⊞-coeffs-hom [] ys Ρ = sym (+-identityˡ (Σ?⟦ ys ⟧ Ρ))
   ⊞-coeffs-hom [ x Δ i & xs ] = ⊞-zip-r-hom i x xs
@@ -141,9 +141,9 @@ mutual
   ⊞-zip-hom : ∀ {n i j}
            → (c : ℕ.Ordering i j)
            → (x : NonZero n)
-           → (xs : [Coeffs] n)
+           → (xs : Coeff n ⋆)
            → (y : NonZero n)
-           → (ys : [Coeffs] n)
+           → (ys : Coeff n ⋆)
            → Π[ ⦇ Σ?⟦ ⊞-zip c x xs y ys ⟧ ≈ ⦇ Σ⟦ x Δ i & xs ⟧ + Σ⟦ y Δ j & ys ⟧ ⦈ ⦈ ]
   ⊞-zip-hom (ℕ.equal i) (x ≠0) xs (y ≠0) ys (ρ , Ρ) =
     let x′  = ⟦ x ⟧ Ρ
@@ -181,9 +181,9 @@ mutual
 
   ⊞-zip-r-step-hom : ∀ {n} j k
                   → (x : NonZero n)
-                  → (xs : [Coeffs] n)
+                  → (xs : Coeff n ⋆)
                   → (y : NonZero n)
-                  → (ys : [Coeffs] n)
+                  → (ys : Coeff n ⋆)
                   → Π[ ⦇ Σ⟦ y Δ j & ⊞-zip-r x k xs ys ⟧ ≈ ⦇ Σ⟦ x Δ suc (j ℕ.+ k) & xs ⟧ + Σ⟦ y Δ j & ys ⟧ ⦈ ⦈ ]
   ⊞-zip-r-step-hom j k x xs y ys (ρ , Ρ) =
     let x′  = ⟦ NonZero.poly x ⟧ Ρ
@@ -223,8 +223,8 @@ mutual
 
   ⊞-zip-r-hom : ∀ {n} i
              → (x : NonZero n)
-             → (xs : [Coeffs] n)
-             → (ys : [Coeffs] n)
+             → (xs : Coeff n ⋆)
+             → (ys : Coeff n ⋆)
              → (Ρ : Carrier × Vec Carrier n)
              → Σ?⟦ ⊞-zip-r x i xs ys ⟧ (Ρ) ≈ Σ⟦ x Δ i & xs ⟧ ( Ρ) + Σ?⟦ ys ⟧ ( Ρ)
   ⊞-zip-r-hom i x xs [] (ρ , Ρ) = sym (+-identityʳ _)

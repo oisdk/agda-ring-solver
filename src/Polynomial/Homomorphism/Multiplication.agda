@@ -63,7 +63,7 @@ mutual
   ⊠-Κ-inj-hom : ∀ {n}
               → (a : Acc _<′_ n)
               → (x : Raw.Carrier)
-              → (xs : Coeffs n)
+              → (xs : Coeff n ⁺)
               → ∀ ρ
               → Σ?⟦ ⊠-Κ-inj a x xs ⟧ ρ ≈ ⟦ x ⟧ᵣ * Σ⟦ xs ⟧ ρ
   ⊠-Κ-inj-hom {n} a x xs (ρ , Ρ) =
@@ -80,7 +80,7 @@ mutual
 
   ⊠-Σ-hom : ∀ {i n}
           → (a : Acc _<′_ n)
-          → (xs : Coeffs i)
+          → (xs : Coeff i ⁺)
           → (i<n : i <′ n)
           → (ys : Poly n)
           → ∀ ρ
@@ -100,7 +100,7 @@ mutual
   ⊠-Σ-inj-hom : ∀ {i k}
               → (a : Acc _<′_ k)
               → (i<k : i <′ k)
-              → (xs : Coeffs i)
+              → (xs : Coeff i ⁺)
               → (ys : Poly k)
               → ∀ ρ
               → ⟦ ⊠-Σ-inj a i<k xs ys ⟧ ρ ≈ Σ⟦ xs ⟧ (drop-1 i<k ρ) * ⟦ ys ⟧ ρ
@@ -121,8 +121,8 @@ mutual
               → {i<n : i <′ n}
               → {j<n : j <′ n}
               → (ord : InjectionOrdering i<n j<n)
-              → (xs : Coeffs i)
-              → (ys : Coeffs j)
+              → (xs : Coeff i ⁺)
+              → (ys : Coeff j ⁺)
               → (Ρ : Vec Carrier n)
               → ⟦ ⊠-match a ord xs ys ⟧ Ρ
               ≈ Σ⟦ xs ⟧ (drop-1 i<n Ρ) * Σ⟦ ys ⟧ (drop-1 j<n Ρ)
@@ -175,8 +175,8 @@ mutual
 
   ⊠-coeffs-hom : ∀ {n}
                → (a : Acc _<′_ n)
-               → (xs : Coeffs n)
-               → (ys : Coeffs n)
+               → (xs : Coeff n ⁺)
+               → (ys : Coeff n ⁺)
                → Π[ ⦇ Σ?⟦ ⊠-coeffs a xs ys ⟧ ≈ ⦇ Σ⟦ xs ⟧ * Σ⟦ ys ⟧ ⦈ ⦈ ]
   ⊠-coeffs-hom a xs (y ≠0 Δ j & []) (ρ , Ρ) =
     begin
@@ -222,8 +222,8 @@ mutual
   ⊠-cons-hom : ∀ {n}
              → (a : Acc _<′_ n)
              → (y : Poly n)
-             → (ys : Coeffs n)
-             → (xs : Coeffs n)
+             → (ys : Coeff n ⁺)
+             → (xs : Coeff n ⁺)
              → (ρ : Carrier)
              → (Ρ : Vec Carrier n)
              → Σ?⟦ para (⊠-cons a y ys) xs ⟧ (ρ , Ρ)

@@ -41,8 +41,8 @@ zero? (Κ x Π _) with Zero-C x
 
 -- Exponentiate the first variable of a polynomial
 infixr 8 _⍓_ _[⍓]_
-_⍓_ : ∀ {n} → [Coeffs] n → ℕ → [Coeffs] n
-_[⍓]_ : ∀ {n} → Coeffs n → ℕ → Coeffs n
+_⍓_ : ∀ {n} → Coeff n ⋆ → ℕ → Coeff n ⋆
+_[⍓]_ : ∀ {n} → Coeff n ⁺ → ℕ → Coeff n ⁺
 
 [] ⍓ _ = []
 [ xs ] ⍓ i = [ xs [⍓] i ]
@@ -52,7 +52,7 @@ pow (head (xs [⍓] i)) = pow (head xs) ℕ.+ i
 tail (xs [⍓] i) = tail xs
 
 infixr 5 _∷↓_
-_∷↓_ : ∀ {n} → PowInd (Poly n) → [Coeffs] n → [Coeffs] n
+_∷↓_ : ∀ {n} → PowInd (Poly n) → Coeff n ⋆ → Coeff n ⋆
 x Δ i ∷↓ xs = case zero? x of
   λ { (yes p) → xs ⍓ suc i
     ; (no ¬p) → [ _≠0 x {¬p} Δ i & xs ]
@@ -65,7 +65,7 @@ _Π↑_ : ∀ {n m} → Poly n → (suc n ≤′ m) → Poly m
 {-# INLINE _Π↑_ #-}
 
 infixr 4 _Π↓_
-_Π↓_ : ∀ {i n} → [Coeffs] i → suc i ≤′ n → Poly n
+_Π↓_ : ∀ {i n} → Coeff i ⋆ → suc i ≤′ n → Poly n
 []                       Π↓ i≤n = Κ 0# Π z≤′n
 [ x ≠0 Δ zero  & [] ]      Π↓ i≤n = x Π↑ i≤n
 [ x    Δ zero  & [ xs ] ] Π↓ i≤n = Σ (x Δ zero  & [ xs ]) Π i≤n
@@ -78,15 +78,15 @@ _Π↓_ : ∀ {i n} → [Coeffs] i → suc i ≤′ n → Poly n
 -- acts the same on a normalised or non-normalised polynomial, we can prove th
 -- same about any operation which uses it.
 PolyF : ℕ → Set a
-PolyF i = Poly i × [Coeffs] i
+PolyF i = Poly i × Coeff i ⋆
 
 Fold : ℕ → Set a
 Fold i = PolyF i → PolyF i
 
-para : ∀ {i} → Fold i → Coeffs i → [Coeffs] i
+para : ∀ {i} → Fold i → Coeff i ⁺ → Coeff i ⋆
 para f (x ≠0 Δ i & []) = case f (x , []) of λ { (y , ys) → y Δ i ∷↓ ys }
 para f (x ≠0 Δ i & [ xs ]) = case f (x , para f xs) of λ { (y , ys) → y Δ i ∷↓ ys }
 
-poly-map : ∀ {i} → (Poly i → Poly i) → Coeffs i → [Coeffs] i
+poly-map : ∀ {i} → (Poly i → Poly i) → Coeff i ⁺ → Coeff i ⋆
 poly-map f = para (λ { (x , y) → (f x , y)})
 {-# INLINE poly-map #-}

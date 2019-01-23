@@ -45,11 +45,11 @@ x *⟨ ρ ⟩^ suc i = ρ ^ i +1 * x
 -- These three functions are the main bottleneck for all of the proofs: as such,
 -- slight changes can dramatically affect the length of proof code.
 mutual
-  _⟦∷⟧_ : ∀ {n} → Poly n × [Coeffs] n → Carrier × Vec Carrier n → Carrier
+  _⟦∷⟧_ : ∀ {n} → Poly n × Coeff n ⋆ → Carrier × Vec Carrier n → Carrier
   (x , []) ⟦∷⟧ (ρ , ρs) = ⟦ x ⟧ ρs
   (x , [ xs ]) ⟦∷⟧ (ρ , ρs) = ρ * Σ⟦ xs ⟧ (ρ , ρs) + ⟦ x ⟧ ρs
 
-  Σ⟦_⟧ : ∀ {n} → Coeffs n → (Carrier × Vec Carrier n) → Carrier
+  Σ⟦_⟧ : ∀ {n} → Coeff n ⁺ → (Carrier × Vec Carrier n) → Carrier
   Σ⟦ x ≠0 Δ i & xs ⟧ (ρ , ρs) = ((x , xs) ⟦∷⟧ (ρ , ρs)) *⟨ ρ ⟩^ i
 
   ⟦_⟧ : ∀ {n} → Poly n → Vec Carrier n → Carrier
