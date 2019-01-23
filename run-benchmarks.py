@@ -54,10 +54,15 @@ def expr_3(n):
     return '(1 + ' + ' + '.join('x%i ^ %i' % (i, i)
                                 for i in range(1, n + 1)) + ') ^ d'
 
+def expr_4(n):
+    return '(' + ' + '.join('x%i ^ %i' % (i, (n+1) - i)
+                                for i in range(1, n + 1)) + ' + 1) ^ d'
+
 expressions = [
     (expr_1, '(x1 + x2 + ... + xn) ^ d'),
     (expr_2, 'x1 ^ d + x2 ^ d + ... + xn ^ d'),
     (expr_3, '(1 + x1 ^ 1 + x2 ^ 2 + ... + xn ^ n) ^ d'),
+    (expr_4, '(x1 ^ n + x2 ^ (n-1) + ... + xn ^ 1 + 1) ^ d'),
 ]
 
 import sympy
