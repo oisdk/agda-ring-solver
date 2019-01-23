@@ -69,24 +69,26 @@ normalise (O x) = go x
 {-# TERMINATING #-}
 prettyExpr : Expr → String
 prettyExpr (C x) = show x
-prettyExpr (O x) = Data.String.fromList (go add x [])
+prettyExpr (O x) = Data.String.fromList (go add x List.[])
   where
   import Data.String
   open import Data.Char using (Char)
-  open import Data.List as List using (List; _∷_; [])
+  open import Data.List.Kleene
+  open import Data.List as List using (List; _∷_)
 
-  collectProducts : Open → List Open → List Open
-  collectProducts (x ⊗ y) xs = collectProducts x (collectProducts y xs)
-  collectProducts x xs = x ∷ xs
+  collectProducts : Open → Open ⋆ → Open ⁺
+  collectProducts (x ⊗ y) xs = collectProducts x [ collectProducts y xs ]
+  collectProducts x xs = x & xs
 
-  collectSums : Open → List Open → List Open
-  collectSums (x ⊕ y) xs = collectSums x (collectSums y xs)
-  collectSums x xs = x ∷ xs
+  collectSums : Open → Open ⋆ → Open ⁺
+  collectSums (x ⊕ y) xs = collectSums x [ collectSums y xs ]
+  collectSums x xs = x & xs
 
   data PrecLevel : Set where
     mul add neg : PrecLevel
 
   go : PrecLevel → Open → List Char → List Char
+
   f : PrecLevel → Char → Open → List Char → List Char
   f p o x xs = ' ' ∷ o ∷ ' ' ∷ go p x xs
 
@@ -94,11 +96,9 @@ prettyExpr (O x) = Data.String.fromList (go add x [])
   go _ (K x) xs = Data.String.toList (show x) List.++ xs
   go neg (⊝ x) xs = '(' ∷ '-' ∷ ' ' ∷ go neg x (')' ∷ xs)
   go _   (⊝ x) xs = '-' ∷ ' ' ∷ go neg x xs
-  go p (x ⊕ y) xs with collectSums x (collectSums y [])
-  go p (x ⊕ y) xs | [] = xs
-  go add (x ⊕ y) xs | z ∷ zs = go add z (List.foldr (f add '+') xs zs)
-  go _   (x ⊕ y) xs | z ∷ zs = '(' ∷ go add z (List.foldr (f add '+') (')' ∷ xs) zs)
-  go p (x ⊗ y) xs with collectProducts x (collectProducts y [])
-  go p (x ⊗ y) xs | [] = xs
-  go neg (x ⊗ y) xs | z ∷ zs = '(' ∷ go mul z (List.foldr (f mul '*') (')' ∷ xs) zs)
-  go _   (x ⊗ y) xs | z ∷ zs = go mul z (List.foldr (f mul '*') xs zs)
+  go p (x ⊕ y) xs with collectSums x [ collectSums y [] ]
+  go add (x ⊕ y) xs | z & zs = go add z (foldr⋆ (f add '+') xs zs)
+  go _   (x ⊕ y) xs | z & zs = '(' ∷ go add z (foldr⋆ (f add '+') (')' ∷ xs) zs)
+  go p (x ⊗ y) xs with collectProducts x [ collectProducts y [] ]
+  go neg (x ⊗ y) xs | z & zs = '(' ∷ go mul z (foldr⋆ (f mul '*') (')' ∷ xs) zs)
+  go _   (x ⊗ y) xs | z & zs = go mul z (foldr⋆ (f mul '*') xs zs)
