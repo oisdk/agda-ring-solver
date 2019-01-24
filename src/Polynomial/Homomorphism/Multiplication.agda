@@ -180,7 +180,7 @@ mutual
                → Π[ ⦇ Σ?⟦ ⊠-coeffs a xs ys ⟧ ≈ ⦇ Σ⟦ xs ⟧ * Σ⟦ ys ⟧ ⦈ ⦈ ]
   ⊠-coeffs-hom a xs (y ≠0 Δ j & []) (ρ , Ρ) =
     begin
-      Σ?⟦ poly-map (⊠-step′ a y) xs ⍓ j ⟧ (ρ , Ρ)
+      Σ?⟦ poly-map (⊠-step′ a y) xs ⍓⋆ j ⟧ (ρ , Ρ)
     ≈⟨ sym (pow′-hom j (poly-map (⊠-step′ a y) xs) ρ Ρ) ⟩
       Σ?⟦ poly-map (⊠-step′ a y) xs ⟧ (ρ , Ρ) *⟨ ρ ⟩^ j
     ≈⟨ pow-mul-cong (poly-mapR ρ Ρ (⊠-step′ a y) (⟦ y ⟧ Ρ *_) reassoc (distribˡ _) (λ z → ⊠-step′-hom a y z Ρ) (zeroʳ _) xs) ρ j ⟩
@@ -196,7 +196,7 @@ mutual
     ∎
      -- poly-mapR ρ Ρ
      --   (smallStep a y)
-     --   (λ z → ( z * ⟦ y ⟧ Ρ ) ⍓ j)
+     --   (λ z → ( z * ⟦ y ⟧ Ρ ) ⍓⋆ j)
      --   {!!}
      --   {!!}
      --   {!!}
@@ -208,7 +208,7 @@ mutual
         ys′ = Σ⟦ ys ⟧ (ρ , Ρ)
     in
     begin
-      Σ?⟦ para (⊠-cons a y ys) xs ⍓ j ⟧ (ρ , Ρ)
+      Σ?⟦ para (⊠-cons a y ys) xs ⍓⋆ j ⟧ (ρ , Ρ)
     ≈⟨ sym (pow′-hom j (para (⊠-cons a y ys) xs) ρ Ρ) ⟨ trans ⟩ pow-opt _ ρ j ⟩
       ρ ^ j * Σ?⟦ para (⊠-cons a y ys) xs ⟧ (ρ , Ρ)
     ≈⟨ *≫ ⊠-cons-hom a y ys xs ρ Ρ ⟩

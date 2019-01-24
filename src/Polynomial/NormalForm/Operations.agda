@@ -153,8 +153,8 @@ mutual
   ⊠-match (acc wf) (inj-gt i≤n j≤i-1) xs ys = poly-map (⊠-Σ-inj (wf _ i≤n) j≤i-1 ys) (xs) Π↓ i≤n
 
   ⊠-coeffs : ∀ {n} → Acc _<′_ n → Coeff n ⁺ → Coeff n ⁺ → Coeff n ⋆
-  ⊠-coeffs a (xs) (y ≠0 Δ j & []) = poly-map (⊠-step′ a y) (xs) ⍓ j
-  ⊠-coeffs a (xs) (y ≠0 Δ j & [ ys ]) = para (⊠-cons a y ys) (xs) ⍓ j
+  ⊠-coeffs a (xs) (y ≠0 Δ j & []) = poly-map (⊠-step′ a y) (xs) ⍓⋆ j
+  ⊠-coeffs a (xs) (y ≠0 Δ j & [ ys ]) = para (⊠-cons a y ys) (xs) ⍓⋆ j
 
   ⊠-cons : ∀ {n}
           → Acc _<′_ n

@@ -40,21 +40,21 @@ zero? (Κ x Π _) with Zero-C x
 {-# INLINE zero? #-}
 
 -- Exponentiate the first variable of a polynomial
-infixr 8 _⍓_ _[⍓]_
-_⍓_ : ∀ {n} → Coeff n ⋆ → ℕ → Coeff n ⋆
-_[⍓]_ : ∀ {n} → Coeff n ⁺ → ℕ → Coeff n ⁺
+infixr 8 _⍓⋆_ _⍓⁺_
+_⍓⋆_ : ∀ {n} → Coeff n ⋆ → ℕ → Coeff n ⋆
+_⍓⁺_ : ∀ {n} → Coeff n ⁺ → ℕ → Coeff n ⁺
 
-[] ⍓ _ = []
-[ xs ] ⍓ i = [ xs [⍓] i ]
+[] ⍓⋆ _ = []
+[ xs ] ⍓⋆ i = [ xs ⍓⁺ i ]
 
-coeff (head (xs [⍓] i)) = coeff (head xs)
-pow (head (xs [⍓] i)) = pow (head xs) ℕ.+ i
-tail (xs [⍓] i) = tail xs
+coeff (head (xs ⍓⁺ i)) = coeff (head xs)
+pow (head (xs ⍓⁺ i)) = pow (head xs) ℕ.+ i
+tail (xs ⍓⁺ i) = tail xs
 
 infixr 5 _∷↓_
 _∷↓_ : ∀ {n} → PowInd (Poly n) → Coeff n ⋆ → Coeff n ⋆
 x Δ i ∷↓ xs = case zero? x of
-  λ { (yes p) → xs ⍓ suc i
+  λ { (yes p) → xs ⍓⋆ suc i
     ; (no ¬p) → [ _≠0 x {¬p} Δ i & xs ]
     }
 {-# INLINE _∷↓_ #-}

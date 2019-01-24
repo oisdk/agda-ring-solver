@@ -64,7 +64,7 @@ pow-opt x ρ (suc i) = refl
 pow-hom : ∀ {n} i
         → (xs : Coeff n ⁺)
         → ∀ ρ ρs
-        → Σ⟦ xs ⟧ (ρ , ρs) *⟨ ρ ⟩^ i ≈ Σ⟦ xs [⍓] i ⟧ (ρ , ρs)
+        → Σ⟦ xs ⟧ (ρ , ρs) *⟨ ρ ⟩^ i ≈ Σ⟦ xs ⍓⁺ i ⟧ (ρ , ρs)
 pow-hom ℕ.zero (x Δ j & xs) ρ ρs rewrite ℕ-Prop.+-identityʳ j = refl
 pow-hom (suc i) (x ≠0 Δ j & xs) ρ ρs =
   begin
@@ -141,7 +141,7 @@ _⟦∷⟧?_ : ∀ {n} (x : Poly n × Coeff n ⋆) → Carrier × Vec Carrier n 
 ⟦∷⟧?-hom x [ xs ] ρ ρs = refl
 ⟦∷⟧?-hom x [] ρ ρs =  (≪+ zeroʳ _) ⟨ trans ⟩ +-identityˡ _
 
-pow′-hom : ∀ {n} i (xs : Coeff n ⋆) → ∀ ρ ρs → ((Σ?⟦ xs ⟧ (ρ , ρs)) *⟨ ρ ⟩^ i) ≈ (Σ?⟦ xs ⍓ i ⟧ (ρ , ρs))
+pow′-hom : ∀ {n} i (xs : Coeff n ⋆) → ∀ ρ ρs → ((Σ?⟦ xs ⟧ (ρ , ρs)) *⟨ ρ ⟩^ i) ≈ (Σ?⟦ xs ⍓⋆ i ⟧ (ρ , ρs))
 pow′-hom i [ xs ] ρ ρs = pow-hom i xs ρ ρs
 pow′-hom zero [] ρ ρs = refl
 pow′-hom (suc i) [] ρ ρs = zeroʳ _
@@ -152,7 +152,7 @@ pow′-hom (suc i) [] ρ ρs = zeroʳ _
 ∷↓-hom-0 x [] ρ ρs | yes p = zero-hom x p ρs
 ∷↓-hom-0 x [ xs ] ρ ρs | yes p =
   begin
-    Σ⟦ xs [⍓] 1 ⟧ (ρ , ρs)
+    Σ⟦ xs ⍓⁺ 1 ⟧ (ρ , ρs)
   ≈⟨ sym (pow-hom 1 xs ρ ρs) ⟩
     ρ * Σ⟦ xs ⟧ (ρ , ρs)
   ≈⟨ sym (+-identityʳ _) ⟨ trans ⟩ (+≫ zero-hom x p ρs) ⟩
@@ -165,7 +165,7 @@ pow′-hom (suc i) [] ρ ρs = zeroʳ _
 ∷↓-hom-s x i [] ρ ρs | yes p = sym ((*≫ sym (zero-hom x p ρs)) ⟨ trans ⟩ zeroʳ _)
 ∷↓-hom-s x i [ xs ] ρ ρs | yes p =
   begin
-    Σ⟦ xs [⍓] (suc (suc i)) ⟧ (ρ , ρs)
+    Σ⟦ xs ⍓⁺ (suc (suc i)) ⟧ (ρ , ρs)
   ≈⟨ sym (pow-hom (suc (suc i)) xs ρ ρs) ⟩
     (ρ ^ suc i +1) * Σ⟦ xs ⟧ (ρ , ρs)
   ≈⟨ *-assoc _ _ _ ⟩
