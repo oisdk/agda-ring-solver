@@ -66,10 +66,10 @@ _Π↑_ : ∀ {n m} → Poly n → (suc n ≤′ m) → Poly m
 
 infixr 4 _Π↓_
 _Π↓_ : ∀ {i n} → Coeff i ⋆ → suc i ≤′ n → Poly n
-[]                       Π↓ i≤n = Κ 0# Π z≤′n
-[ x ≠0 Δ zero  & [] ]      Π↓ i≤n = x Π↑ i≤n
+[]                        Π↓ i≤n = Κ 0# Π z≤′n
+[ x ≠0 Δ zero  & []     ] Π↓ i≤n = x Π↑ i≤n
 [ x    Δ zero  & [ xs ] ] Π↓ i≤n = Σ (x Δ zero  & [ xs ]) Π i≤n
-[ x    Δ suc j & xs ]      Π↓ i≤n = Σ (x  Δ suc j & xs) Π i≤n
+[ x    Δ suc j & xs     ] Π↓ i≤n = Σ (x Δ suc j & xs) Π i≤n
 {-# INLINE _Π↓_ #-}
 
 --------------------------------------------------------------------------------
