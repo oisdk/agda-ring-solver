@@ -66,39 +66,53 @@ normalise (O x) = go x
   go (⊝ x) | C x₁ = C (- x₁)
   go (⊝ x) | O x₁ = O (⊝ x₁)
 
-{-# TERMINATING #-}
+open import Data.List.Kleene
+
+data Flat : Set r where
+  sum : Flat ⁺ → Flat
+  prd : Flat ⁺ → Flat
+  neg : Flat → Flat
+  V′ : String → Flat
+  K′ : Carrier → Flat
+
+flatten : Open → Flat
+flatten (V x) = V′ x
+flatten (K x) = K′ x
+flatten (x ⊕ y) = sum (x ⊕⋆ [ y ⊕⋆ [] ])
+  where
+  _⊕⋆_ : Open → Flat ⋆ → Flat ⁺
+  (x ⊕ y) ⊕⋆ xs = x ⊕⋆ [ y ⊕⋆ xs ]
+  x ⊕⋆ xs = flatten x & xs
+flatten (x ⊗ y) = prd (x ⊗⋆ [ y ⊗⋆ [] ])
+  where
+  _⊗⋆_ : Open → Flat ⋆ → Flat ⁺
+  (x ⊗ y) ⊗⋆ xs = x ⊗⋆ [ y ⊗⋆ xs ]
+  x ⊗⋆ xs = flatten x & xs
+flatten (⊝ x) = neg (flatten x)
+
 prettyExpr : Expr → String
 prettyExpr (C x) = show x
-prettyExpr (O x) = Data.String.fromList (go add x List.[])
+prettyExpr (O x) = Data.String.fromList (go add (flatten x) List.[])
   where
   import Data.String
   open import Data.Char using (Char)
   open import Data.List.Kleene
   open import Data.List as List using (List; _∷_)
 
-  collectProducts : Open → Open ⋆ → Open ⁺
-  collectProducts (x ⊗ y) xs = collectProducts x [ collectProducts y xs ]
-  collectProducts x xs = x & xs
-
-  collectSums : Open → Open ⋆ → Open ⁺
-  collectSums (x ⊕ y) xs = collectSums x [ collectSums y xs ]
-  collectSums x xs = x & xs
-
   data PrecLevel : Set where
-    mul add neg : PrecLevel
+    mul add neg′ : PrecLevel
 
-  go : PrecLevel → Open → List Char → List Char
+  go : PrecLevel → Flat → List Char → List Char
 
-  f : PrecLevel → Char → Open → List Char → List Char
-  f p o x xs = ' ' ∷ o ∷ ' ' ∷ go p x xs
+  f : PrecLevel → Char → List Char → Flat ⋆ → List Char
+  f p o xs [ x & zs ] = ' ' ∷ o ∷ ' ' ∷ go p x (f p o xs zs)
+  f p o xs [] = xs
 
-  go _ (V x) xs = Data.String.toList x List.++ xs
-  go _ (K x) xs = Data.String.toList (show x) List.++ xs
-  go neg (⊝ x) xs = '(' ∷ '-' ∷ ' ' ∷ go neg x (')' ∷ xs)
-  go _   (⊝ x) xs = '-' ∷ ' ' ∷ go neg x xs
-  go p (x ⊕ y) xs with collectSums x [ collectSums y [] ]
-  go add (x ⊕ y) xs | z & zs = go add z (foldr⋆ (f add '+') xs zs)
-  go _   (x ⊕ y) xs | z & zs = '(' ∷ go add z (foldr⋆ (f add '+') (')' ∷ xs) zs)
-  go p (x ⊗ y) xs with collectProducts x [ collectProducts y [] ]
-  go neg (x ⊗ y) xs | z & zs = '(' ∷ go mul z (foldr⋆ (f mul '*') (')' ∷ xs) zs)
-  go _   (x ⊗ y) xs | z & zs = go mul z (foldr⋆ (f mul '*') xs zs)
+  go _ (V′ x) xs = Data.String.toList x List.++ xs
+  go _ (K′ x) xs = Data.String.toList (show x) List.++ xs
+  go neg′ (neg x) xs = '(' ∷ '-' ∷ ' ' ∷ go neg′ x (')' ∷ xs)
+  go _   (neg x) xs = '-' ∷ ' ' ∷ go neg′ x xs
+  go add (sum (z & zs)) xs = go add z (f add '+' xs zs)
+  go _   (sum (z & zs)) xs = '(' ∷ go add z (f add '+' (')' ∷ xs) zs)
+  go neg′ (prd (z & zs)) xs = '(' ∷ go mul z (f mul '*' (')' ∷ xs) zs)
+  go _    (prd (z & zs)) xs = go mul z (f mul '*' xs zs)

@@ -13,12 +13,15 @@ module _ {r} {R′ : Set r} where
 
   pure : ∀ {a} {A : Set a} → A → R A
   pure x = λ _ → x
+  {-# INLINE pure #-}
 
   _<*>_ : ∀ {a b} {A : Set a} {B : Set b}
         → R (A → B) → R A → R B
   f <*> g = λ x → f x (g x)
+  {-# INLINE _<*>_ #-}
 
   _>>=_ : ∀ {a b} {A : Set a} {B : Set b}
         → R A → (A → R B) → R B
   f >>= k = λ x → k (f x) x
+  {-# INLINE _>>=_ #-}
 
