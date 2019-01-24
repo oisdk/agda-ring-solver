@@ -117,30 +117,29 @@ def time_file_typecheck(contents):
             raise err
 
 import itertools
+import math
 
 def print_graph(degrees, sparse_results, dense_results):
-    width = 9 + len(degrees) * 10
-    print('-' * width)
-    max_res = max(sparse_results + dense_results)
-    sparse_ys = [int((y * 40) / max_res) for y in sparse_results]
-    dense_ys = [int((y * 40) / max_res) for y in dense_results]
-    for y in range(39, -1, -1):
-        print('%5i | ' % int((y / 40) * max_res), end='')
-        for y_s, y_d in itertools.zip_longest(sparse_ys, dense_ys):
-            if y == y_d:
-                print('*' + ' ' * 9, end='')
-            elif y == y_s:
-                print('+' + ' ' * 9, end='')
-            else:
-                print(' ' * 10, end='')
-        print('|')
-    max_deg = max(degrees)
-    print('-' * width)
-    print(' ' * 4, end='d = ')
-    for x in range(1, len(degrees) + 1):
-        deg = (x * max_deg) / (len(degrees))
-        print('%-10i' % round(deg), end='')
-    print()
+    sparse_data = '\n'.join('%i %g' % (d, r) for (d, r) in zip(degrees, sparse_results))
+    dense_data  = '\n'.join('%i %g' % (d, r) for (d, r) in zip(degrees, dense_results))
+    xpadding = math.ceil(max(degrees) / 10)
+    ypadding = math.ceil(max(sparse_results + dense_results) / 10)
+    ymin = int(min(sparse_results + dense_results)) - ypadding
+    ymax = math.ceil(max(sparse_results + dense_results)) + ypadding
+    data_file = """
+$sparse << EOD
+%s
+EOD
+$dense << EOD
+%s
+EOD
+set terminal dumb size 80,40 ansi256
+set xrange [%i:%i]
+set yrange [%i:%i]
+plot $sparse title "sparse", $dense title "dense"
+undefine $*
+""" % (sparse_data, dense_data, min(degrees) - xpadding, max(degrees) + xpadding, ymin, ymax)
+    subprocess.run(['gnuplot'], input=data_file, text=True)
 
 print('Choose an expression: ')
 for i, (_, expr_desc) in enumerate(expressions):
@@ -148,7 +147,10 @@ for i, (_, expr_desc) in enumerate(expressions):
 expr_fn = expressions[int(input('> '))][0]
 n = int(input('Choose n:\n> '))
 degrees = [ int(d) for d in input('Choose degrees (default= 1 2 3 4 5 6 7 8)\n> ').split() ] or list(range(1,9))
-benches = input('Choose things to benchmark (default = sparse dense)\n> ').split() or ['sparse', 'dense']
+benchopts = [['sparse'], ['dense'], ['sparse', 'dense']]
+for i, opts in enumerate(benchopts):
+    print('%2i : %s' % (i, ' & '.join(opts)))
+benches = benchopts[int(input('Choose things to benchmark\n> '))]
 varnames = ' '.join('x' + str(i) for i in range(1, n + 1))
 expr_ = expr_fn(n)
 print(expr_)
