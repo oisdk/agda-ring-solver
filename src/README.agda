@@ -272,7 +272,8 @@ module TracedExamples where                                                   --
 --                                                                            --              ██║  ██║
 --     (1 + x₁¹ + x₂² + x₃³ + x₄⁴ + x₅⁵)ᵈ                                     --              ██║  ██║
 --                                                                            --              ██║  ██║
--- is equal to its expanded form.                                             --              ██║  ██║
+-- is equal to its expanded form. (to run the benchmarks yourself, run the    --              ██║  ██║
+-- run_benchmarks.py file. You'll need python 3 and sympy.)                   --              ██║  ██║
 --                                                                            --              ██║  ██║
 -- 540 |  * = old                                                       *     --              ██║  ██║
 -- 525 |  + = new                                                       *     --              ██║  ██║

@@ -273,92 +273,93 @@
 <a id="25745" class="Comment">--                                                                            --              ██║  ██║</a>
 <a id="25848" class="Comment">--     (1 + x₁¹ + x₂² + x₃³ + x₄⁴ + x₅⁵)ᵈ                                     --              ██║  ██║</a>
 <a id="25951" class="Comment">--                                                                            --              ██║  ██║</a>
-<a id="26054" class="Comment">-- is equal to its expanded form.                                             --              ██║  ██║</a>
-<a id="26157" class="Comment">--                                                                            --              ██║  ██║</a>
-<a id="26260" class="Comment">-- 540 |  * = old                                                       *     --              ██║  ██║</a>
-<a id="26363" class="Comment">-- 525 |  + = new                                                       *     --              ██║  ██║</a>
-<a id="26466" class="Comment">-- 510 |                                                                *     --              ██║  ██║</a>
-<a id="26569" class="Comment">-- 495 |                                                                *     --              ██║  ██║</a>
-<a id="26672" class="Comment">-- 480 |                                                                *     --              ██║  ██║</a>
-<a id="26775" class="Comment">-- 465 |                                                               *      --              ██║  ██║</a>
-<a id="26878" class="Comment">-- 450 |                                                               *      --              ██║  ██║</a>
-<a id="26981" class="Comment">-- 435 |                                                               *      --              ██║  ██║</a>
-<a id="27084" class="Comment">-- 420 |                                                              *       --              ██║  ██║</a>
-<a id="27187" class="Comment">-- 405 |                                                              *       --              ██║  ██║</a>
-<a id="27290" class="Comment">-- 390 |                                                              *       --              ██║  ██║</a>
-<a id="27393" class="Comment">-- 375 |                                                             *        --              ██║  ██║</a>
-<a id="27496" class="Comment">-- 360 |                                                             *        --              ██║  ██║</a>
-<a id="27599" class="Comment">-- 345 |                                                             *        --              ██║  ██║</a>
-<a id="27702" class="Comment">-- 330 |                                                            *         --              ██║  ██║</a>
-<a id="27805" class="Comment">-- 315 |                                                            *         --              ██║  ██║</a>
-<a id="27908" class="Comment">-- 300 |                                                            *         --              ██║  ██║</a>
-<a id="28011" class="Comment">-- 285 |                                                           *          --              ██║  ██║</a>
-<a id="28114" class="Comment">-- 270 |                                                           *          --              ██║  ██║</a>
-<a id="28217" class="Comment">-- 255 |                                                           *          --              ██║  ██║</a>
-<a id="28320" class="Comment">-- 240 |                                                          *           --           ██╗██║  ██║</a>
-<a id="28423" class="Comment">-- 225 |                                                          *           --         ████║██║  ██║</a>
-<a id="28526" class="Comment">-- 210 |                                                          *           --       █████████║  ██║</a>
-<a id="28629" class="Comment">-- 195 |                                                         *            --         ████╔══╝  ██║</a>
-<a id="28732" class="Comment">-- 180 |                                                         *            --           ██║     ██║</a>
-<a id="28835" class="Comment">-- 165 |                                                         *            --           ╚═╝     ██║</a>
-<a id="28938" class="Comment">-- 150 |                                                        *             --                   ██║</a>
-<a id="29041" class="Comment">-- 135 |                                                        *             --                   ██║</a>
-<a id="29144" class="Comment">-- 120 |                                                        *             --                   ██║</a>
-<a id="29247" class="Comment">-- 105 |                                                       *              --                   ██║</a>
-<a id="29350" class="Comment">--  90 |                                                      *               --                   ██║</a>
-<a id="29453" class="Comment">--  75 |                                                     *                --                   ██║</a>
-<a id="29556" class="Comment">--  60 |                                                   **                 --                   ██║</a>
-<a id="29659" class="Comment">--  45 |                                                 **                   --                   ██║</a>
-<a id="29762" class="Comment">--  30 |                                               **           +++++     --                   ██║</a>
-<a id="29865" class="Comment">--  15 |                                          *****    +++++++++          --                   ██║</a>
-<a id="29968" class="Comment">--   0 | *****************************************+++++++++                   --                   ██║</a>
-<a id="30071" class="Comment">--     ------------------------------------------------------------------     --                   ██║</a>
-<a id="30174" class="Comment">--   d = 1        2        3        4        5        6        7        8     --                   ██║</a>
-<a id="30277" class="Comment">--------------------------------------------------------------------------------                   ██║</a>
-<a id="30380" class="Comment">--                                                                                                 ██║</a>
-<a id="30483" class="Comment">--                                 ██████████████████████████████████████████████████████████████████║</a>
-<a id="30586" class="Comment">--                                 ██╔═══════════════════════════════════════════════════════════════╝</a>
-<a id="30689" class="Comment">--                             ██████████╗</a>
-<a id="30732" class="Comment">--                               ██████╔═╝</a>
-<a id="30775" class="Comment">--                                 ██╔═╝</a>
-<a id="30816" class="Comment">--                                 ╚═╝</a>
-<a id="30855" class="Comment">--</a>
-<a id="30858" class="Comment">-- * How does it work? Why is it fast?</a>
-<a id="30897" class="Comment">--       The solver works by converting expressions to &quot;Horner Normal Form&quot;.</a>
-<a id="30974" class="Comment">--       This representation is special: x + y is represented in the same way</a>
-<a id="31052" class="Comment">--       as y + x. This is what lets us check that two expressions are equal.</a>
-<a id="31130" class="Comment">--       The implementation here is *sparse*, also, which is why it&#39;s faster</a>
-<a id="31207" class="Comment">--       than the old implementation.</a>
-<a id="31245" class="Comment">--</a>
-<a id="31248" class="Comment">--       Want to learn more? Then this is the place for you:</a>
-<a id="31309" class="Keyword">import</a> <a id="31316" href="Polynomial.NormalForm.html" class="Module">Polynomial.NormalForm</a>
-<a id="31338" class="Comment">--</a>
-<a id="31341" class="Comment">-- * Prove it!</a>
-<a id="31356" class="Comment">--       The type of proofs we need are *homomorphisms*. They basically mean</a>
-<a id="31433" class="Comment">--       that the operations on the normal form correspond to the operations</a>
-<a id="31510" class="Comment">--       on expressions. Also, we don&#39;t use propositional equality: we use</a>
-<a id="31585" class="Comment">--       any equivalence relation the user supplies.</a>
-<a id="31638" class="Comment">--</a>
-<a id="31641" class="Comment">--       Don&#39;t believe me? Check it out:</a>
-<a id="31682" class="Keyword">import</a> <a id="31689" href="Polynomial.Homomorphism.html" class="Module">Polynomial.Homomorphism</a>
-<a id="31713" class="Comment">--</a>
-<a id="31716" class="Comment">-- * How do I use it?</a>
-<a id="31738" class="Comment">--       Copy the examples above! For the full solver, check out:</a>
-<a id="31804" class="Keyword">import</a> <a id="31811" href="Polynomial.Solver.html" class="Module">Polynomial.Solver</a>
-<a id="31829" class="Comment">--</a>
-<a id="31832" class="Comment">-- * Wait! Don&#39;t!</a>
-<a id="31850" class="Comment">--       The &quot;full&quot; solver lets you use different types for the coefficient</a>
-<a id="31926" class="Comment">--       and carrier. You probably don&#39;t want that, unless you need the extra</a>
-<a id="32004" class="Comment">--       efficiency. You&#39;ll want the *simple* solver:</a>
-<a id="32058" class="Keyword">import</a> <a id="32065" href="Polynomial.Simple.Solver.html" class="Module">Polynomial.Simple.Solver</a>
-<a id="32090" class="Comment">--</a>
-<a id="32093" class="Comment">-- * Is that all?</a>
-<a id="32111" class="Comment">--       No! As it happens, even the simple solver is complicated to use.</a>
-<a id="32185" class="Comment">--       You&#39;ll *actually* want to use the reflection-based interface:</a>
-<a id="32256" class="Keyword">import</a> <a id="32263" href="Polynomial.Simple.Reflection.html" class="Module">Polynomial.Simple.Reflection</a>
-<a id="32292" class="Comment">--</a>
-<a id="32295" class="Comment">-- * And what about the step-by-step stuff?</a>
-<a id="32339" class="Comment">--       That all uses the same underlying solver as the other stuff, with a</a>
-<a id="32416" class="Comment">--       special *relation*. You can check that out here:</a>
-<a id="32474" class="Keyword">import</a> <a id="32481" href="Relation.Traced.html" class="Module">Relation.Traced</a>
+<a id="26054" class="Comment">-- is equal to its expanded form. (to run the benchmarks yourself, run the    --              ██║  ██║</a>
+<a id="26157" class="Comment">-- run_benchmarks.py file. You&#39;ll need python 3 and sympy.)                   --              ██║  ██║</a>
+<a id="26260" class="Comment">--                                                                            --              ██║  ██║</a>
+<a id="26363" class="Comment">-- 540 |  * = old                                                       *     --              ██║  ██║</a>
+<a id="26466" class="Comment">-- 525 |  + = new                                                       *     --              ██║  ██║</a>
+<a id="26569" class="Comment">-- 510 |                                                                *     --              ██║  ██║</a>
+<a id="26672" class="Comment">-- 495 |                                                                *     --              ██║  ██║</a>
+<a id="26775" class="Comment">-- 480 |                                                                *     --              ██║  ██║</a>
+<a id="26878" class="Comment">-- 465 |                                                               *      --              ██║  ██║</a>
+<a id="26981" class="Comment">-- 450 |                                                               *      --              ██║  ██║</a>
+<a id="27084" class="Comment">-- 435 |                                                               *      --              ██║  ██║</a>
+<a id="27187" class="Comment">-- 420 |                                                              *       --              ██║  ██║</a>
+<a id="27290" class="Comment">-- 405 |                                                              *       --              ██║  ██║</a>
+<a id="27393" class="Comment">-- 390 |                                                              *       --              ██║  ██║</a>
+<a id="27496" class="Comment">-- 375 |                                                             *        --              ██║  ██║</a>
+<a id="27599" class="Comment">-- 360 |                                                             *        --              ██║  ██║</a>
+<a id="27702" class="Comment">-- 345 |                                                             *        --              ██║  ██║</a>
+<a id="27805" class="Comment">-- 330 |                                                            *         --              ██║  ██║</a>
+<a id="27908" class="Comment">-- 315 |                                                            *         --              ██║  ██║</a>
+<a id="28011" class="Comment">-- 300 |                                                            *         --              ██║  ██║</a>
+<a id="28114" class="Comment">-- 285 |                                                           *          --              ██║  ██║</a>
+<a id="28217" class="Comment">-- 270 |                                                           *          --              ██║  ██║</a>
+<a id="28320" class="Comment">-- 255 |                                                           *          --              ██║  ██║</a>
+<a id="28423" class="Comment">-- 240 |                                                          *           --           ██╗██║  ██║</a>
+<a id="28526" class="Comment">-- 225 |                                                          *           --         ████║██║  ██║</a>
+<a id="28629" class="Comment">-- 210 |                                                          *           --       █████████║  ██║</a>
+<a id="28732" class="Comment">-- 195 |                                                         *            --         ████╔══╝  ██║</a>
+<a id="28835" class="Comment">-- 180 |                                                         *            --           ██║     ██║</a>
+<a id="28938" class="Comment">-- 165 |                                                         *            --           ╚═╝     ██║</a>
+<a id="29041" class="Comment">-- 150 |                                                        *             --                   ██║</a>
+<a id="29144" class="Comment">-- 135 |                                                        *             --                   ██║</a>
+<a id="29247" class="Comment">-- 120 |                                                        *             --                   ██║</a>
+<a id="29350" class="Comment">-- 105 |                                                       *              --                   ██║</a>
+<a id="29453" class="Comment">--  90 |                                                      *               --                   ██║</a>
+<a id="29556" class="Comment">--  75 |                                                     *                --                   ██║</a>
+<a id="29659" class="Comment">--  60 |                                                   **                 --                   ██║</a>
+<a id="29762" class="Comment">--  45 |                                                 **                   --                   ██║</a>
+<a id="29865" class="Comment">--  30 |                                               **           +++++     --                   ██║</a>
+<a id="29968" class="Comment">--  15 |                                          *****    +++++++++          --                   ██║</a>
+<a id="30071" class="Comment">--   0 | *****************************************+++++++++                   --                   ██║</a>
+<a id="30174" class="Comment">--     ------------------------------------------------------------------     --                   ██║</a>
+<a id="30277" class="Comment">--   d = 1        2        3        4        5        6        7        8     --                   ██║</a>
+<a id="30380" class="Comment">--------------------------------------------------------------------------------                   ██║</a>
+<a id="30483" class="Comment">--                                                                                                 ██║</a>
+<a id="30586" class="Comment">--                                 ██████████████████████████████████████████████████████████████████║</a>
+<a id="30689" class="Comment">--                                 ██╔═══════════════════════════════════════════════════════════════╝</a>
+<a id="30792" class="Comment">--                             ██████████╗</a>
+<a id="30835" class="Comment">--                               ██████╔═╝</a>
+<a id="30878" class="Comment">--                                 ██╔═╝</a>
+<a id="30919" class="Comment">--                                 ╚═╝</a>
+<a id="30958" class="Comment">--</a>
+<a id="30961" class="Comment">-- * How does it work? Why is it fast?</a>
+<a id="31000" class="Comment">--       The solver works by converting expressions to &quot;Horner Normal Form&quot;.</a>
+<a id="31077" class="Comment">--       This representation is special: x + y is represented in the same way</a>
+<a id="31155" class="Comment">--       as y + x. This is what lets us check that two expressions are equal.</a>
+<a id="31233" class="Comment">--       The implementation here is *sparse*, also, which is why it&#39;s faster</a>
+<a id="31310" class="Comment">--       than the old implementation.</a>
+<a id="31348" class="Comment">--</a>
+<a id="31351" class="Comment">--       Want to learn more? Then this is the place for you:</a>
+<a id="31412" class="Keyword">import</a> <a id="31419" href="Polynomial.NormalForm.html" class="Module">Polynomial.NormalForm</a>
+<a id="31441" class="Comment">--</a>
+<a id="31444" class="Comment">-- * Prove it!</a>
+<a id="31459" class="Comment">--       The type of proofs we need are *homomorphisms*. They basically mean</a>
+<a id="31536" class="Comment">--       that the operations on the normal form correspond to the operations</a>
+<a id="31613" class="Comment">--       on expressions. Also, we don&#39;t use propositional equality: we use</a>
+<a id="31688" class="Comment">--       any equivalence relation the user supplies.</a>
+<a id="31741" class="Comment">--</a>
+<a id="31744" class="Comment">--       Don&#39;t believe me? Check it out:</a>
+<a id="31785" class="Keyword">import</a> <a id="31792" href="Polynomial.Homomorphism.html" class="Module">Polynomial.Homomorphism</a>
+<a id="31816" class="Comment">--</a>
+<a id="31819" class="Comment">-- * How do I use it?</a>
+<a id="31841" class="Comment">--       Copy the examples above! For the full solver, check out:</a>
+<a id="31907" class="Keyword">import</a> <a id="31914" href="Polynomial.Solver.html" class="Module">Polynomial.Solver</a>
+<a id="31932" class="Comment">--</a>
+<a id="31935" class="Comment">-- * Wait! Don&#39;t!</a>
+<a id="31953" class="Comment">--       The &quot;full&quot; solver lets you use different types for the coefficient</a>
+<a id="32029" class="Comment">--       and carrier. You probably don&#39;t want that, unless you need the extra</a>
+<a id="32107" class="Comment">--       efficiency. You&#39;ll want the *simple* solver:</a>
+<a id="32161" class="Keyword">import</a> <a id="32168" href="Polynomial.Simple.Solver.html" class="Module">Polynomial.Simple.Solver</a>
+<a id="32193" class="Comment">--</a>
+<a id="32196" class="Comment">-- * Is that all?</a>
+<a id="32214" class="Comment">--       No! As it happens, even the simple solver is complicated to use.</a>
+<a id="32288" class="Comment">--       You&#39;ll *actually* want to use the reflection-based interface:</a>
+<a id="32359" class="Keyword">import</a> <a id="32366" href="Polynomial.Simple.Reflection.html" class="Module">Polynomial.Simple.Reflection</a>
+<a id="32395" class="Comment">--</a>
+<a id="32398" class="Comment">-- * And what about the step-by-step stuff?</a>
+<a id="32442" class="Comment">--       That all uses the same underlying solver as the other stuff, with a</a>
+<a id="32519" class="Comment">--       special *relation*. You can check that out here:</a>
+<a id="32577" class="Keyword">import</a> <a id="32584" href="Relation.Traced.html" class="Module">Relation.Traced</a>
 </pre></body></html>
