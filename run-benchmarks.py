@@ -1,3 +1,13 @@
+import sympy
+import subprocess
+import os
+import time
+import sys
+import tempfile
+import datetime
+
+subprocess.check_output(['agda', 'src/README.agda'])
+
 library_file = """
 name: agda-ring-solver-benchmarks
 depend: standard-library, agda-ring-solver
@@ -54,9 +64,11 @@ def expr_3(n):
     return '(1 + ' + ' + '.join('x%i ^ %i' % (i, i)
                                 for i in range(1, n + 1)) + ') ^ d'
 
+
 def expr_4(n):
-    return '(' + ' + '.join('x%i ^ %i' % (i, (n+1) - i)
-                                for i in range(1, n + 1)) + ' + 1) ^ d'
+    return '(' + ' + '.join('x%i ^ %i' % (i, (n + 1) - i)
+                            for i in range(1, n + 1)) + ' + 1) ^ d'
+
 
 expressions = [
     (expr_1, '(x1 + x2 + ... + xn) ^ d'),
@@ -65,8 +77,6 @@ expressions = [
     (expr_4, '(x1 ^ n + x2 ^ (n-1) + ... + xn ^ 1 + 1) ^ d'),
 ]
 
-import sympy
-
 
 def expand(expr):
     return str(sympy.sympify(expr.replace('^', '**')).expand()).replace(
@@ -74,13 +84,6 @@ def expand(expr):
 
 
 dense_expr_encoding = str.maketrans({'+': ':+', '^': ':^', '*': ':*'})
-
-import subprocess
-import os
-import time
-import sys
-import tempfile
-import datetime
 
 
 class cd:
@@ -116,12 +119,16 @@ def time_file_typecheck(contents):
             print('\n' + proc.stdout)
             raise err
 
+
 import itertools
 import math
 
+
 def print_graph(degrees, sparse_results, dense_results):
-    sparse_data = '\n'.join('%i %g' % (d, r) for (d, r) in zip(degrees, sparse_results))
-    dense_data  = '\n'.join('%i %g' % (d, r) for (d, r) in zip(degrees, dense_results))
+    sparse_data = '\n'.join(
+        '%i %g' % (d, r) for (d, r) in zip(degrees, sparse_results))
+    dense_data = '\n'.join(
+        '%i %g' % (d, r) for (d, r) in zip(degrees, dense_results))
     xpadding = math.ceil(max(degrees) / 10)
     ypadding = math.ceil(max(sparse_results + dense_results) / 10)
     ymin = int(min(sparse_results + dense_results)) - ypadding
@@ -138,15 +145,20 @@ set xrange [%i:%i]
 set yrange [%i:%i]
 plot $sparse title "sparse", $dense title "dense"
 undefine $*
-""" % (sparse_data, dense_data, min(degrees) - xpadding, max(degrees) + xpadding, ymin, ymax)
+""" % (sparse_data, dense_data, min(degrees) - xpadding,
+       max(degrees) + xpadding, ymin, ymax)
     subprocess.run(['gnuplot'], input=data_file, text=True)
+
 
 print('Choose an expression: ')
 for i, (_, expr_desc) in enumerate(expressions):
     print('%2i : %s' % (i, expr_desc))
 expr_fn = expressions[int(input('> '))][0]
 n = int(input('Choose n:\n> '))
-degrees = [ int(d) for d in input('Choose degrees (default= 1 2 3 4 5 6 7 8)\n> ').split() ] or list(range(1,9))
+degrees = [
+    int(d)
+    for d in input('Choose degrees (default= 1 2 3 4 5 6 7 8)\n> ').split()
+] or list(range(1, 9))
 benchopts = [['sparse'], ['dense'], ['sparse', 'dense']]
 for i, opts in enumerate(benchopts):
     print('%2i : %s' % (i, ' & '.join(opts)))
@@ -164,7 +176,7 @@ for degree in degrees:
     if 'sparse' in benches:
         typesig = 'lemma : ∀ %s → %s ≈ %s' % (varnames, expr, expand(expr))
         res = time_file_typecheck('\n'.join((sparse_preamble, typesig,
-                                                'lemma = solve NatRing')))
+                                             'lemma = solve NatRing')))
         print(('%7g | ' % res), end='')
         sparse_results.append(res)
     else:
@@ -176,7 +188,7 @@ for degree in degrees:
             n, varnames, expr.translate(dense_expr_encoding),
             expand(expr).translate(dense_expr_encoding))
         res = time_file_typecheck('\n'.join((dense_preamble, typesig,
-                                            expr_ast)))
+                                             expr_ast)))
         print(('%7g | ' % res))
         dense_results.append(res)
     else:
@@ -189,7 +201,8 @@ with open('benchmark-logs', 'a') as logfile:
     logfile.write(str(datetime.datetime.now()) + '\n')
     logfile.write(expr_ + '\n')
     logfile.write('d sparse dense\n')
-    for d, sp, dn in itertools.zip_longest(degrees, sparse_results, dense_results):
-        logfile.write(d.__repr__() + ' ' + sp.__repr__() + ' ' +
-                        dn.__repr__() + '\n')
+    for d, sp, dn in itertools.zip_longest(degrees, sparse_results,
+                                           dense_results):
+        logfile.write(d.__repr__() + ' ' + sp.__repr__() + ' ' + dn.__repr__()
+                      + '\n')
     logfile.write('\n\n')
