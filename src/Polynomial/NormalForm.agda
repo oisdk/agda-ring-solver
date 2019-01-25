@@ -8,7 +8,16 @@
 --   Ring Done Right in Coq’, in Theorem Proving in Higher Order
 --   Logics, Berlin, Heidelberg, 2005, vol. 3603, pp. 98–113.
 --
--- However the details are quite different.
+-- The main sources of efficience come from:
+--
+-- * Careful arrangement of operators to maintain *syntactic equality*.
+--
+-- * Avoiding of identities (like *1 or +0) with specialised data
+--  structures.
+--
+-- Check out the relevent sections in the paper for the details:
+--     https://github.com/oisdk/agda-ring-solver-report/blob/master/report.pdf
+
 open import Polynomial.Parameters
 
 module Polynomial.NormalForm

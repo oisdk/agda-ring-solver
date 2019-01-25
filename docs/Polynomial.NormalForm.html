@@ -9,29 +9,38 @@
 <a id="229" class="Comment">--   Ring Done Right in Coq’, in Theorem Proving in Higher Order</a>
 <a id="294" class="Comment">--   Logics, Berlin, Heidelberg, 2005, vol. 3603, pp. 98–113.</a>
 <a id="356" class="Comment">--</a>
-<a id="359" class="Comment">-- However the details are quite different.</a>
-<a id="403" class="Keyword">open</a> <a id="408" class="Keyword">import</a> <a id="415" href="Polynomial.Parameters.html" class="Module">Polynomial.Parameters</a>
+<a id="359" class="Comment">-- The main sources of efficience come from:</a>
+<a id="404" class="Comment">--</a>
+<a id="407" class="Comment">-- * Careful arrangement of operators to maintain *syntactic equality*.</a>
+<a id="479" class="Comment">--</a>
+<a id="482" class="Comment">-- * Avoiding of identities (like *1 or +0) with specialised data</a>
+<a id="548" class="Comment">--  structures.</a>
+<a id="564" class="Comment">--</a>
+<a id="567" class="Comment">-- Check out the relevent sections in the paper for the details:</a>
+<a id="632" class="Comment">--     https://github.com/oisdk/agda-ring-solver-report/blob/master/report.pdf</a>
 
-<a id="438" class="Keyword">module</a> <a id="445" href="Polynomial.NormalForm.html" class="Module">Polynomial.NormalForm</a>
-  <a id="469" class="Symbol">{</a><a id="470" href="Polynomial.NormalForm.html#470" class="Bound">r₁</a> <a id="473" href="Polynomial.NormalForm.html#473" class="Bound">r₂</a> <a id="476" href="Polynomial.NormalForm.html#476" class="Bound">r₃</a><a id="478" class="Symbol">}</a>
-  <a id="482" class="Symbol">(</a><a id="483" href="Polynomial.NormalForm.html#483" class="Bound">homo</a> <a id="488" class="Symbol">:</a> <a id="490" href="Polynomial.Parameters.html#795" class="Record">Homomorphism</a> <a id="503" href="Polynomial.NormalForm.html#470" class="Bound">r₁</a> <a id="506" href="Polynomial.NormalForm.html#473" class="Bound">r₂</a> <a id="509" href="Polynomial.NormalForm.html#476" class="Bound">r₃</a><a id="511" class="Symbol">)</a>
-  <a id="515" class="Keyword">where</a>
+<a id="712" class="Keyword">open</a> <a id="717" class="Keyword">import</a> <a id="724" href="Polynomial.Parameters.html" class="Module">Polynomial.Parameters</a>
 
-<a id="522" class="Keyword">open</a> <a id="527" href="Polynomial.Parameters.html#795" class="Module">Homomorphism</a> <a id="540" href="Polynomial.NormalForm.html#483" class="Bound">homo</a>
+<a id="747" class="Keyword">module</a> <a id="754" href="Polynomial.NormalForm.html" class="Module">Polynomial.NormalForm</a>
+  <a id="778" class="Symbol">{</a><a id="779" href="Polynomial.NormalForm.html#779" class="Bound">r₁</a> <a id="782" href="Polynomial.NormalForm.html#782" class="Bound">r₂</a> <a id="785" href="Polynomial.NormalForm.html#785" class="Bound">r₃</a><a id="787" class="Symbol">}</a>
+  <a id="791" class="Symbol">(</a><a id="792" href="Polynomial.NormalForm.html#792" class="Bound">homo</a> <a id="797" class="Symbol">:</a> <a id="799" href="Polynomial.Parameters.html#795" class="Record">Homomorphism</a> <a id="812" href="Polynomial.NormalForm.html#779" class="Bound">r₁</a> <a id="815" href="Polynomial.NormalForm.html#782" class="Bound">r₂</a> <a id="818" href="Polynomial.NormalForm.html#785" class="Bound">r₃</a><a id="820" class="Symbol">)</a>
+  <a id="824" class="Keyword">where</a>
 
-<a id="546" class="Comment">-- The &quot;injection index&quot; is what allows us to store the nested</a>
-<a id="609" class="Comment">-- polynomials sparsely.</a>
-<a id="634" class="Keyword">open</a> <a id="639" class="Keyword">import</a> <a id="646" href="Polynomial.NormalForm.InjectionIndex.html" class="Module">Polynomial.NormalForm.InjectionIndex</a> <a id="683" class="Keyword">public</a>
+<a id="831" class="Keyword">open</a> <a id="836" href="Polynomial.Parameters.html#795" class="Module">Homomorphism</a> <a id="849" href="Polynomial.NormalForm.html#792" class="Bound">homo</a>
 
-<a id="691" class="Comment">-- The definition and types for the polynomial.</a>
-<a id="739" class="Keyword">open</a> <a id="744" class="Keyword">import</a> <a id="751" href="Polynomial.NormalForm.Definition.html" class="Module">Polynomial.NormalForm.Definition</a> <a id="784" href="Polynomial.Parameters.html#862" class="Field">coeffs</a> <a id="791" class="Keyword">public</a>
+<a id="855" class="Comment">-- The &quot;injection index&quot; is what allows us to store the nested</a>
+<a id="918" class="Comment">-- polynomials sparsely.</a>
+<a id="943" class="Keyword">open</a> <a id="948" class="Keyword">import</a> <a id="955" href="Polynomial.NormalForm.InjectionIndex.html" class="Module">Polynomial.NormalForm.InjectionIndex</a> <a id="992" class="Keyword">public</a>
 
-<a id="799" class="Comment">-- Normalizing constructors.</a>
-<a id="828" class="Keyword">open</a> <a id="833" class="Keyword">import</a> <a id="840" href="Polynomial.NormalForm.Construction.html" class="Module">Polynomial.NormalForm.Construction</a> <a id="875" href="Polynomial.Parameters.html#862" class="Field">coeffs</a> <a id="882" class="Keyword">public</a>
+<a id="1000" class="Comment">-- The definition and types for the polynomial.</a>
+<a id="1048" class="Keyword">open</a> <a id="1053" class="Keyword">import</a> <a id="1060" href="Polynomial.NormalForm.Definition.html" class="Module">Polynomial.NormalForm.Definition</a> <a id="1093" href="Polynomial.Parameters.html#862" class="Field">coeffs</a> <a id="1100" class="Keyword">public</a>
 
-<a id="890" class="Comment">-- Definition of arithmetic operations etc.</a>
-<a id="934" class="Keyword">open</a> <a id="939" class="Keyword">import</a> <a id="946" href="Polynomial.NormalForm.Operations.html" class="Module">Polynomial.NormalForm.Operations</a> <a id="979" href="Polynomial.Parameters.html#862" class="Field">coeffs</a> <a id="986" class="Keyword">public</a>
+<a id="1108" class="Comment">-- Normalizing constructors.</a>
+<a id="1137" class="Keyword">open</a> <a id="1142" class="Keyword">import</a> <a id="1149" href="Polynomial.NormalForm.Construction.html" class="Module">Polynomial.NormalForm.Construction</a> <a id="1184" href="Polynomial.Parameters.html#862" class="Field">coeffs</a> <a id="1191" class="Keyword">public</a>
 
-<a id="994" class="Comment">-- &quot;Running&quot; the polynomial on some input.</a>
-<a id="1037" class="Keyword">open</a> <a id="1042" class="Keyword">import</a> <a id="1049" href="Polynomial.NormalForm.Semantics.html" class="Module">Polynomial.NormalForm.Semantics</a> <a id="1081" href="Polynomial.NormalForm.html#483" class="Bound">homo</a> <a id="1086" class="Keyword">public</a>
+<a id="1199" class="Comment">-- Definition of arithmetic operations etc.</a>
+<a id="1243" class="Keyword">open</a> <a id="1248" class="Keyword">import</a> <a id="1255" href="Polynomial.NormalForm.Operations.html" class="Module">Polynomial.NormalForm.Operations</a> <a id="1288" href="Polynomial.Parameters.html#862" class="Field">coeffs</a> <a id="1295" class="Keyword">public</a>
+
+<a id="1303" class="Comment">-- &quot;Running&quot; the polynomial on some input.</a>
+<a id="1346" class="Keyword">open</a> <a id="1351" class="Keyword">import</a> <a id="1358" href="Polynomial.NormalForm.Semantics.html" class="Module">Polynomial.NormalForm.Semantics</a> <a id="1390" href="Polynomial.NormalForm.html#792" class="Bound">homo</a> <a id="1395" class="Keyword">public</a>
 </pre></body></html>
