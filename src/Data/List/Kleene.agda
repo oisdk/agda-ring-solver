@@ -25,3 +25,34 @@ module _ {a b} {A : Set a} {B : Set b} (f : A → B → B) (b : B) where
     foldr⋆ : A ⋆ → B
     foldr⋆ [] = b
     foldr⋆ [ xs ] = foldr⁺ xs
+
+-- Why is this useful? What does it give us over the normal list definition?
+--
+-- As is explained in the report, one of the most import factors which gives
+-- us a speedup in the solver is *avoiding identities*. For instance, in
+-- Haskell, we might write foldMap like this (on lists):
+--
+--   foldMap _ [] = mempty
+--   foldMap f (x:xs) = f x <> foldMap f xs
+--
+-- To avoid mempty, we could instead write this:
+--
+--   foldMap _ [] = mempty
+--   foldMap f [x] = f x
+--   foldMap f (x:xs) = f x <> foldMap f xs
+--
+-- This avoids a mempty on nonempty lists, but does an extra pattern match.
+-- For these lists, we can write:
+open import Algebra
+
+module _ {m r} (mon : RawMonoid m r) where
+  open RawMonoid mon
+
+  foldMap : ∀ {a} {A : Set a} → (A → Carrier) → A ⋆ → Carrier
+  foldMap f [] = ε
+  foldMap {A = A} f [ xs ] = go xs
+    where
+    go : A ⁺ → Carrier
+    go (x & []) = f x
+    go (x & [ xs ]) = f x ∙ go xs
+-- Which is a little cleaner.
