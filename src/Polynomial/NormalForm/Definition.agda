@@ -16,14 +16,11 @@ module Polynomial.NormalForm.Definition
 open import Polynomial.NormalForm.InjectionIndex
 
 open import Relation.Nullary using (¬_)
-open import Level            using (_⊔_; Lift)
+open import Level            using (_⊔_)
 open import Data.Empty       using (⊥)
 open import Data.Unit        using (⊤)
 open import Data.Nat         using (ℕ; suc; zero)
-open import Function         using (_∘_)
-open import Data.Maybe       using (Maybe; just; nothing)
 open import Data.Bool        using (T)
-open import Data.Product     using (_×_; _,_)
 open import Data.List.Kleene public
 
 infixl 6 _Δ_
