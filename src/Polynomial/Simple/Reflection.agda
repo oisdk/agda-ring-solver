@@ -27,7 +27,7 @@ module Internal (rng : Term) where
 
   infixr 5 _⋯⟅∷⟆_
   _⋯⟅∷⟆_ : ℕ → List (Arg Term) → List (Arg Term)
-  zero ⋯⟅∷⟆ xs = xs
+  zero  ⋯⟅∷⟆ xs = xs
   suc i ⋯⟅∷⟆ xs = unknown ⟅∷⟆  i ⋯⟅∷⟆ xs
 
   natTerm : ℕ → Term
@@ -162,9 +162,8 @@ module Internal (rng : Term) where
                           [])
 
   listType : Term → TC Term
-  listType t = do
-    t′ ← normalise t
-    checkType t′ (def (quote List) (1 ⋯⟅∷⟆ def (quote AlmostCommutativeRing.Carrier) (2 ⋯⟅∷⟆ rng ⟨∷⟩ []) ⟨∷⟩ []))
+  listType t =
+    checkType t (def (quote List) (1 ⋯⟅∷⟆ def (quote AlmostCommutativeRing.Carrier) (2 ⋯⟅∷⟆ rng ⟨∷⟩ []) ⟨∷⟩ [])) ⟨ bindTC ⟩ normalise
 
   checkRing : TC Term
   checkRing = checkType rng (def (quote AlmostCommutativeRing) (unknown ⟨∷⟩ unknown ⟨∷⟩ []))
