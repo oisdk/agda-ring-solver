@@ -133,12 +133,13 @@ module IntExamples where                                                      --
   open import Relation.Binary.EqReasoning setoid                              --         ██║  ██║  ██║
   open import Function                                                        --         ██║  ██║  ██║
   open import Relation.Binary.Reasoning.Inference _≈_ refl trans              --         ██║  ██║  ██║
+  open import Data.List using (_∷_; [])                                       --         ██║  ██║  ██║
                                                                               --         ██║  ██║  ██║
   -- It can interact with manual proofs as well.                              --         ██║  ██║  ██║
   lemma₃ : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x                              --         ██║  ██║  ██║
   lemma₃ x y = begin                                                          --         ██║  ██║  ██║
     x + y * 1 + 3 ≈⟨ +-comm x (y * 1) ⟨ +-cong ⟩ refl ⟩                       --         ██║  ██║  ██║
-    y * 1 + x + 3 ≋⟨ solveFor 2 Int.ring ⟩                                    --         ██║  ██║  ██║
+    y * 1 + x + 3 ≋⟨ solveFor (x ∷ y ∷ []) Int.ring ⟩                         --         ██║  ██║  ██║
     3 + y + x     ≡⟨ refl ⟩                                                   --         ██║  ██║  ██║
     2 + 1 + y + x ∎                                                           --         ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║

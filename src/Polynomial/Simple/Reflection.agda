@@ -1,10 +1,14 @@
 module Polynomial.Simple.Reflection where
 
+open import Agda.Builtin.Reflection
 open import Reflection
 open import Function
 open import Data.Unit using (⊤)
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.List as List using (List; _∷_; []; foldr)
+
+_>>=_ : {A B : Set} → TC A → (A → TC B) → TC B
+_>>=_ = bindTC
 
 module Internal (rng : Term) where
   open import Polynomial.Simple.Solver renaming (solve to solve′)
@@ -12,6 +16,9 @@ module Internal (rng : Term) where
   open import Relation.Nullary using (Dec; yes; no)
   import Data.Vec as Vec
   import Data.Fin as Fin
+  open import Data.Maybe as Maybe using (Maybe; just; nothing)
+
+  open import Data.Nat.Table
 
   -- Some patterns to decrease verbosity
   infixr 5 _⟨∷⟩_ _⟅∷⟆_
@@ -31,12 +38,12 @@ module Internal (rng : Term) where
   finTerm zero = quote Fin.zero ⟨ con ⟩ 1 ⋯⟅∷⟆ []
   finTerm (suc i) = quote Fin.suc ⟨ con ⟩ 1 ⋯⟅∷⟆ finTerm i ⟨∷⟩ []
 
-  curriedTerm : ℕ → Term
+  curriedTerm : Table → Term
   curriedTerm = go zero
     where
-    go : ℕ → ℕ → Term
-    go k zero = quote Vec.[] ⟨ con ⟩ 2 ⋯⟅∷⟆ []
-    go k (suc i) = quote Vec._∷_ ⟨ con ⟩ 2 ⋯⟅∷⟆ 1 ⋯⟅∷⟆ var k [] ⟨∷⟩ go (suc k) i ⟨∷⟩ []
+    go : ℕ → Table → Term
+    go k [] = quote Vec.[] ⟨ con ⟩ 2 ⋯⟅∷⟆ []
+    go k (x ∷ xs) = quote Vec._∷_ ⟨ con ⟩ 2 ⋯⟅∷⟆ 1 ⋯⟅∷⟆ var (k ℕ.+ x) [] ⟨∷⟩ go (suc (k ℕ.+ x)) xs ⟨∷⟩ []
 
   hlams : List String → Term → Term
   hlams vs xs = foldr (λ v vs → lam hidden (abs v vs)) xs vs
@@ -62,7 +69,7 @@ module Internal (rng : Term) where
     constExpr : Term → Term
     constExpr x = quote Κ ⟨ con ⟩ E⟅∷⟆ x ⟨∷⟩ []
 
-    module ToExpr (varExpr : ℕ → Term) where
+    module ToExpr (varExpr : ℕ → Maybe Term) where
       mutual
         -- Application of a ring operator often doesn't have a type as
         -- simple as "Carrier → Carrier → Carrier": there may be hidden
@@ -99,9 +106,9 @@ module Internal (rng : Term) where
         toExpr (def (quote AlmostCommutativeRing._*_) xs) = getBinOp (quote _⊗_) xs
         toExpr (def (quote AlmostCommutativeRing._^_) xs) = getExp xs
         toExpr (def (quote AlmostCommutativeRing.-_) xs) = getUnOp (quote ⊝_) xs
-        toExpr v@(var x args) with x ℕ.<? numVars
-        ... | yes p = varExpr x
-        ... | no ¬p = constExpr v
+        toExpr v@(var x args) with varExpr x
+        ... | just p = p
+        ... | nothing = constExpr v
         {-# CATCHALL #-}
         toExpr t = constExpr t
 
@@ -114,10 +121,14 @@ module Internal (rng : Term) where
         hlams nms (quote AlmostCommutativeRing.refl ⟨ def ⟩ 2 ⋯⟅∷⟆ rng ⟨∷⟩ 1 ⋯⟅∷⟆ []) ⟨∷⟩
         []
       where
-      open ToExpr (λ x → var x [])
+      varExpr : ℕ → Maybe Term
+      varExpr i with i ℕ.<? numVars
+      ... | yes _ = just (var i [])
+      ... | no _ = nothing
+      open ToExpr varExpr
 
-    mkSolver′ : Term → Term → Term
-    mkSolver′ lhs rhs =
+    mkSolver′ : Table → Term → Term → Term
+    mkSolver′ t lhs rhs =
       quote AlmostCommutativeRing.trans ⟨ def ⟩
         2 ⋯⟅∷⟆
         rng ⟨∷⟩
@@ -132,9 +143,12 @@ module Internal (rng : Term) where
         (quote Ops.correct ⟨ def ⟩ 2 ⋯⟅∷⟆ rng ⟨∷⟩ 1 ⋯⟅∷⟆ toExpr rhs ⟨∷⟩ ρ ⟨∷⟩ []) ⟨∷⟩
         []
       where
-      open ToExpr (λ x → quote Ι ⟨ con ⟩ E⟅∷⟆ finTerm x ⟨∷⟩ [])
+      varExpr : ℕ → Maybe Term
+      varExpr i = Maybe.map (λ x → quote Ι ⟨ con ⟩ E⟅∷⟆ finTerm x ⟨∷⟩ []) (member i t)
+
+      open ToExpr varExpr
       ρ : Term
-      ρ = curriedTerm numVars
+      ρ = curriedTerm t
 
   toSoln : Term → Term
   toSoln = go 0 id
@@ -146,14 +160,26 @@ module Internal (rng : Term) where
     go i k (pi a (abs s x)) = go (suc i) (k ∘ (s ∷_)) x
     go i k t = unknown
 
-  toSoln′ : ℕ → Term → Term
-  toSoln′ i (def f (            lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = mkSolver′ i lhs rhs
-  toSoln′ i (def f (_ ∷ _ ∷     lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = mkSolver′ i lhs rhs
-  toSoln′ i (def f (_ ∷ _ ∷ _ ∷ lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = mkSolver′ i lhs rhs
-  toSoln′ _ _ = unknown
+  listType : Term → TC Term
+  listType t = do
+    t′ ← normalise t
+    checkType t′ (def (quote List) (1 ⋯⟅∷⟆ def (quote AlmostCommutativeRing.Carrier) (2 ⋯⟅∷⟆ rng ⟨∷⟩ []) ⟨∷⟩ []))
+
+  toSoln′ : Term  → Term → Term
+  toSoln′ = go []
+    where
+    go′ : Table → Term → Term
+    go′ i (def f (            lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = mkSolver′ (List.length i) i lhs rhs
+    go′ i (def f (_ ∷ _ ∷     lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = mkSolver′ (List.length i) i lhs rhs
+    go′ i (def f (_ ∷ _ ∷ _ ∷ lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = mkSolver′ (List.length i) i lhs rhs
+    go′ _ _ = unknown
+
+    go : Table → Term → Term → Term
+    go t (con (quote List._∷_) (_ ∷ _ ∷ var i [] ⟨∷⟩ xs ⟨∷⟩ _)) ys = go (insert i t) xs ys
+    go t (con (quote List.List.[]) _) xs = go′ t xs
+    go t _ xs = unknown
 
 open Internal
-open import Agda.Builtin.Reflection
 
 -- This is the main macro you'll probably be using. Call it like this:
 --
@@ -174,17 +200,20 @@ macro
 --   lemma₃ : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x
 --   lemma₃ x y = begin
 --     x + y * 1 + 3 ≈⟨ +-comm x (y * 1) ⟨ +-cong ⟩ refl ⟩
---     y * 1 + x + 3 ≋⟨ solveFor 2 Int.ring ⟩
+--     y * 1 + x + 3 ≋⟨ solveFor (x ∷ y ∷ []) Int.ring ⟩
 --     3 + y + x     ≡⟨ refl ⟩
 --     2 + 1 + y + x ∎
 --
--- The first argument is the number of free variables, and the second is the
+-- The first argument is the free variables, and the second is the
 -- ring implementation (as before).
 --
 -- One thing to note here is that we need to be able to infer *both* sides of
 -- the equality, which the normal equaltional reasoning combinators don't let you
 -- do. You'll need a special combinator, defined in Relation.Binary.Reasoning.Inference.
+
 macro
-  solveFor : ℕ → Name → Term → TC ⊤
-  solveFor i rng hole =
+  solveFor : Term → Name → Term → TC ⊤
+  solveFor i′ rng hole = do
+    i ← listType (def rng []) i′
+    _ ← commitTC
     inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ unify hole ∘ toSoln′ (def rng []) i
