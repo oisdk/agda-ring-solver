@@ -159,12 +159,7 @@ macro
   solve rng hole =
     inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ unify hole ∘ toSoln (def rng [])
 
-_>>=_ : ∀ {a b} {A : Set a} {B : Set b} → TC A → (A → TC B) → TC B
-_>>=_ = bindTC
-
 macro
   solveFor : ℕ → Name → Term → TC ⊤
-  solveFor i rng hole = do
-    hole′ ← inferType hole >>= reduce
-    let res = toSoln′ (def rng []) i hole′
-    unify hole res
+  solveFor i rng hole =
+    inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ unify hole ∘ toSoln′ (def rng []) i
