@@ -106,10 +106,7 @@ module Internal (rng : Term) where
         toExpr (def (quote AlmostCommutativeRing._*_) xs) = getBinOp (quote _⊗_) xs
         toExpr (def (quote AlmostCommutativeRing._^_) xs) = getExp xs
         toExpr (def (quote AlmostCommutativeRing.-_) xs) = getUnOp (quote ⊝_) xs
-        toExpr v@(var x args) with varExpr x
-        ... | just p = p
-        ... | nothing = constExpr v
-        {-# CATCHALL #-}
+        toExpr v@(var x _) = Maybe.fromMaybe (constExpr v) (varExpr x)
         toExpr t = constExpr t
 
     mkSolver : List String → Term → Term → List (Arg Type)
@@ -150,48 +147,60 @@ module Internal (rng : Term) where
       ρ : Term
       ρ = curriedTerm t
 
-  toSoln : Term → Term
-  toSoln = go 0 id
+  toSoln : Term → TC Term
+  toSoln t′ = go 0 id t′
     where
-    go : ℕ → (List String → List String) → Term → Term
-    go i k (def f (            lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = quote solve′ ⟨ def ⟩ mkSolver i (k []) lhs rhs
-    go i k (def f (    _ ∷ _ ∷ lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = quote solve′ ⟨ def ⟩ mkSolver i (k []) lhs rhs
-    go i k (def f (_ ∷ _ ∷ _ ∷ lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = quote solve′ ⟨ def ⟩ mkSolver i (k []) lhs rhs
+    go : ℕ → (List String → List String) → Term → TC Term
+    go i k (def f (            lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = returnTC $ quote solve′ ⟨ def ⟩ mkSolver i (k []) lhs rhs
+    go i k (def f (    _ ∷ _ ∷ lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = returnTC $ quote solve′ ⟨ def ⟩ mkSolver i (k []) lhs rhs
+    go i k (def f (_ ∷ _ ∷ _ ∷ lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = returnTC $ quote solve′ ⟨ def ⟩ mkSolver i (k []) lhs rhs
     go i k (pi a (abs s x)) = go (suc i) (k ∘ (s ∷_)) x
-    go i k t = unknown
+    go i k t = typeError (strErr "Malformed call to solve." ∷
+                          strErr "Expected target type to be like: ∀ x y → x + y ≈ y + x." ∷
+                          strErr "Instead: " ∷
+                          termErr t′ ∷
+                          [])
 
   listType : Term → TC Term
   listType t = do
     t′ ← normalise t
     checkType t′ (def (quote List) (1 ⋯⟅∷⟆ def (quote AlmostCommutativeRing.Carrier) (2 ⋯⟅∷⟆ rng ⟨∷⟩ []) ⟨∷⟩ []))
 
-  toSoln′ : Term  → Term → Term
-  toSoln′ = go []
+  toSoln′ : Term  → Term → TC Term
+  toSoln′ t′ xs′ = go [] t′ xs′
     where
-    go′ : Table → Term → Term
-    go′ i (def f (            lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = mkSolver′ (List.length i) i lhs rhs
-    go′ i (def f (_ ∷ _ ∷     lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = mkSolver′ (List.length i) i lhs rhs
-    go′ i (def f (_ ∷ _ ∷ _ ∷ lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = mkSolver′ (List.length i) i lhs rhs
-    go′ _ _ = unknown
+    go′ : Table → Term → TC Term
+    go′ i (def f (            lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = returnTC $ mkSolver′ (List.length i) i lhs rhs
+    go′ i (def f (_ ∷ _ ∷     lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = returnTC $ mkSolver′ (List.length i) i lhs rhs
+    go′ i (def f (_ ∷ _ ∷ _ ∷ lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = returnTC $ mkSolver′ (List.length i) i lhs rhs
+    go′ _ _ = typeError (strErr "Malformed call to solveOver." ∷
+                         strErr "Target type should be an equality like x + y ≈ y + x." ∷
+                         strErr "Instead: " ∷
+                         termErr xs′ ∷
+                         [])
 
-    go : Table → Term → Term → Term
+    go : Table → Term → Term → TC Term
     go t (con (quote List._∷_) (_ ∷ _ ∷ var i [] ⟨∷⟩ xs ⟨∷⟩ _)) ys = go (insert i t) xs ys
     go t (con (quote List.List.[]) _) xs = go′ t xs
-    go t _ xs = unknown
+    go i k t = typeError (strErr "Malformed call to solveOver." ∷
+                          strErr "First argument should be a list of free variables." ∷
+                          strErr "Instead: " ∷
+                          termErr t′ ∷
+                          [])
 
 open Internal
 
 -- This is the main macro you'll probably be using. Call it like this:
 --
 --   lemma : ∀ x y → x + y ≈ y + x
---   lemma = solver TypeRing
+--   lemma = solve TypeRing
 --
 -- where TypRing is your implementation of AlmostCommutativeRing. (Find some
 -- example implementations in Polynomial.Solver.Ring.AlmostCommutativeRing.Instances).
 macro
   solve : Name → Term → TC ⊤
   solve rng hole =
-    inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ unify hole ∘ toSoln (def rng [])
+    inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ toSoln (def rng []) ⟨ bindTC ⟩ unify hole
 
 -- Use this macro when you want to solve something *under* a lambda. For example:
 -- say you have a long proof, and you just want the solver to deal with an
@@ -200,7 +209,7 @@ macro
 --   lemma₃ : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x
 --   lemma₃ x y = begin
 --     x + y * 1 + 3 ≈⟨ +-comm x (y * 1) ⟨ +-cong ⟩ refl ⟩
---     y * 1 + x + 3 ≋⟨ solveFor (x ∷ y ∷ []) Int.ring ⟩
+--     y * 1 + x + 3 ≋⟨ solveOver (x ∷ y ∷ []) Int.ring ⟩
 --     3 + y + x     ≡⟨ refl ⟩
 --     2 + 1 + y + x ∎
 --
@@ -212,8 +221,8 @@ macro
 -- do. You'll need a special combinator, defined in Relation.Binary.Reasoning.Inference.
 
 macro
-  solveFor : Term → Name → Term → TC ⊤
-  solveFor i′ rng hole = do
+  solveOver : Term → Name → Term → TC ⊤
+  solveOver i′ rng hole = do
     i ← listType (def rng []) i′
     _ ← commitTC
-    inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ unify hole ∘ toSoln′ (def rng []) i
+    inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ toSoln′ (def rng []) i ⟨ bindTC ⟩ unify hole
