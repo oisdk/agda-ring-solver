@@ -154,11 +154,36 @@ module Internal (rng : Term) where
 
 open Internal
 open import Agda.Builtin.Reflection
+
+-- This is the main macro you'll probably be using. Call it like this:
+--
+--   lemma : ∀ x y → x + y ≈ y + x
+--   lemma = solver TypeRing
+--
+-- where TypRing is your implementation of AlmostCommutativeRing. (Find some
+-- example implementations in Polynomial.Solver.Ring.AlmostCommutativeRing.Instances).
 macro
   solve : Name → Term → TC ⊤
   solve rng hole =
     inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ unify hole ∘ toSoln (def rng [])
 
+-- Use this macro when you want to solve something *under* a lambda. For example:
+-- say you have a long proof, and you just want the solver to deal with an
+-- intermediate step. Call it like so:
+--
+--   lemma₃ : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x
+--   lemma₃ x y = begin
+--     x + y * 1 + 3 ≈⟨ +-comm x (y * 1) ⟨ +-cong ⟩ refl ⟩
+--     y * 1 + x + 3 ≋⟨ solveFor 2 Int.ring ⟩
+--     3 + y + x     ≡⟨ refl ⟩
+--     2 + 1 + y + x ∎
+--
+-- The first argument is the number of free variables, and the second is the
+-- ring implementation (as before).
+--
+-- One thing to note here is that we need to be able to infer *both* sides of
+-- the equality, which the normal equaltional reasoning combinators don't let you
+-- do. You'll need a special combinator, defined in Relation.Binary.Reasoning.Inference.
 macro
   solveFor : ℕ → Name → Term → TC ⊤
   solveFor i rng hole =
