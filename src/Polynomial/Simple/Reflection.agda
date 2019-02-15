@@ -166,6 +166,9 @@ module Internal (rng : Term) where
     t′ ← normalise t
     checkType t′ (def (quote List) (1 ⋯⟅∷⟆ def (quote AlmostCommutativeRing.Carrier) (2 ⋯⟅∷⟆ rng ⟨∷⟩ []) ⟨∷⟩ []))
 
+  checkRing : TC Term
+  checkRing = checkType rng (def (quote AlmostCommutativeRing) (unknown ⟨∷⟩ unknown ⟨∷⟩ []))
+
   toSoln′ : Term  → Term → TC Term
   toSoln′ t′ xs′ = go [] t′ xs′
     where
@@ -187,7 +190,6 @@ module Internal (rng : Term) where
                           strErr "Instead: " ∷
                           termErr t′ ∷
                           [])
-
 open Internal
 
 -- This is the main macro you'll probably be using. Call it like this:
@@ -199,8 +201,10 @@ open Internal
 -- example implementations in Polynomial.Solver.Ring.AlmostCommutativeRing.Instances).
 macro
   solve : Name → Term → TC ⊤
-  solve rng hole =
-    inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ toSoln (def rng []) ⟨ bindTC ⟩ unify hole
+  solve rng′ hole = do
+    rng ← checkRing (def rng′ [])
+    _ ← commitTC
+    inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ toSoln rng ⟨ bindTC ⟩ unify hole
 
 -- Use this macro when you want to solve something *under* a lambda. For example:
 -- say you have a long proof, and you just want the solver to deal with an
@@ -222,7 +226,9 @@ macro
 
 macro
   solveOver : Term → Name → Term → TC ⊤
-  solveOver i′ rng hole = do
-    i ← listType (def rng []) i′
+  solveOver i′ rng′ hole = do
+    rng ← checkRing (def rng′ [])
     _ ← commitTC
-    inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ toSoln′ (def rng []) i ⟨ bindTC ⟩ unify hole
+    i ← listType rng i′
+    _ ← commitTC
+    inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ toSoln′ rng i ⟨ bindTC ⟩ unify hole
