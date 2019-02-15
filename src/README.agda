@@ -129,6 +129,18 @@ module IntExamples where                                                      --
                                                                               --   ████╔═██║  ██║  ██║
   lemma₂ : ∀ x y → (x + y) ^ 2 ≈ x ^ 2 + 2 * x * y + y ^ 2                    --     ██║ ██║  ██║  ██║
   lemma₂ = solve Int.ring                                                     --     ╚═╝ ██║  ██║  ██║
+                                                                              --         ██║  ██║  ██║
+  open import Relation.Binary.EqReasoning setoid                              --         ██║  ██║  ██║
+  open import Function                                                        --         ██║  ██║  ██║
+  open import Relation.Binary.Reasoning.Inference _≈_ refl trans              --         ██║  ██║  ██║
+                                                                              --         ██║  ██║  ██║
+  -- It can interact with manual proofs as well.                              --         ██║  ██║  ██║
+  lemma₃ : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x                              --         ██║  ██║  ██║
+  lemma₃ x y = begin                                                          --         ██║  ██║  ██║
+    x + y * 1 + 3 ≈⟨ +-comm x (y * 1) ⟨ +-cong ⟩ refl ⟩                       --         ██║  ██║  ██║
+    y * 1 + x + 3 ≋⟨ solveFor 2 Int.ring ⟩                                    --         ██║  ██║  ██║
+    3 + y + x     ≡⟨ refl ⟩                                                   --         ██║  ██║  ██║
+    2 + 1 + y + x ∎                                                           --         ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║
 --------------------------------------------------------------------------------         ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║
@@ -151,16 +163,7 @@ module NatExamples where                                                      --
   -- for rings!)                                                              -- ██████████║  ██║  ██║
   lemma₁ : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x                              --   ████╔═██║  ██║  ██║
   lemma₁ = solve Nat.ring                                                     --     ██║ ██║  ██║  ██║
-                                                                              --     ╚═╝ ██║  ██║  ██║
-  open import Relation.Binary.EqReasoning setoid                              --         ██║  ██║  ██║
-  open import Relation.Binary.Reasoning.Inference _≈_ refl trans              --         ██║  ██║  ██║
-                                                                              --         ██║  ██║  ██║
-  -- It can interact with manual proofs as well.                              --         ██║  ██║  ██║
-  lemma₂ : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x                              --         ██║  ██║  ██║
-  lemma₂ x y = begin                                                          --         ██║  ██║  ██║
-    x + y * 1 + 3 ≋⟨ solveFor 2 Nat.ring ⟩                                    --         ██║  ██║  ██║
-    3 + y + x ≡⟨ refl ⟩                                                       --         ██║  ██║  ██║
-    2 + 1 + y + x ∎                                                           --         ██║  ██║  ██║
+--                                                                            --     ╚═╝ ██║  ██║  ██║
 --------------------------------------------------------------------------------         ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║
 --             8888888 8888888888 8 8888        8 8 8888888888                --         ██║  ██║  ██║
