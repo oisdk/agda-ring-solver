@@ -3,13 +3,13 @@ module Polynomial.Simple.Reflection where
 open import Reflection
 open import Function
 open import Data.Unit using (⊤)
+open import Data.Nat as ℕ using (ℕ; suc; zero)
+open import Data.List as List using (List; _∷_; []; foldr)
 
 module Internal where
   open import Polynomial.Simple.Solver renaming (solve to solve′)
   open import Data.String
   open import Relation.Nullary using (Dec; yes; no)
-  open import Data.Nat as ℕ using (ℕ; suc; zero)
-  open import Data.List using (List; _∷_; []; foldr)
 
   -- Some patterns to decrease verbosity
   infixr 5 ⟨_⟩∷_ ⟅_⟆∷_
@@ -65,15 +65,10 @@ module Internal where
     -- function *are* recognizable. As a result, the "catch-all" case
     -- will just assume that it has a constant expression.
     toExpr : (i : ℕ) → Term → Term
-    toExpr i t@(def f xs) with f ≟-Name quote AlmostCommutativeRing._+_
-    ... | yes p = getBinOp i (quote _⊕_) xs
-    ... | no _ with f ≟-Name quote AlmostCommutativeRing._*_
-    ... | yes p = getBinOp i (quote _⊗_) xs
-    ... | no _ with f ≟-Name quote AlmostCommutativeRing._^_
-    ... | yes p = getExp i xs
-    ... | no _ with f ≟-Name quote AlmostCommutativeRing.-_
-    ... | yes p = getUnOp i (quote ⊝_) xs
-    ... | no _ = constExpr i t
+    toExpr i (def (quote AlmostCommutativeRing._+_) xs) = getBinOp i (quote _⊕_) xs
+    toExpr i (def (quote AlmostCommutativeRing._*_) xs) = getBinOp i (quote _⊗_) xs
+    toExpr i (def (quote AlmostCommutativeRing._^_) xs) = getExp i xs
+    toExpr i (def (quote AlmostCommutativeRing.-_) xs) = getUnOp i (quote ⊝_) xs
     toExpr i v@(var x args) with suc x ℕ.≤? i
     ... | yes p = v
     ... | no ¬p = constExpr i v
@@ -87,9 +82,8 @@ module Internal where
   vlams : List String → Term → Term
   vlams vs xs = foldr (λ v vs → lam visible (abs v vs)) xs vs
 
-  mkSolver : List String → Name → ℕ → Term → Term → Term
+  mkSolver : List String → Name → ℕ → Term → Term → List (Arg Type)
   mkSolver nms rng i lhs rhs =
-    quote solve′ ⟨ def ⟩
       ⟅ unknown ⟆∷
       ⟅ unknown ⟆∷
       ⟨ def rng [] ⟩∷
@@ -119,11 +113,17 @@ module Internal where
   toSoln rng = go 0 id
     where
     go : ℕ → (List String → List String) → Term → Term
-    go i k (def f (⟨ lhs ⟩∷ ⟨ rhs ⟩∷ [])) = mkSolver (k []) rng i lhs rhs
-    go i k (def f (_ ∷ _ ∷ ⟨ lhs ⟩∷ ⟨ rhs ⟩∷ [])) = mkSolver (k []) rng i lhs rhs
-    go i k (def f (_ ∷ _ ∷ _ ∷ ⟨ lhs ⟩∷ ⟨ rhs ⟩∷ [])) = mkSolver (k []) rng i lhs rhs
+    go i k (def f (            ⟨ lhs ⟩∷ ⟨ rhs ⟩∷ [])) = quote solve′ ⟨ def ⟩ mkSolver (k []) rng i lhs rhs
+    go i k (def f (    _ ∷ _ ∷ ⟨ lhs ⟩∷ ⟨ rhs ⟩∷ [])) = quote solve′ ⟨ def ⟩ mkSolver (k []) rng i lhs rhs
+    go i k (def f (_ ∷ _ ∷ _ ∷ ⟨ lhs ⟩∷ ⟨ rhs ⟩∷ [])) = quote solve′ ⟨ def ⟩ mkSolver (k []) rng i lhs rhs
     go i k (pi a (abs s x)) = go (suc i) (k ∘ (s ∷_)) x
     go i k t = unknown
+
+  toSoln′ : ℕ → List String → Name → Term → Term
+  toSoln′ i nms rng (def f (⟨ lhs ⟩∷ ⟨ rhs ⟩∷ []))             = quote solve′ ⟨ def ⟩ (mkSolver nms rng i lhs rhs List.++ (List.applyDownFrom (λ j → arg (arg-info visible relevant) (var j [])) i))
+  toSoln′ i nms rng (def f (_ ∷ _ ∷ ⟨ lhs ⟩∷ ⟨ rhs ⟩∷ []))     = quote solve′ ⟨ def ⟩ (mkSolver nms rng i lhs rhs List.++ (List.applyDownFrom (λ j → arg (arg-info visible relevant) (var j [])) i))
+  toSoln′ i nms rng (def f (_ ∷ _ ∷ _ ∷ ⟨ lhs ⟩∷ ⟨ rhs ⟩∷ [])) = quote solve′ ⟨ def ⟩ (mkSolver nms rng i lhs rhs List.++ (List.applyDownFrom (λ j → arg (arg-info visible relevant) (var j [])) i))
+  toSoln′ _ _ _ _ = unknown
 
 open Internal
 open import Agda.Builtin.Reflection
@@ -131,3 +131,13 @@ macro
   solve : Name → Term → TC ⊤
   solve rng hole =
     inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ unify hole ∘ toSoln rng
+
+_>>=_ : ∀ {a b} {A : Set a} {B : Set b} → TC A → (A → TC B) → TC B
+_>>=_ = bindTC
+
+macro
+  solveFor : ℕ → Name → Term → TC ⊤
+  solveFor i rng hole = do
+    hole′ ← inferType hole >>= reduce
+    let res = toSoln′ i (List.replicate i "?") rng hole′
+    unify hole res ⟨ catchTC ⟩ typeError (termErr res ∷ [])

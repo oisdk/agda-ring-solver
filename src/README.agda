@@ -149,9 +149,18 @@ module NatExamples where                                                      --
   open AlmostCommutativeRing Nat.ring                                         --     ██╗ ██║  ██║  ██║
   -- The solver is flexible enough to work with Nats (even though it asks     --   ████║ ██║  ██║  ██║
   -- for rings!)                                                              -- ██████████║  ██║  ██║
-  lemma : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x                               --   ████╔═██║  ██║  ██║
-  lemma = solve Nat.ring                                                      --     ██║ ██║  ██║  ██║
+  lemma₁ : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x                              --   ████╔═██║  ██║  ██║
+  lemma₁ = solve Nat.ring                                                     --     ██║ ██║  ██║  ██║
                                                                               --     ╚═╝ ██║  ██║  ██║
+  open import Relation.Binary.EqReasoning setoid                              --         ██║  ██║  ██║
+  open import Relation.Binary.Reasoning.Inference _≈_ refl trans              --         ██║  ██║  ██║
+                                                                              --         ██║  ██║  ██║
+  -- It can interact with manual proofs as well.                              --         ██║  ██║  ██║
+  lemma₂ : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x                              --         ██║  ██║  ██║
+  lemma₂ x y = begin                                                          --         ██║  ██║  ██║
+    x + y * 1 + 3 ≋⟨ solveFor 2 Nat.ring ⟩                                    --         ██║  ██║  ██║
+    3 + y + x ≡⟨ refl ⟩                                                       --         ██║  ██║  ██║
+    2 + 1 + y + x ∎                                                           --         ██║  ██║  ██║
 --------------------------------------------------------------------------------         ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║
 --             8888888 8888888888 8 8888        8 8 8888888888                --         ██║  ██║  ██║
