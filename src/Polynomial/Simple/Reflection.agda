@@ -35,7 +35,7 @@ module Internal (rng : Term) where
   infixr 5 _⋯⟅∷⟆_
   _⋯⟅∷⟆_ : ℕ → List (Arg Term) → List (Arg Term)
   zero  ⋯⟅∷⟆ xs = xs
-  suc i ⋯⟅∷⟆ xs = unknown ⟅∷⟆  i ⋯⟅∷⟆ xs
+  suc i ⋯⟅∷⟆ xs = unknown ⟅∷⟆ i ⋯⟅∷⟆ xs
 
   natTerm : ℕ → Term
   natTerm zero = quote zero ⟨ con ⟩ []
@@ -46,11 +46,10 @@ module Internal (rng : Term) where
   finTerm (suc i) = quote Fin.suc ⟨ con ⟩ 1 ⋯⟅∷⟆ finTerm i ⟨∷⟩ []
 
   curriedTerm : Table → Term
-  curriedTerm = go zero
+  curriedTerm = List.foldr go (quote Vec.[] ⟨ con ⟩ 2 ⋯⟅∷⟆ []) ∘ Data.Nat.Table.toList
     where
-    go : ℕ → Table → Term
-    go k [] = quote Vec.[] ⟨ con ⟩ 2 ⋯⟅∷⟆ []
-    go k (x ∷ xs) = quote Vec._∷_ ⟨ con ⟩ 2 ⋯⟅∷⟆ 1 ⋯⟅∷⟆ var (k ℕ.+ x) [] ⟨∷⟩ go (suc (k ℕ.+ x)) xs ⟨∷⟩ []
+    go : ℕ → Term → Term
+    go x xs = quote Vec._∷_ ⟨ con ⟩ 3 ⋯⟅∷⟆ var x [] ⟨∷⟩ xs ⟨∷⟩ []
 
   hlams : List String → Term → Term
   hlams vs xs = foldr (λ v vs → lam hidden (abs v vs)) xs vs
