@@ -12,6 +12,9 @@ open import Data.List as List using (List; _∷_; []; foldr)
 _>>=_ : {A B : Set} → TC A → (A → TC B) → TC B
 _>>=_ = bindTC
 
+_>>_ : {A B : Set} → TC A → TC B → TC B
+xs >> ys = xs >>= const ys
+
 module Internal (rng : Term) where
   open import Polynomial.Simple.Solver renaming (solve to solve′)
   open import Data.String
@@ -204,7 +207,7 @@ macro
   solve : Name → Term → TC ⊤
   solve rng′ hole = do
     rng ← checkRing (def rng′ [])
-    _ ← commitTC
+    commitTC
     inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ toSoln rng ⟨ bindTC ⟩ unify hole
 
 -- Use this macro when you want to solve something *under* a lambda. For example:
@@ -230,7 +233,7 @@ macro
   solveOver : Term → Name → Term → TC ⊤
   solveOver i′ rng′ hole = do
     rng ← checkRing (def rng′ [])
-    _ ← commitTC
+    commitTC
     i ← listType rng i′
-    _ ← commitTC
+    commitTC
     inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ toSoln′ rng i ⟨ bindTC ⟩ unify hole
