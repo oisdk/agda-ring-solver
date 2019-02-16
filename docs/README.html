@@ -1,377 +1,379 @@
 <!DOCTYPE HTML>
-<html><head><meta charset="utf-8"><title>README</title><link rel="stylesheet" href="Agda.css"></head><body><pre><a id="1" class="Comment">-- ------------------------------------------------------------------------------------------------------</a>
-<a id="107" class="Comment">-- | ███████╗ ██████╗ ██╗     ██╗   ██╗██╗███╗   ██╗ ██████╗     ██████╗ ██╗███╗   ██╗ ██████╗ ███████╗ |</a>
-<a id="213" class="Comment">-- | ██╔════╝██╔═══██╗██║     ██║   ██║██║████╗  ██║██╔════╝     ██╔══██╗██║████╗  ██║██╔════╝ ██╔════╝ |</a>
-<a id="319" class="Comment">-- | ███████╗██║   ██║██║     ██║   ██║██║██╔██╗ ██║██║  ███╗    ██████╔╝██║██╔██╗ ██║██║  ███╗███████╗ |</a>
-<a id="425" class="Comment">-- | ╚════██║██║   ██║██║     ╚██╗ ██╔╝██║██║╚██╗██║██║   ██║    ██╔══██╗██║██║╚██╗██║██║   ██║╚════██║ |</a>
-<a id="531" class="Comment">-- | ███████║╚██████╔╝███████╗ ╚████╔╝ ██║██║ ╚████║╚██████╔╝    ██║  ██║██║██║ ╚████║╚██████╔╝███████║ |</a>
-<a id="637" class="Comment">-- | ╚══════╝ ╚═════╝ ╚══════╝  ╚═══╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝     ╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝ |</a>
-<a id="743" class="Comment">-- |                                                                                                    |</a>
-<a id="849" class="Comment">-- |                         ██╗███╗   ██╗     █████╗  ██████╗ ██████╗  █████╗                          |</a>
-<a id="955" class="Comment">-- |                         ██║████╗  ██║    ██╔══██╗██╔════╝ ██╔══██╗██╔══██╗                         |</a>
-<a id="1061" class="Comment">-- |                         ██║██╔██╗ ██║    ███████║██║  ███╗██║  ██║███████║                         |</a>
-<a id="1167" class="Comment">-- |                         ██║██║╚██╗██║    ██╔══██║██║   ██║██║  ██║██╔══██║                         |</a>
-<a id="1273" class="Comment">-- |                         ██║██║ ╚████║    ██║  ██║╚██████╔╝██████╔╝██║  ██║                         |</a>
-<a id="1379" class="Comment">-- |                         ╚═╝╚═╝  ╚═══╝    ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝                         |</a>
-<a id="1485" class="Comment">-- ------------------------------------------------------------------------------------------------------</a>
-<a id="1591" class="Comment">--</a>
-<a id="1594" class="Comment">--                                         Donnacha Oisín Kidney</a>
-<a id="1659" class="Comment">--                                            22 January 2019</a>
+<html><head><meta charset="utf-8"><title>README</title><link rel="stylesheet" href="Agda.css"></head><body><pre><a id="1" class="Symbol">{-#</a> <a id="5" class="Keyword">OPTIONS</a> <a id="13" class="Option">--without-K</a> <a id="25" class="Option">--safe</a> <a id="32" class="Symbol">#-}</a>
 
-<a id="1722" class="Keyword">module</a> <a id="1729" href="README.html" class="Module">README</a> <a id="1736" class="Keyword">where</a>
+<a id="37" class="Comment">-- ------------------------------------------------------------------------------------------------------</a>
+<a id="143" class="Comment">-- | ███████╗ ██████╗ ██╗     ██╗   ██╗██╗███╗   ██╗ ██████╗     ██████╗ ██╗███╗   ██╗ ██████╗ ███████╗ |</a>
+<a id="249" class="Comment">-- | ██╔════╝██╔═══██╗██║     ██║   ██║██║████╗  ██║██╔════╝     ██╔══██╗██║████╗  ██║██╔════╝ ██╔════╝ |</a>
+<a id="355" class="Comment">-- | ███████╗██║   ██║██║     ██║   ██║██║██╔██╗ ██║██║  ███╗    ██████╔╝██║██╔██╗ ██║██║  ███╗███████╗ |</a>
+<a id="461" class="Comment">-- | ╚════██║██║   ██║██║     ╚██╗ ██╔╝██║██║╚██╗██║██║   ██║    ██╔══██╗██║██║╚██╗██║██║   ██║╚════██║ |</a>
+<a id="567" class="Comment">-- | ███████║╚██████╔╝███████╗ ╚████╔╝ ██║██║ ╚████║╚██████╔╝    ██║  ██║██║██║ ╚████║╚██████╔╝███████║ |</a>
+<a id="673" class="Comment">-- | ╚══════╝ ╚═════╝ ╚══════╝  ╚═══╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝     ╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝ |</a>
+<a id="779" class="Comment">-- |                                                                                                    |</a>
+<a id="885" class="Comment">-- |                         ██╗███╗   ██╗     █████╗  ██████╗ ██████╗  █████╗                          |</a>
+<a id="991" class="Comment">-- |                         ██║████╗  ██║    ██╔══██╗██╔════╝ ██╔══██╗██╔══██╗                         |</a>
+<a id="1097" class="Comment">-- |                         ██║██╔██╗ ██║    ███████║██║  ███╗██║  ██║███████║                         |</a>
+<a id="1203" class="Comment">-- |                         ██║██║╚██╗██║    ██╔══██║██║   ██║██║  ██║██╔══██║                         |</a>
+<a id="1309" class="Comment">-- |                         ██║██║ ╚████║    ██║  ██║╚██████╔╝██████╔╝██║  ██║                         |</a>
+<a id="1415" class="Comment">-- |                         ╚═╝╚═╝  ╚═══╝    ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝                         |</a>
+<a id="1521" class="Comment">-- ------------------------------------------------------------------------------------------------------</a>
+<a id="1627" class="Comment">--</a>
+<a id="1630" class="Comment">--                                         Donnacha Oisín Kidney</a>
+<a id="1695" class="Comment">--                                            22 January 2019</a>
 
-<a id="1743" class="Comment">-- This contains the worked-through source code for:</a>
-<a id="1796" class="Comment">--</a>
-<a id="1799" class="Comment">--     &quot;Automatically And Efficiently Illustrating Polynomial Equalities in Agda&quot;</a>
-<a id="1881" class="Comment">--</a>
-<a id="1884" class="Comment">--     We present a new library which automates the construction of equivalence</a>
-<a id="1964" class="Comment">--     proofs between polynomials over commutative rings and semirings in the</a>
-<a id="2042" class="Comment">--     programming language Agda. It is asymptotically faster than Agda&#39;s existing</a>
-<a id="2125" class="Comment">--     solver. We use Agda&#39;s reflection machinery to provide a simple interface to</a>
-<a id="2208" class="Comment">--     the solver, and demonstrate an interesting use of the constructed relations:</a>
-<a id="2292" class="Comment">--     step-by-step solutions.</a>
-<a id="2323" class="Comment">--</a>
-<a id="2326" class="Comment">-- Which is (at time of writing) a work-in-progress.</a>
-<a id="2379" class="Comment">--</a>
-<a id="2382" class="Comment">-- This code is available on github:</a>
-<a id="2419" class="Comment">--     https://github.com/oisdk/agda-ring-solver</a>
-<a id="2468" class="Comment">--</a>
-<a id="2471" class="Comment">-- As is the paper:</a>
-<a id="2491" class="Comment">--     https://github.com/oisdk/agda-ring-solver-report</a>
-<a id="2547" class="Comment">--</a>
-<a id="2550" class="Comment">--------------------------------------------------------------------------------</a>
-<a id="2631" class="Comment">-- There are 3 main contributions in this library:                            --</a>
-<a id="2712" class="Comment">--                                                                            --</a>
-<a id="2793" class="Comment">--   * A solver for polynomials over &quot;almost commutative rings&quot;.              --</a>
-<a id="2874" class="Comment">--         Agda already has one these in the standard library, but this one   --</a>
-<a id="2955" class="Comment">--         is much more efficient. &quot;Almost commutative rings&quot; encapsulates a  --</a>
-<a id="3036" class="Comment">--         bunch of things, including ℕ.                                      --</a>
-<a id="3117" class="Comment">--                                                                            --</a>
-<a id="3198" class="Comment">--   * A reflection-based interface.                                          --</a>
-<a id="3279" class="Comment">--         Not many people used the old solver, mainly (I think) because the  --</a>
-<a id="3360" class="Comment">--         interface was difficult and irritating. This library provides a    --</a>
-<a id="3441" class="Comment">--         super-simple interface using reflection.                           --</a>
-<a id="3522" class="Comment">--                                                                            --</a>
-<a id="3603" class="Comment">--   * An implementation of &quot;step-by-step solutions&quot;.                         --</a>
-<a id="3684" class="Comment">--         I don&#39;t know a huge amount about computer algebra systems, but I   --</a>
-<a id="3765" class="Comment">--         have used Wolfram Alpha countless times (especially when I was in  --</a>
-<a id="3846" class="Comment">--         school) to help with basic maths. I was able to get this solver to --</a>
-<a id="3927" class="Comment">--         produce step-by-step solutions, and learned something about the    --</a>
-<a id="4008" class="Comment">--         theory behind them along the way.                                  --</a>
-<a id="4089" class="Comment">--------------------------------------------------------------------------------</a>
-<a id="4170" class="Comment">--</a>
-<a id="4173" class="Comment">-- ███████╗██╗   ██╗██╗     ██╗          ██████╗ ██████╗ ██████╗ ███████╗</a>
-<a id="4247" class="Comment">-- ██╔════╝██║   ██║██║     ██║         ██╔════╝██╔═══██╗██╔══██╗██╔════╝</a>
-<a id="4321" class="Comment">-- █████╗  ██║   ██║██║     ██║         ██║     ██║   ██║██║  ██║█████╗   ███████████████████████████╗</a>
-<a id="4424" class="Comment">-- ██╔══╝  ██║   ██║██║     ██║         ██║     ██║   ██║██║  ██║██╔══╝   ╚════════════════════════██║</a>
-<a id="4527" class="Comment">-- ██║     ╚██████╔╝███████╗███████╗    ╚██████╗╚██████╔╝██████╔╝███████╗                          ██║</a>
-<a id="4630" class="Comment">-- ╚═╝      ╚═════╝ ╚══════╝╚══════╝     ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝                          ██║</a>
-<a id="4733" class="Comment">--                                                                                                 ██║</a>
-<a id="4836" class="Comment">-- ██████╗ ███████╗███╗   ██╗ ██████╗██╗  ██╗███╗   ███╗ █████╗ ██████╗ ██╗  ██╗███████╗           ██║</a>
-<a id="4939" class="Comment">-- ██╔══██╗██╔════╝████╗  ██║██╔════╝██║  ██║████╗ ████║██╔══██╗██╔══██╗██║ ██╔╝██╔════╝           ██║</a>
-<a id="5042" class="Comment">-- ██████╔╝█████╗  ██╔██╗ ██║██║     ███████║██╔████╔██║███████║██████╔╝█████╔╝ ███████╗ ███████╗  ██║</a>
-<a id="5145" class="Comment">-- ██╔══██╗██╔══╝  ██║╚██╗██║██║     ██╔══██║██║╚██╔╝██║██╔══██║██╔══██╗██╔═██╗ ╚════██║ ╚════██║  ██║</a>
-<a id="5248" class="Comment">-- ██████╔╝███████╗██║ ╚████║╚██████╗██║  ██║██║ ╚═╝ ██║██║  ██║██║  ██║██║  ██╗███████║      ██║  ██║</a>
-<a id="5351" class="Comment">-- ╚═════╝ ╚══════╝╚═╝  ╚═══╝ ╚═════╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝      ██║  ██║</a>
-<a id="5454" class="Comment">--                                                                                            ██║  ██║</a>
-<a id="5557" class="Comment">-- ███████╗██╗  ██╗ █████╗ ███╗   ███╗██████╗ ██╗     ███████╗███████╗                        ██║  ██║</a>
-<a id="5660" class="Comment">-- ██╔════╝╚██╗██╔╝██╔══██╗████╗ ████║██╔══██╗██║     ██╔════╝██╔════╝                        ██║  ██║</a>
-<a id="5763" class="Comment">-- █████╗   ╚███╔╝ ███████║██╔████╔██║██████╔╝██║     █████╗  ███████╗ ████████████████████╗  ██║  ██║</a>
-<a id="5866" class="Comment">-- ██╔══╝   ██╔██╗ ██╔══██║██║╚██╔╝██║██╔═══╝ ██║     ██╔══╝  ╚════██║ ╚═════════════════██║  ██║  ██║</a>
-<a id="5969" class="Comment">-- ███████╗██╔╝ ██╗██║  ██║██║ ╚═╝ ██║██║     ███████╗███████╗███████║                   ██║  ██║  ██║</a>
-<a id="6072" class="Comment">-- ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝     ╚══════╝╚══════╝╚══════╝                   ██║  ██║  ██║</a>
-<a id="6175" class="Comment">--                                                                                       ██║  ██║  ██║</a>
-<a id="6278" class="Comment">--------------------------------------------------------------------------------         ██║  ██║  ██║</a>
-<a id="6381" class="Comment">-- You can ignore this bit! We&#39;re just overloading the literals Agda uses for --         ██║  ██║  ██║</a>
-<a id="6484" class="Comment">-- numbers This bit isn&#39;t necessary if you&#39;re just using Nats, or if you      --         ██║  ██║  ██║</a>
-<a id="6587" class="Comment">-- construct your type directly. We only really do it here so that we can use --         ██║  ██║  ██║</a>
-<a id="6690" class="Comment">-- different numeric types in the same file.                                  --         ██║  ██║  ██║</a>
-                                                                              <a id="6871" class="Comment">--         ██║  ██║  ██║</a>
-<a id="6896" class="Keyword">open</a> <a id="6901" class="Keyword">import</a> <a id="6908" href="Agda.Builtin.FromNat.html" class="Module">Agda.Builtin.FromNat</a>                                              <a id="6974" class="Comment">--         ██║  ██║  ██║</a>
-<a id="6999" class="Keyword">open</a> <a id="7004" class="Keyword">import</a> <a id="7011" href="Agda.Builtin.Nat.html" class="Module">Agda.Builtin.Nat</a> <a id="7028" class="Keyword">using</a> <a id="7034" class="Symbol">(</a><a id="7035" href="Agda.Builtin.Nat.html#97" class="Datatype">Nat</a><a id="7038" class="Symbol">)</a>                                      <a id="7077" class="Comment">--         ██║  ██║  ██║</a>
-<a id="7102" class="Keyword">open</a> <a id="7107" class="Keyword">import</a> <a id="7114" href="Agda.Builtin.Int.html" class="Module">Agda.Builtin.Int</a> <a id="7131" class="Keyword">using</a> <a id="7137" class="Symbol">(</a><a id="7138" href="Agda.Builtin.Int.html#178" class="Datatype">Int</a><a id="7141" class="Symbol">)</a>                                      <a id="7180" class="Comment">--         ██║  ██║  ██║</a>
-                                                                              <a id="7283" class="Comment">--         ██║  ██║  ██║</a>
-<a id="7308" class="Keyword">instance</a>                                                                      <a id="7386" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="numberNat"></a><a id="7413" href="README.html#7413" class="Function">numberNat</a> <a id="7423" class="Symbol">:</a> <a id="7425" href="Agda.Builtin.FromNat.html#129" class="Record">Number</a> <a id="7432" href="Agda.Builtin.Nat.html#97" class="Datatype">Nat</a>                                                      <a id="7489" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="7516" href="README.html#7413" class="Function">numberNat</a> <a id="7526" class="Symbol">=</a> <a id="7528" href="Data.Nat.Literals.html#353" class="Function">Data.Nat.Literals.number</a>                                        <a id="7592" class="Comment">--         ██║  ██║  ██║</a>
-    <a id="7621" class="Keyword">where</a> <a id="7627" class="Keyword">import</a> <a id="7634" href="Data.Nat.Literals.html" class="Module">Data.Nat.Literals</a>                                            <a id="7695" class="Comment">--         ██║  ██║  ██║</a>
-                                                                              <a id="7798" class="Comment">--         ██║  ██║  ██║</a>
-<a id="7823" class="Keyword">instance</a>                                                                      <a id="7901" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="numberInt"></a><a id="7928" href="README.html#7928" class="Function">numberInt</a> <a id="7938" class="Symbol">:</a> <a id="7940" href="Agda.Builtin.FromNat.html#129" class="Record">Number</a> <a id="7947" href="Agda.Builtin.Int.html#178" class="Datatype">Int</a>                                                      <a id="8004" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="8031" href="README.html#7928" class="Function">numberInt</a> <a id="8041" class="Symbol">=</a> <a id="8043" href="Data.Integer.Literals.html#386" class="Function">Data.Integer.Literals.number</a>                                    <a id="8107" class="Comment">--         ██║  ██║  ██║</a>
-    <a id="8136" class="Keyword">where</a> <a id="8142" class="Keyword">import</a> <a id="8149" href="Data.Integer.Literals.html" class="Module">Data.Integer.Literals</a>                                        <a id="8210" class="Comment">--         ██║  ██║  ██║</a>
-                                                                              <a id="8313" class="Comment">--         ██║  ██║  ██║</a>
-<a id="8338" class="Comment">--------------------------------------------------------------------------------         ██║  ██║  ██║</a>
-<a id="8441" class="Comment">-- Imports!                                                                   --         ██║  ██║  ██║</a>
-                                                                              <a id="8622" class="Comment">--         ██║  ██║  ██║</a>
-<a id="8647" class="Keyword">open</a> <a id="8652" class="Keyword">import</a> <a id="8659" href="Polynomial.Simple.AlmostCommutativeRing.html" class="Module">Polynomial.Simple.AlmostCommutativeRing</a>                           <a id="8725" class="Comment">--         ██║  ██║  ██║</a>
-<a id="8750" class="Keyword">open</a> <a id="8755" class="Keyword">import</a> <a id="8762" href="Polynomial.Simple.AlmostCommutativeRing.Instances.html" class="Module">Polynomial.Simple.AlmostCommutativeRing.Instances</a>                 <a id="8828" class="Comment">--         ██║  ██║  ██║</a>
-<a id="8853" class="Keyword">open</a> <a id="8858" class="Keyword">import</a> <a id="8865" href="Polynomial.Simple.Reflection.html" class="Module">Polynomial.Simple.Reflection</a>                                      <a id="8931" class="Comment">--         ██║  ██║  ██║</a>
-<a id="8956" class="Comment">--------------------------------------------------------------------------------         ██║  ██║  ██║</a>
-<a id="9059" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
-<a id="9162" class="Comment">--                           8888888888&#39;,8888&#39;                                --         ██║  ██║  ██║</a>
-<a id="9265" class="Comment">--                                  ,8&#39;,8888&#39;                                 --         ██║  ██║  ██║</a>
-<a id="9368" class="Comment">--                                 ,8&#39;,8888&#39;                                  --         ██║  ██║  ██║</a>
-<a id="9471" class="Comment">--                                ,8&#39;,8888&#39;                                   --         ██║  ██║  ██║</a>
-<a id="9574" class="Comment">--                               ,8&#39;,8888&#39;                                    --         ██║  ██║  ██║</a>
-<a id="9677" class="Comment">--                              ,8&#39;,8888&#39;                                     --         ██║  ██║  ██║</a>
-<a id="9780" class="Comment">--                             ,8&#39;,8888&#39;                                      --         ██║  ██║  ██║</a>
-<a id="9883" class="Comment">--                            ,8&#39;,8888&#39;                                       --         ██║  ██║  ██║</a>
-<a id="9986" class="Comment">--                           ,8&#39;,8888&#39;                                        --         ██║  ██║  ██║</a>
-<a id="10089" class="Comment">--                          ,8&#39;,8888888888888                                 --         ██║  ██║  ██║</a>
-<a id="10192" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
-<a id="10295" class="Comment">--------------------------------------------------------------------------------         ██║  ██║  ██║</a>
-<a id="10398" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
-<a id="10501" class="Keyword">module</a> <a id="IntExamples"></a><a id="10508" href="README.html#10508" class="Module">IntExamples</a> <a id="10520" class="Keyword">where</a>                                                      <a id="10579" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="10606" class="Keyword">open</a> <a id="10611" href="Polynomial.Simple.AlmostCommutativeRing.html#905" class="Module">AlmostCommutativeRing</a> <a id="10633" href="Polynomial.Simple.AlmostCommutativeRing.Instances.html#802" class="Function">Int.ring</a>                                         <a id="10682" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="10709" class="Comment">-- Everything is automatic: you just ask Agda to solve it and it does!      --     ██╗ ██║  ██║  ██║</a>
-  <a id="IntExamples.lemma₁"></a><a id="10812" href="README.html#10812" class="Function">lemma₁</a> <a id="10819" class="Symbol">:</a> <a id="10821" class="Symbol">∀</a> <a id="10823" href="README.html#10823" class="Bound">x</a> <a id="10825" href="README.html#10825" class="Bound">y</a> <a id="10827" class="Symbol">→</a> <a id="10829" href="README.html#10823" class="Bound">x</a> <a id="10831" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="10833" href="README.html#10825" class="Bound">y</a> <a id="10835" href="Polynomial.Simple.AlmostCommutativeRing.html#1165" class="Function Operator">*</a> <a id="10837" class="Number">1</a> <a id="10839" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="10841" class="Number">3</a> <a id="10843" href="Polynomial.Simple.AlmostCommutativeRing.html#1079" class="Function Operator">≈</a> <a id="10845" class="Number">3</a> <a id="10847" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="10849" class="Number">1</a> <a id="10851" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="10853" href="README.html#10825" class="Bound">y</a> <a id="10855" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="10857" href="README.html#10823" class="Bound">x</a> <a id="10859" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="10861" href="Polynomial.Simple.AlmostCommutativeRing.html#1207" class="Function Operator">-</a> <a id="10863" class="Number">1</a>                        <a id="10888" class="Comment">--   ████║ ██║  ██║  ██║</a>
-  <a id="10915" href="README.html#10812" class="Function">lemma₁</a> <a id="10922" class="Symbol">=</a> <a id="10924" href="Polynomial.Simple.Reflection.html#8185" class="Macro">solve</a> <a id="10930" href="Polynomial.Simple.AlmostCommutativeRing.Instances.html#802" class="Function">Int.ring</a>                                                     <a id="10991" class="Comment">-- ██████████║  ██║  ██║</a>
-                                                                              <a id="11094" class="Comment">--   ████╔═██║  ██║  ██║</a>
-  <a id="IntExamples.lemma₂"></a><a id="11121" href="README.html#11121" class="Function">lemma₂</a> <a id="11128" class="Symbol">:</a> <a id="11130" class="Symbol">∀</a> <a id="11132" href="README.html#11132" class="Bound">x</a> <a id="11134" href="README.html#11134" class="Bound">y</a> <a id="11136" class="Symbol">→</a> <a id="11138" class="Symbol">(</a><a id="11139" href="README.html#11132" class="Bound">x</a> <a id="11141" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="11143" href="README.html#11134" class="Bound">y</a><a id="11144" class="Symbol">)</a> <a id="11146" href="Polynomial.Simple.AlmostCommutativeRing.html#2058" class="Function Operator">^</a> <a id="11148" class="Number">2</a> <a id="11150" href="Polynomial.Simple.AlmostCommutativeRing.html#1079" class="Function Operator">≈</a> <a id="11152" href="README.html#11132" class="Bound">x</a> <a id="11154" href="Polynomial.Simple.AlmostCommutativeRing.html#2058" class="Function Operator">^</a> <a id="11156" class="Number">2</a> <a id="11158" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="11160" class="Number">2</a> <a id="11162" href="Polynomial.Simple.AlmostCommutativeRing.html#1165" class="Function Operator">*</a> <a id="11164" href="README.html#11132" class="Bound">x</a> <a id="11166" href="Polynomial.Simple.AlmostCommutativeRing.html#1165" class="Function Operator">*</a> <a id="11168" href="README.html#11134" class="Bound">y</a> <a id="11170" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="11172" href="README.html#11134" class="Bound">y</a> <a id="11174" href="Polynomial.Simple.AlmostCommutativeRing.html#2058" class="Function Operator">^</a> <a id="11176" class="Number">2</a>                    <a id="11197" class="Comment">--     ██║ ██║  ██║  ██║</a>
-  <a id="11224" href="README.html#11121" class="Function">lemma₂</a> <a id="11231" class="Symbol">=</a> <a id="11233" href="Polynomial.Simple.Reflection.html#8185" class="Macro">solve</a> <a id="11239" href="Polynomial.Simple.AlmostCommutativeRing.Instances.html#802" class="Function">Int.ring</a>                                                     <a id="11300" class="Comment">--     ╚═╝ ██║  ██║  ██║</a>
-                                                                              <a id="11403" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="11430" class="Keyword">open</a> <a id="11435" class="Keyword">import</a> <a id="11442" href="Function.html" class="Module">Function</a>                                                        <a id="11506" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="11533" class="Keyword">open</a> <a id="11538" class="Keyword">import</a> <a id="11545" href="Relation.Binary.Reasoning.Inference.html" class="Module">Relation.Binary.Reasoning.Inference</a> <a id="11581" href="Algebra.Structures.html#935" class="Function">setoid</a>                      <a id="11609" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="11636" class="Keyword">open</a> <a id="11641" class="Keyword">import</a> <a id="11648" href="Data.List.html" class="Module">Data.List</a> <a id="11658" class="Keyword">using</a> <a id="11664" class="Symbol">(</a><a id="11665" href="Agda.Builtin.List.html#132" class="InductiveConstructor Operator">_∷_</a><a id="11668" class="Symbol">;</a> <a id="11670" href="Data.List.Base.html#9863" class="InductiveConstructor">[]</a><a id="11672" class="Symbol">)</a>                                       <a id="11712" class="Comment">--         ██║  ██║  ██║</a>
-                                                                              <a id="11815" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="11842" class="Comment">-- It can interact with manual proofs as well.                              --         ██║  ██║  ██║</a>
-  <a id="IntExamples.lemma₃"></a><a id="11945" href="README.html#11945" class="Function">lemma₃</a> <a id="11952" class="Symbol">:</a> <a id="11954" class="Symbol">∀</a> <a id="11956" href="README.html#11956" class="Bound">x</a> <a id="11958" href="README.html#11958" class="Bound">y</a> <a id="11960" class="Symbol">→</a> <a id="11962" href="README.html#11956" class="Bound">x</a> <a id="11964" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="11966" href="README.html#11958" class="Bound">y</a> <a id="11968" href="Polynomial.Simple.AlmostCommutativeRing.html#1165" class="Function Operator">*</a> <a id="11970" class="Number">1</a> <a id="11972" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="11974" class="Number">3</a> <a id="11976" href="Polynomial.Simple.AlmostCommutativeRing.html#1079" class="Function Operator">≈</a> <a id="11978" class="Number">2</a> <a id="11980" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="11982" class="Number">1</a> <a id="11984" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="11986" href="README.html#11958" class="Bound">y</a> <a id="11988" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="11990" href="README.html#11956" class="Bound">x</a>                              <a id="12021" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="12048" href="README.html#11945" class="Function">lemma₃</a> <a id="12055" href="README.html#12055" class="Bound">x</a> <a id="12057" href="README.html#12057" class="Bound">y</a> <a id="12059" class="Symbol">=</a> <a id="12061" href="Relation.Binary.Reasoning.Inference.html#1052" class="Function Operator">begin</a>                                                          <a id="12124" class="Comment">--         ██║  ██║  ██║</a>
-    <a id="12153" href="README.html#12055" class="Bound">x</a> <a id="12155" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="12157" href="README.html#12057" class="Bound">y</a> <a id="12159" href="Polynomial.Simple.AlmostCommutativeRing.html#1165" class="Function Operator">*</a> <a id="12161" class="Number">1</a> <a id="12163" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="12165" class="Number">3</a> <a id="12167" href="Relation.Binary.Reasoning.Inference.html#1118" class="Function">≈⟨</a> <a id="12170" href="Algebra.Structures.html#2120" class="Function">+-comm</a> <a id="12177" href="README.html#12055" class="Bound">x</a> <a id="12179" class="Symbol">(</a><a id="12180" href="README.html#12057" class="Bound">y</a> <a id="12182" href="Polynomial.Simple.AlmostCommutativeRing.html#1165" class="Function Operator">*</a> <a id="12184" class="Number">1</a><a id="12185" class="Symbol">)</a> <a id="12187" href="Function.html#2548" class="Function Operator">⟨</a> <a id="12189" href="Algebra.Structures.html#860" class="Function">+-cong</a> <a id="12196" href="Function.html#2548" class="Function Operator">⟩</a> <a id="12198" href="Polynomial.Simple.AlmostCommutativeRing.html#2136" class="Function">refl</a> <a id="12203" href="Relation.Binary.Reasoning.Inference.html#1118" class="Function">⟩</a>                       <a id="12227" class="Comment">--         ██║  ██║  ██║</a>
-    <a id="12256" href="README.html#12057" class="Bound">y</a> <a id="12258" href="Polynomial.Simple.AlmostCommutativeRing.html#1165" class="Function Operator">*</a> <a id="12260" class="Number">1</a> <a id="12262" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="12264" href="README.html#12055" class="Bound">x</a> <a id="12266" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="12268" class="Number">3</a> <a id="12270" href="Relation.Binary.Reasoning.Inference.html#1118" class="Function">≈⟨</a> <a id="12273" href="Polynomial.Simple.Reflection.html#9267" class="Macro">solveOver</a> <a id="12283" class="Symbol">(</a><a id="12284" href="README.html#12055" class="Bound">x</a> <a id="12286" href="Agda.Builtin.List.html#132" class="InductiveConstructor Operator">∷</a> <a id="12288" href="README.html#12057" class="Bound">y</a> <a id="12290" href="Agda.Builtin.List.html#132" class="InductiveConstructor Operator">∷</a> <a id="12292" href="Agda.Builtin.List.html#117" class="InductiveConstructor">[]</a><a id="12294" class="Symbol">)</a> <a id="12296" href="Polynomial.Simple.AlmostCommutativeRing.Instances.html#802" class="Function">Int.ring</a> <a id="12305" href="Relation.Binary.Reasoning.Inference.html#1118" class="Function">⟩</a>                        <a id="12330" class="Comment">--         ██║  ██║  ██║</a>
-    <a id="12359" class="Number">3</a> <a id="12361" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="12363" href="README.html#12057" class="Bound">y</a> <a id="12365" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="12367" href="README.html#12055" class="Bound">x</a>     <a id="12373" href="Relation.Binary.Reasoning.Inference.html#1706" class="Function Operator">≡⟨⟩</a>                                                         <a id="12433" class="Comment">--         ██║  ██║  ██║</a>
-    <a id="12462" class="Number">2</a> <a id="12464" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="12466" class="Number">1</a> <a id="12468" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="12470" href="README.html#12057" class="Bound">y</a> <a id="12472" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="12474" href="README.html#12055" class="Bound">x</a> <a id="12476" href="Relation.Binary.Reasoning.Inference.html#1789" class="Function Operator">∎</a>                                                           <a id="12536" class="Comment">--         ██║  ██║  ██║</a>
-<a id="12561" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
-<a id="12664" class="Comment">--------------------------------------------------------------------------------         ██║  ██║  ██║</a>
-<a id="12767" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
-<a id="12870" class="Comment">--                          b.             8                                  --         ██║  ██║  ██║</a>
-<a id="12973" class="Comment">--                          888o.          8                                  --         ██║  ██║  ██║</a>
-<a id="13076" class="Comment">--                          Y88888o.       8                                  --         ██║  ██║  ██║</a>
-<a id="13179" class="Comment">--                          .`Y888888o.    8                                  --         ██║  ██║  ██║</a>
-<a id="13282" class="Comment">--                          8o. `Y888888o. 8                                  --         ██║  ██║  ██║</a>
-<a id="13385" class="Comment">--                          8`Y8o. `Y88888o8                                  --         ██║  ██║  ██║</a>
-<a id="13488" class="Comment">--                          8   `Y8o. `Y8888                                  --         ██║  ██║  ██║</a>
-<a id="13591" class="Comment">--                          8      `Y8o. `Y8                                  --         ██║  ██║  ██║</a>
-<a id="13694" class="Comment">--                          8         `Y8o.`                                  --         ██║  ██║  ██║</a>
-<a id="13797" class="Comment">--                          8            `Yo                                  --         ██║  ██║  ██║</a>
-<a id="13900" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
-<a id="14003" class="Comment">--------------------------------------------------------------------------------         ██║  ██║  ██║</a>
-<a id="14106" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
-<a id="14209" class="Keyword">module</a> <a id="NatExamples"></a><a id="14216" href="README.html#14216" class="Module">NatExamples</a> <a id="14228" class="Keyword">where</a>                                                      <a id="14287" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="14314" class="Keyword">open</a> <a id="14319" href="Polynomial.Simple.AlmostCommutativeRing.html#905" class="Module">AlmostCommutativeRing</a> <a id="14341" href="Polynomial.Simple.AlmostCommutativeRing.Instances.html#386" class="Function">Nat.ring</a>                                         <a id="14390" class="Comment">--     ██╗ ██║  ██║  ██║</a>
-  <a id="14417" class="Comment">-- The solver is flexible enough to work with Nats (even though it asks     --   ████║ ██║  ██║  ██║</a>
-  <a id="14520" class="Comment">-- for rings!)                                                              -- ██████████║  ██║  ██║</a>
-  <a id="NatExamples.lemma₁"></a><a id="14623" href="README.html#14623" class="Function">lemma₁</a> <a id="14630" class="Symbol">:</a> <a id="14632" class="Symbol">∀</a> <a id="14634" href="README.html#14634" class="Bound">x</a> <a id="14636" href="README.html#14636" class="Bound">y</a> <a id="14638" class="Symbol">→</a> <a id="14640" href="README.html#14634" class="Bound">x</a> <a id="14642" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="14644" href="README.html#14636" class="Bound">y</a> <a id="14646" href="Polynomial.Simple.AlmostCommutativeRing.html#1165" class="Function Operator">*</a> <a id="14648" class="Number">1</a> <a id="14650" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="14652" class="Number">3</a> <a id="14654" href="Polynomial.Simple.AlmostCommutativeRing.html#1079" class="Function Operator">≈</a> <a id="14656" class="Number">2</a> <a id="14658" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="14660" class="Number">1</a> <a id="14662" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="14664" href="README.html#14636" class="Bound">y</a> <a id="14666" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="14668" href="README.html#14634" class="Bound">x</a>                              <a id="14699" class="Comment">--   ████╔═██║  ██║  ██║</a>
-  <a id="14726" href="README.html#14623" class="Function">lemma₁</a> <a id="14733" class="Symbol">=</a> <a id="14735" href="Polynomial.Simple.Reflection.html#8185" class="Macro">solve</a> <a id="14741" href="Polynomial.Simple.AlmostCommutativeRing.Instances.html#386" class="Function">Nat.ring</a>                                                     <a id="14802" class="Comment">--     ██║ ██║  ██║  ██║</a>
-<a id="14827" class="Comment">--                                                                            --     ╚═╝ ██║  ██║  ██║</a>
-<a id="14930" class="Comment">--------------------------------------------------------------------------------         ██║  ██║  ██║</a>
-<a id="15033" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
-<a id="15136" class="Comment">--             8888888 8888888888 8 8888        8 8 8888888888                --         ██║  ██║  ██║</a>
-<a id="15239" class="Comment">--                   8 8888       8 8888        8 8 8888                      --         ██║  ██║  ██║</a>
-<a id="15342" class="Comment">--                   8 8888       8 8888        8 8 8888                      --         ██║  ██║  ██║</a>
-<a id="15445" class="Comment">--                   8 8888       8 8888        8 8 8888                      --         ██║  ██║  ██║</a>
-<a id="15548" class="Comment">--                   8 8888       8 8888        8 8 888888888888              --         ██║  ██║  ██║</a>
-<a id="15651" class="Comment">--                   8 8888       8 8888        8 8 8888                      --         ██║  ██║  ██║</a>
-<a id="15754" class="Comment">--                   8 8888       8 8888888888888 8 8888                      --         ██║  ██║  ██║</a>
-<a id="15857" class="Comment">--                   8 8888       8 8888        8 8 8888                      --         ██║  ██║  ██║</a>
-<a id="15960" class="Comment">--                   8 8888       8 8888        8 8 8888                      --         ██║  ██║  ██║</a>
-<a id="16063" class="Comment">--                   8 8888       8 8888        8 8 888888888888              --         ██║  ██║  ██║</a>
-<a id="16166" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
-<a id="16269" class="Comment">--                 ,o888888o.     8 8888         8 888888888o.                --         ██║  ██║  ██║</a>
-<a id="16372" class="Comment">--              . 8888     `88.   8 8888         8 8888    `^888.             --         ██║  ██║  ██║</a>
-<a id="16475" class="Comment">--             ,8 8888       `8b  8 8888         8 8888        `88.           --         ██║  ██║  ██║</a>
-<a id="16578" class="Comment">--             88 8888        `8b 8 8888         8 8888         `88           --         ██║  ██║  ██║</a>
-<a id="16681" class="Comment">--             88 8888         88 8 8888         8 8888          88           --         ██║  ██║  ██║</a>
-<a id="16784" class="Comment">--             88 8888         88 8 8888         8 8888          88           --         ██║  ██║  ██║</a>
-<a id="16887" class="Comment">--             88 8888        ,8P 8 8888         8 8888         ,88           --         ██║  ██║  ██║</a>
-<a id="16990" class="Comment">--             `8 8888       ,8P  8 8888         8 8888        ,88&#39;           --         ██║  ██║  ██║</a>
-<a id="17093" class="Comment">--              ` 8888     ,88&#39;   8 8888         8 8888    ,o88P&#39;             --         ██║  ██║  ██║</a>
-<a id="17196" class="Comment">--                 `8888888P&#39;     8 888888888888 8 888888888P&#39;                --         ██║  ██║  ██║</a>
-<a id="17299" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
-<a id="17402" class="Comment">--             `8.`888b                 ,8&#39; .8.   `8.`8888.      ,8&#39;          --         ██║  ██║  ██║</a>
-<a id="17505" class="Comment">--              `8.`888b               ,8&#39; .888.   `8.`8888.    ,8&#39;           --         ██║  ██║  ██║</a>
-<a id="17608" class="Comment">--               `8.`888b             ,8&#39; :88888.   `8.`8888.  ,8&#39;            --         ██║  ██║  ██║</a>
-<a id="17711" class="Comment">--                `8.`888b     .b    ,8&#39; . `88888.   `8.`8888.,8&#39;             --         ██║  ██║  ██║</a>
-<a id="17814" class="Comment">--                 `8.`888b    88b  ,8&#39; .8. `88888.   `8.`88888&#39;              --         ██║  ██║  ██║</a>
-<a id="17917" class="Comment">--                  `8.`888b .`888b,8&#39; .8`8. `88888.   `8. 8888               --         ██║  ██║  ██║</a>
-<a id="18020" class="Comment">--                   `8.`888b8.`8888&#39; .8&#39; `8. `88888.   `8 8888               --         ██║  ██║  ██║</a>
-<a id="18123" class="Comment">--                    `8.`888`8.`88&#39; .8&#39;   `8. `88888.   8 8888               --         ██║  ██║  ██║</a>
-<a id="18226" class="Comment">--                     `8.`8&#39; `8,`&#39; .888888888. `88888.  8 8888               --         ██║  ██║  ██║</a>
-<a id="18329" class="Comment">--                      `8.`   `8&#39; .8&#39;       `8. `88888. 8 8888               --         ██║  ██║  ██║</a>
-<a id="18432" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
-<a id="18535" class="Comment">--------------------------------------------------------------------------------         ██║  ██║  ██║</a>
-<a id="18638" class="Comment">-- Previously, you had to construct the expression you wanted to solve twice: --         ██║  ██║  ██║</a>
-<a id="18741" class="Comment">-- once in the type signature, and again using the special solver syntax.     --         ██║  ██║  ██║</a>
-<a id="18844" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
-<a id="18947" class="Comment">-- This is difficult to learn, and error-prone: if I change an x + y          --         ██║  ██║  ██║</a>
-<a id="19050" class="Comment">-- somewhere to a y + x, I *also* have to change the proofs now! The          --         ██║  ██║  ██║</a>
-<a id="19153" class="Comment">-- reflection-based solver will automatically construct the new proof.        --         ██║  ██║  ██║</a>
-<a id="19256" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
-<a id="19359" class="Keyword">module</a> <a id="OldSolver"></a><a id="19366" href="README.html#19366" class="Module">OldSolver</a> <a id="19376" class="Keyword">where</a>                                                        <a id="19437" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="19464" class="Keyword">open</a> <a id="19469" class="Keyword">import</a> <a id="19476" href="Relation.Binary.PropositionalEquality.html" class="Module">Relation.Binary.PropositionalEquality</a>                           <a id="19540" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="19567" class="Keyword">open</a> <a id="19572" class="Keyword">import</a> <a id="19579" href="Data.Nat.html" class="Module">Data.Nat</a>                                                        <a id="19643" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="19670" class="Keyword">open</a> <a id="19675" class="Keyword">import</a> <a id="19682" href="Data.Nat.Solver.html" class="Module">Data.Nat.Solver</a> <a id="19698" class="Keyword">using</a> <a id="19704" class="Symbol">(</a><a id="19705" class="Keyword">module</a> <a id="19712" href="Data.Nat.Solver.html#691" class="Module">+-*-Solver</a><a id="19722" class="Symbol">)</a>                       <a id="19746" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="19773" class="Keyword">open</a> <a id="19778" href="Data.Nat.Solver.html#691" class="Module">+-*-Solver</a>                                                             <a id="19849" class="Comment">--         ██║  ██║  ██║</a>
-                                                                              <a id="19952" class="Comment">--     ██╗ ██║  ██║  ██║</a>
-  <a id="OldSolver.lemma"></a><a id="19979" href="README.html#19979" class="Function">lemma</a> <a id="19985" class="Symbol">:</a> <a id="19987" class="Symbol">∀</a> <a id="19989" href="README.html#19989" class="Bound">x</a> <a id="19991" href="README.html#19991" class="Bound">y</a> <a id="19993" class="Symbol">→</a> <a id="19995" href="README.html#19989" class="Bound">x</a> <a id="19997" href="Agda.Builtin.Nat.html#230" class="Primitive Operator">+</a> <a id="19999" href="README.html#19991" class="Bound">y</a> <a id="20001" href="Agda.Builtin.Nat.html#433" class="Primitive Operator">*</a> <a id="20003" class="Number">1</a> <a id="20005" href="Agda.Builtin.Nat.html#230" class="Primitive Operator">+</a> <a id="20007" class="Number">3</a> <a id="20009" href="Agda.Builtin.Equality.html#83" class="Datatype Operator">≡</a> <a id="20011" class="Number">2</a> <a id="20013" href="Agda.Builtin.Nat.html#230" class="Primitive Operator">+</a> <a id="20015" class="Number">1</a> <a id="20017" href="Agda.Builtin.Nat.html#230" class="Primitive Operator">+</a> <a id="20019" href="README.html#19991" class="Bound">y</a> <a id="20021" href="Agda.Builtin.Nat.html#230" class="Primitive Operator">+</a> <a id="20023" href="README.html#19989" class="Bound">x</a>                               <a id="20055" class="Comment">--   ████║ ██║  ██║  ██║</a>
-  <a id="20082" href="README.html#19979" class="Function">lemma</a> <a id="20088" class="Symbol">=</a> <a id="20090" href="Relation.Binary.Reflection.html#2423" class="Function">+-*-Solver.solve</a> <a id="20107" class="Number">2</a>                                                  <a id="20158" class="Comment">-- ██████████║  ██║  ██║</a>
-    <a id="20187" class="Symbol">(λ</a> <a id="20190" href="README.html#20190" class="Bound">x</a> <a id="20192" href="README.html#20192" class="Bound">y</a> <a id="20194" class="Symbol">→</a> <a id="20196" href="README.html#20190" class="Bound">x</a> <a id="20198" href="Algebra.Solver.Ring.html#2721" class="Function Operator">:+</a> <a id="20201" href="README.html#20192" class="Bound">y</a> <a id="20203" href="Algebra.Solver.Ring.html#2794" class="Function Operator">:*</a> <a id="20206" href="Algebra.Solver.Ring.html#2527" class="InductiveConstructor">con</a> <a id="20210" class="Number">1</a> <a id="20212" href="Algebra.Solver.Ring.html#2721" class="Function Operator">:+</a> <a id="20215" href="Algebra.Solver.Ring.html#2527" class="InductiveConstructor">con</a> <a id="20219" class="Number">3</a> <a id="20221" href="Relation.Binary.Reflection.html#3532" class="Function Operator">:=</a> <a id="20224" href="Algebra.Solver.Ring.html#2527" class="InductiveConstructor">con</a> <a id="20228" class="Number">2</a> <a id="20230" href="Algebra.Solver.Ring.html#2721" class="Function Operator">:+</a> <a id="20233" href="Algebra.Solver.Ring.html#2527" class="InductiveConstructor">con</a> <a id="20237" class="Number">1</a> <a id="20239" href="Algebra.Solver.Ring.html#2721" class="Function Operator">:+</a> <a id="20242" href="README.html#20192" class="Bound">y</a> <a id="20244" href="Algebra.Solver.Ring.html#2721" class="Function Operator">:+</a> <a id="20247" href="README.html#20190" class="Bound">x</a><a id="20248" class="Symbol">)</a> <a id="20250" href="Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a>       <a id="20261" class="Comment">--   ████╔═██║  ██║  ██║</a>
-<a id="20286" class="Comment">--                                                                            --     ██║ ██║  ██║  ██║</a>
-<a id="20389" class="Comment">--------------------------------------------------------------------------------     ╚═╝ ██║  ██║  ██║</a>
-<a id="20492" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
-<a id="20595" class="Comment">--          d888888o.   8888888 8888888888 8 8888888888   8 888888888o        --         ██║  ██║  ██║</a>
-<a id="20698" class="Comment">--        .`8888:&#39; `88.       8 8888       8 8888         8 8888    `88.      --         ██║  ██║  ██║</a>
-<a id="20801" class="Comment">--        8.`8888.   Y8       8 8888       8 8888         8 8888     `88      --         ██║  ██║  ██║</a>
-<a id="20904" class="Comment">--        `8.`8888.           8 8888       8 8888         8 8888     ,88      --         ██║  ██║  ██║</a>
-<a id="21007" class="Comment">--         `8.`8888.          8 8888       8 888888888888 8 8888.   ,88&#39;      --         ██║  ██║  ██║</a>
-<a id="21110" class="Comment">--          `8.`8888.         8 8888       8 8888         8 888888888P&#39;       --         ██║  ██║  ██║</a>
-<a id="21213" class="Comment">--           `8.`8888.        8 8888       8 8888         8 8888              --         ██║  ██║  ██║</a>
-<a id="21316" class="Comment">--       8b   `8.`8888.       8 8888       8 8888         8 8888              --         ██║  ██║  ██║</a>
-<a id="21419" class="Comment">--       `8b.  ;8.`8888       8 8888       8 8888         8 8888              --         ██║  ██║  ██║</a>
-<a id="21522" class="Comment">--        `Y8888P ,88P&#39;       8 8888       8 888888888888 8 8888              --         ██║  ██║  ██║</a>
-<a id="21625" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
-<a id="21728" class="Comment">--                      8 888888888o   `8.`8888.      ,8&#39;                     --         ██║  ██║  ██║</a>
-<a id="21831" class="Comment">--                      8 8888    `88.  `8.`8888.    ,8&#39;                      --         ██║  ██║  ██║</a>
-<a id="21934" class="Comment">--                      8 8888     `88   `8.`8888.  ,8&#39;                       --         ██║  ██║  ██║</a>
-<a id="22037" class="Comment">--                      8 8888     ,88    `8.`8888.,8&#39;                        --         ██║  ██║  ██║</a>
-<a id="22140" class="Comment">--                      8 8888.   ,88&#39;     `8.`88888&#39;                         --         ██║  ██║  ██║</a>
-<a id="22243" class="Comment">--                      8 8888888888        `8. 8888                          --         ██║  ██║  ██║</a>
-<a id="22346" class="Comment">--                      8 8888    `88.       `8 8888                          --         ██║  ██║  ██║</a>
-<a id="22449" class="Comment">--                      8 8888      88        8 8888                          --         ██║  ██║  ██║</a>
-<a id="22552" class="Comment">--                      8 8888    ,88&#39;        8 8888                          --         ██║  ██║  ██║</a>
-<a id="22655" class="Comment">--                      8 888888888P          8 8888                          --         ██║  ██║  ██║</a>
-<a id="22758" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
-<a id="22861" class="Comment">--          d888888o.   8888888 8888888888 8 8888888888   8 888888888o        --         ██║  ██║  ██║</a>
-<a id="22964" class="Comment">--        .`8888:&#39; `88.       8 8888       8 8888         8 8888    `88.      --         ██║  ██║  ██║</a>
-<a id="23067" class="Comment">--        8.`8888.   Y8       8 8888       8 8888         8 8888     `88      --         ██║  ██║  ██║</a>
-<a id="23170" class="Comment">--        `8.`8888.           8 8888       8 8888         8 8888     ,88      --         ██║  ██║  ██║</a>
-<a id="23273" class="Comment">--         `8.`8888.          8 8888       8 888888888888 8 8888.   ,88&#39;      --         ██║  ██║  ██║</a>
-<a id="23376" class="Comment">--          `8.`8888.         8 8888       8 8888         8 888888888P&#39;       --         ██║  ██║  ██║</a>
-<a id="23479" class="Comment">--           `8.`8888.        8 8888       8 8888         8 8888              --         ██║  ██║  ██║</a>
-<a id="23582" class="Comment">--       8b   `8.`8888.       8 8888       8 8888         8 8888              --         ██║  ██║  ██║</a>
-<a id="23685" class="Comment">--       `8b.  ;8.`8888       8 8888       8 8888         8 8888              --         ██║  ██║  ██║</a>
-<a id="23788" class="Comment">--        `Y8888P ,88P&#39;       8 8888       8 888888888888 8 8888              --         ██║  ██║  ██║</a>
-<a id="23891" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
-<a id="23994" class="Comment">--------------------------------------------------------------------------------         ██║  ██║  ██║</a>
-<a id="24097" class="Comment">-- Don&#39;t understand why something works? Wanna get it explained to you? Now   --         ██║  ██║  ██║</a>
-<a id="24200" class="Comment">-- you can! The solver can generate step-by-step, human-readable solutions    --         ██║  ██║  ██║</a>
-<a id="24303" class="Comment">-- for learning purposes.                                                     --         ██║  ██║  ██║</a>
-<a id="24406" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
-<a id="24509" class="Keyword">module</a> <a id="TracedExamples"></a><a id="24516" href="README.html#24516" class="Module">TracedExamples</a> <a id="24531" class="Keyword">where</a>                                                   <a id="24587" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="24614" class="Keyword">import</a> <a id="24621" href="Data.Nat.Show.html" class="Module">Data.Nat.Show</a>                                                        <a id="24690" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="24717" class="Keyword">open</a> <a id="24722" class="Keyword">import</a> <a id="24729" href="Data.List.html" class="Module">Data.List</a> <a id="24739" class="Keyword">using</a> <a id="24745" class="Symbol">(</a><a id="24746" href="Agda.Builtin.List.html#132" class="InductiveConstructor Operator">_∷_</a><a id="24749" class="Symbol">;</a> <a id="24751" href="Data.List.Base.html#9863" class="InductiveConstructor">[]</a><a id="24753" class="Symbol">)</a>                                       <a id="24793" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="24820" class="Keyword">open</a> <a id="24825" class="Keyword">import</a> <a id="24832" href="EqBool.html" class="Module">EqBool</a>                                                          <a id="24896" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="24923" class="Keyword">open</a> <a id="24928" class="Keyword">import</a> <a id="24935" href="Relation.Traced.html" class="Module">Relation.Traced</a> <a id="24951" href="Polynomial.Simple.AlmostCommutativeRing.Instances.html#386" class="Function">Nat.ring</a>  <a id="24961" href="Data.Nat.Show.html#987" class="Function">Data.Nat.Show.show</a> <a id="24980" class="Keyword">public</a>             <a id="24999" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="25026" class="Keyword">open</a> <a id="25031" href="Polynomial.Simple.AlmostCommutativeRing.html#905" class="Module">AlmostCommutativeRing</a> <a id="25053" href="Relation.Traced.html#6181" class="Function">tracedRing</a>                                       <a id="25102" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="25129" class="Keyword">open</a> <a id="25134" class="Keyword">import</a> <a id="25141" href="Relation.Binary.PropositionalEquality.html" class="Module">Relation.Binary.PropositionalEquality</a> <a id="25179" class="Symbol">as</a> <a id="25182" class="Module">≡</a> <a id="25184" class="Keyword">using</a> <a id="25190" class="Symbol">(</a><a id="25191" href="Agda.Builtin.Equality.html#83" class="Datatype Operator">_≡_</a><a id="25194" class="Symbol">)</a>          <a id="25205" class="Comment">--         ██║  ██║  ██║</a>
-                                                                              <a id="25308" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="TracedExamples.lemma"></a><a id="25335" href="README.html#25335" class="Function">lemma</a> <a id="25341" class="Symbol">:</a> <a id="25343" class="Symbol">∀</a> <a id="25345" href="README.html#25345" class="Bound">x</a> <a id="25347" href="README.html#25347" class="Bound">y</a> <a id="25349" class="Symbol">→</a> <a id="25351" href="README.html#25345" class="Bound">x</a> <a id="25353" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="25355" href="README.html#25347" class="Bound">y</a> <a id="25357" href="Polynomial.Simple.AlmostCommutativeRing.html#1165" class="Function Operator">*</a> <a id="25359" class="Number">1</a> <a id="25361" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="25363" class="Number">3</a> <a id="25365" href="Polynomial.Simple.AlmostCommutativeRing.html#1079" class="Function Operator">≈</a> <a id="25367" class="Number">2</a> <a id="25369" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="25371" class="Number">1</a> <a id="25373" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="25375" href="README.html#25347" class="Bound">y</a> <a id="25377" href="Polynomial.Simple.AlmostCommutativeRing.html#1123" class="Function Operator">+</a> <a id="25379" href="README.html#25345" class="Bound">x</a>                               <a id="25411" class="Comment">--         ██║  ██║  ██║</a>
-  <a id="25438" href="README.html#25335" class="Function">lemma</a> <a id="25444" class="Symbol">=</a> <a id="25446" href="Polynomial.Simple.Reflection.html#8185" class="Macro">solve</a> <a id="25452" href="Relation.Traced.html#6181" class="Function">tracedRing</a>                                                    <a id="25514" class="Comment">--         ██║  ██║  ██║</a>
-                                                                              <a id="25617" class="Comment">--      ██╗██║  ██║  ██║</a>
-  <a id="TracedExamples.explained"></a><a id="25644" href="README.html#25644" class="Function">explained</a>                                                                   <a id="25720" class="Comment">--    ████║██║  ██║  ██║</a>
-    <a id="25749" class="Symbol">:</a> <a id="25751" href="Relation.Traced.html#9804" class="Function">showProof</a> <a id="25761" class="Symbol">(</a><a id="25762" href="README.html#25335" class="Function">lemma</a> <a id="25768" class="String">&quot;x&quot;</a> <a id="25772" class="String">&quot;y&quot;</a><a id="25775" class="Symbol">)</a> <a id="25777" href="Agda.Builtin.Equality.html#83" class="Datatype Operator">≡</a> <a id="25779" class="String">&quot;x + y + 3&quot;</a>                                 <a id="25823" class="Comment">--  █████████║  ██║  ██║</a>
-                                <a id="25880" href="Agda.Builtin.List.html#132" class="InductiveConstructor Operator">∷</a> <a id="25882" class="String">&quot;    ={ +-comm(x, y + 3) }&quot;</a>                 <a id="25926" class="Comment">--    ████╔══╝  ██║  ██║</a>
-                                <a id="25983" href="Agda.Builtin.List.html#132" class="InductiveConstructor Operator">∷</a> <a id="25985" class="String">&quot;y + 3 + x&quot;</a>                                 <a id="26029" class="Comment">--      ██║     ██║  ██║</a>
-                                <a id="26086" href="Agda.Builtin.List.html#132" class="InductiveConstructor Operator">∷</a> <a id="26088" class="String">&quot;    ={ +-comm(y, 3) }&quot;</a>                     <a id="26132" class="Comment">--      ╚═╝     ██║  ██║</a>
-                                <a id="26189" href="Agda.Builtin.List.html#132" class="InductiveConstructor Operator">∷</a> <a id="26191" class="String">&quot;3 + y + x&quot;</a>                                 <a id="26235" class="Comment">--              ██║  ██║</a>
-                                <a id="26292" href="Agda.Builtin.List.html#132" class="InductiveConstructor Operator">∷</a> <a id="26294" href="Agda.Builtin.List.html#117" class="InductiveConstructor">[]</a>                                          <a id="26338" class="Comment">--              ██║  ██║</a>
-  <a id="26365" href="README.html#25644" class="Function">explained</a> <a id="26375" class="Symbol">=</a> <a id="26377" href="Agda.Builtin.Equality.html#140" class="InductiveConstructor">≡.refl</a>                                                          <a id="26441" class="Comment">--              ██║  ██║</a>
-<a id="26466" class="Comment">--------------------------------------------------------------------------------              ██║  ██║</a>
-<a id="26569" class="Comment">--                                                                            --              ██║  ██║</a>
-<a id="26672" class="Comment">-- The new solver uses a sparse representation, which is much faster than the --              ██║  ██║</a>
-<a id="26775" class="Comment">-- dense one the old solver used. The following graph shows the time (in      --              ██║  ██║</a>
-<a id="26878" class="Comment">-- seconds) to prove that:                                                    --              ██║  ██║</a>
-<a id="26981" class="Comment">--                                                                            --              ██║  ██║</a>
-<a id="27084" class="Comment">--     (1 + x₁¹ + x₂² + x₃³ + x₄⁴ + x₅⁵)ᵈ                                     --              ██║  ██║</a>
-<a id="27187" class="Comment">--                                                                            --              ██║  ██║</a>
-<a id="27290" class="Comment">-- is equal to its expanded form. (to run the benchmarks yourself, run the    --              ██║  ██║</a>
-<a id="27393" class="Comment">-- run_benchmarks.py file. You&#39;ll need python 3 and sympy.)                   --              ██║  ██║</a>
-<a id="27496" class="Comment">--                                                                            --              ██║  ██║</a>
-<a id="27599" class="Comment">-- 540 |  * = old                                                       *     --              ██║  ██║</a>
-<a id="27702" class="Comment">-- 525 |  + = new                                                       *     --              ██║  ██║</a>
-<a id="27805" class="Comment">-- 510 |                                                                *     --              ██║  ██║</a>
-<a id="27908" class="Comment">-- 495 |                                                                *     --              ██║  ██║</a>
-<a id="28011" class="Comment">-- 480 |                                                                *     --              ██║  ██║</a>
-<a id="28114" class="Comment">-- 465 |                                                               *      --              ██║  ██║</a>
-<a id="28217" class="Comment">-- 450 |                                                               *      --              ██║  ██║</a>
-<a id="28320" class="Comment">-- 435 |                                                               *      --              ██║  ██║</a>
-<a id="28423" class="Comment">-- 420 |                                                              *       --              ██║  ██║</a>
-<a id="28526" class="Comment">-- 405 |                                                              *       --              ██║  ██║</a>
-<a id="28629" class="Comment">-- 390 |                                                              *       --              ██║  ██║</a>
-<a id="28732" class="Comment">-- 375 |                                                             *        --              ██║  ██║</a>
-<a id="28835" class="Comment">-- 360 |                                                             *        --              ██║  ██║</a>
-<a id="28938" class="Comment">-- 345 |                                                             *        --              ██║  ██║</a>
-<a id="29041" class="Comment">-- 330 |                                                            *         --              ██║  ██║</a>
-<a id="29144" class="Comment">-- 315 |                                                            *         --              ██║  ██║</a>
-<a id="29247" class="Comment">-- 300 |                                                            *         --              ██║  ██║</a>
-<a id="29350" class="Comment">-- 285 |                                                           *          --              ██║  ██║</a>
-<a id="29453" class="Comment">-- 270 |                                                           *          --              ██║  ██║</a>
-<a id="29556" class="Comment">-- 255 |                                                           *          --              ██║  ██║</a>
-<a id="29659" class="Comment">-- 240 |                                                          *           --           ██╗██║  ██║</a>
-<a id="29762" class="Comment">-- 225 |                                                          *           --         ████║██║  ██║</a>
-<a id="29865" class="Comment">-- 210 |                                                          *           --       █████████║  ██║</a>
-<a id="29968" class="Comment">-- 195 |                                                         *            --         ████╔══╝  ██║</a>
-<a id="30071" class="Comment">-- 180 |                                                         *            --           ██║     ██║</a>
-<a id="30174" class="Comment">-- 165 |                                                         *            --           ╚═╝     ██║</a>
-<a id="30277" class="Comment">-- 150 |                                                        *             --                   ██║</a>
-<a id="30380" class="Comment">-- 135 |                                                        *             --                   ██║</a>
-<a id="30483" class="Comment">-- 120 |                                                        *             --                   ██║</a>
-<a id="30586" class="Comment">-- 105 |                                                       *              --                   ██║</a>
-<a id="30689" class="Comment">--  90 |                                                      *               --                   ██║</a>
-<a id="30792" class="Comment">--  75 |                                                     *                --                   ██║</a>
-<a id="30895" class="Comment">--  60 |                                                   **                 --                   ██║</a>
-<a id="30998" class="Comment">--  45 |                                                 **                   --                   ██║</a>
-<a id="31101" class="Comment">--  30 |                                               **           +++++     --                   ██║</a>
-<a id="31204" class="Comment">--  15 |                                          *****    +++++++++          --                   ██║</a>
-<a id="31307" class="Comment">--   0 | *****************************************+++++++++                   --                   ██║</a>
-<a id="31410" class="Comment">--     ------------------------------------------------------------------     --                   ██║</a>
-<a id="31513" class="Comment">--   d = 1        2        3        4        5        6        7        8     --                   ██║</a>
-<a id="31616" class="Comment">--------------------------------------------------------------------------------                   ██║</a>
-<a id="31719" class="Comment">--                                                                                                 ██║</a>
-<a id="31822" class="Comment">--                                 ██████████████████████████████████████████████████████████████████║</a>
-<a id="31925" class="Comment">--                                 ██╔═══════════════════════════════════════════════════════════════╝</a>
-<a id="32028" class="Comment">--                             ██████████╗</a>
-<a id="32071" class="Comment">--                               ██████╔═╝</a>
-<a id="32114" class="Comment">--                                 ██╔═╝</a>
-<a id="32155" class="Comment">--                                 ╚═╝</a>
-<a id="32194" class="Comment">--</a>
-<a id="32197" class="Comment">-- * How does it work? Why is it fast?</a>
-<a id="32236" class="Comment">--       The solver works by converting expressions to &quot;Horner Normal Form&quot;.</a>
-<a id="32313" class="Comment">--       This representation is special: x + y is represented in the same way</a>
-<a id="32391" class="Comment">--       as y + x. This is what lets us check that two expressions are equal.</a>
-<a id="32469" class="Comment">--       The implementation here is *sparse*, also, which is why it&#39;s faster</a>
-<a id="32546" class="Comment">--       than the old implementation.</a>
-<a id="32584" class="Comment">--</a>
-<a id="32587" class="Comment">--       Want to learn more? Then this is the place for you:</a>
-<a id="32648" class="Keyword">import</a> <a id="32655" href="Polynomial.NormalForm.html" class="Module">Polynomial.NormalForm</a>
-<a id="32677" class="Comment">--</a>
-<a id="32680" class="Comment">-- * Prove it!</a>
-<a id="32695" class="Comment">--       The type of proofs we need are *homomorphisms*. They basically mean</a>
-<a id="32772" class="Comment">--       that the operations on the normal form correspond to the operations</a>
-<a id="32849" class="Comment">--       on expressions. Also, we don&#39;t use propositional equality: we use</a>
-<a id="32924" class="Comment">--       any equivalence relation the user supplies.</a>
-<a id="32977" class="Comment">--</a>
-<a id="32980" class="Comment">--       Don&#39;t believe me? Check it out:</a>
-<a id="33021" class="Keyword">import</a> <a id="33028" href="Polynomial.Homomorphism.html" class="Module">Polynomial.Homomorphism</a>
-<a id="33052" class="Comment">--</a>
-<a id="33055" class="Comment">-- * How do I use it?</a>
-<a id="33077" class="Comment">--       Copy the examples above! For the full solver, check out:</a>
-<a id="33143" class="Keyword">import</a> <a id="33150" href="Polynomial.Solver.html" class="Module">Polynomial.Solver</a>
-<a id="33168" class="Comment">--</a>
-<a id="33171" class="Comment">-- * Wait! Don&#39;t!</a>
-<a id="33189" class="Comment">--       The &quot;full&quot; solver lets you use different types for the coefficient</a>
-<a id="33265" class="Comment">--       and carrier. You probably don&#39;t want that, unless you need the extra</a>
-<a id="33343" class="Comment">--       efficiency. You&#39;ll want the *simple* solver:</a>
-<a id="33397" class="Keyword">import</a> <a id="33404" href="Polynomial.Simple.Solver.html" class="Module">Polynomial.Simple.Solver</a>
-<a id="33429" class="Comment">--</a>
-<a id="33432" class="Comment">-- * Is that all?</a>
-<a id="33450" class="Comment">--       No! As it happens, even the simple solver is complicated to use.</a>
-<a id="33524" class="Comment">--       You&#39;ll *actually* want to use the reflection-based interface:</a>
-<a id="33595" class="Keyword">import</a> <a id="33602" href="Polynomial.Simple.Reflection.html" class="Module">Polynomial.Simple.Reflection</a>
-<a id="33631" class="Comment">--</a>
-<a id="33634" class="Comment">-- * And what about the step-by-step stuff?</a>
-<a id="33678" class="Comment">--       That all uses the same underlying solver as the other stuff, with a</a>
-<a id="33755" class="Comment">--       special *relation*. You can check that out here:</a>
-<a id="33813" class="Keyword">import</a> <a id="33820" href="Relation.Traced.html" class="Module">Relation.Traced</a>
+<a id="1758" class="Keyword">module</a> <a id="1765" href="README.html" class="Module">README</a> <a id="1772" class="Keyword">where</a>
+
+<a id="1779" class="Comment">-- This contains the worked-through source code for:</a>
+<a id="1832" class="Comment">--</a>
+<a id="1835" class="Comment">--     &quot;Automatically And Efficiently Illustrating Polynomial Equalities in Agda&quot;</a>
+<a id="1917" class="Comment">--</a>
+<a id="1920" class="Comment">--     We present a new library which automates the construction of equivalence</a>
+<a id="2000" class="Comment">--     proofs between polynomials over commutative rings and semirings in the</a>
+<a id="2078" class="Comment">--     programming language Agda. It is asymptotically faster than Agda&#39;s existing</a>
+<a id="2161" class="Comment">--     solver. We use Agda&#39;s reflection machinery to provide a simple interface to</a>
+<a id="2244" class="Comment">--     the solver, and demonstrate an interesting use of the constructed relations:</a>
+<a id="2328" class="Comment">--     step-by-step solutions.</a>
+<a id="2359" class="Comment">--</a>
+<a id="2362" class="Comment">-- Which is (at time of writing) a work-in-progress.</a>
+<a id="2415" class="Comment">--</a>
+<a id="2418" class="Comment">-- This code is available on github:</a>
+<a id="2455" class="Comment">--     https://github.com/oisdk/agda-ring-solver</a>
+<a id="2504" class="Comment">--</a>
+<a id="2507" class="Comment">-- As is the paper:</a>
+<a id="2527" class="Comment">--     https://github.com/oisdk/agda-ring-solver-report</a>
+<a id="2583" class="Comment">--</a>
+<a id="2586" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="2667" class="Comment">-- There are 3 main contributions in this library:                            --</a>
+<a id="2748" class="Comment">--                                                                            --</a>
+<a id="2829" class="Comment">--   * A solver for polynomials over &quot;almost commutative rings&quot;.              --</a>
+<a id="2910" class="Comment">--         Agda already has one these in the standard library, but this one   --</a>
+<a id="2991" class="Comment">--         is much more efficient. &quot;Almost commutative rings&quot; encapsulates a  --</a>
+<a id="3072" class="Comment">--         bunch of things, including ℕ.                                      --</a>
+<a id="3153" class="Comment">--                                                                            --</a>
+<a id="3234" class="Comment">--   * A reflection-based interface.                                          --</a>
+<a id="3315" class="Comment">--         Not many people used the old solver, mainly (I think) because the  --</a>
+<a id="3396" class="Comment">--         interface was difficult and irritating. This library provides a    --</a>
+<a id="3477" class="Comment">--         super-simple interface using reflection.                           --</a>
+<a id="3558" class="Comment">--                                                                            --</a>
+<a id="3639" class="Comment">--   * An implementation of &quot;step-by-step solutions&quot;.                         --</a>
+<a id="3720" class="Comment">--         I don&#39;t know a huge amount about computer algebra systems, but I   --</a>
+<a id="3801" class="Comment">--         have used Wolfram Alpha countless times (especially when I was in  --</a>
+<a id="3882" class="Comment">--         school) to help with basic maths. I was able to get this solver to --</a>
+<a id="3963" class="Comment">--         produce step-by-step solutions, and learned something about the    --</a>
+<a id="4044" class="Comment">--         theory behind them along the way.                                  --</a>
+<a id="4125" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="4206" class="Comment">--</a>
+<a id="4209" class="Comment">-- ███████╗██╗   ██╗██╗     ██╗          ██████╗ ██████╗ ██████╗ ███████╗</a>
+<a id="4283" class="Comment">-- ██╔════╝██║   ██║██║     ██║         ██╔════╝██╔═══██╗██╔══██╗██╔════╝</a>
+<a id="4357" class="Comment">-- █████╗  ██║   ██║██║     ██║         ██║     ██║   ██║██║  ██║█████╗   ███████████████████████████╗</a>
+<a id="4460" class="Comment">-- ██╔══╝  ██║   ██║██║     ██║         ██║     ██║   ██║██║  ██║██╔══╝   ╚════════════════════════██║</a>
+<a id="4563" class="Comment">-- ██║     ╚██████╔╝███████╗███████╗    ╚██████╗╚██████╔╝██████╔╝███████╗                          ██║</a>
+<a id="4666" class="Comment">-- ╚═╝      ╚═════╝ ╚══════╝╚══════╝     ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝                          ██║</a>
+<a id="4769" class="Comment">--                                                                                                 ██║</a>
+<a id="4872" class="Comment">-- ██████╗ ███████╗███╗   ██╗ ██████╗██╗  ██╗███╗   ███╗ █████╗ ██████╗ ██╗  ██╗███████╗           ██║</a>
+<a id="4975" class="Comment">-- ██╔══██╗██╔════╝████╗  ██║██╔════╝██║  ██║████╗ ████║██╔══██╗██╔══██╗██║ ██╔╝██╔════╝           ██║</a>
+<a id="5078" class="Comment">-- ██████╔╝█████╗  ██╔██╗ ██║██║     ███████║██╔████╔██║███████║██████╔╝█████╔╝ ███████╗ ███████╗  ██║</a>
+<a id="5181" class="Comment">-- ██╔══██╗██╔══╝  ██║╚██╗██║██║     ██╔══██║██║╚██╔╝██║██╔══██║██╔══██╗██╔═██╗ ╚════██║ ╚════██║  ██║</a>
+<a id="5284" class="Comment">-- ██████╔╝███████╗██║ ╚████║╚██████╗██║  ██║██║ ╚═╝ ██║██║  ██║██║  ██║██║  ██╗███████║      ██║  ██║</a>
+<a id="5387" class="Comment">-- ╚═════╝ ╚══════╝╚═╝  ╚═══╝ ╚═════╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝      ██║  ██║</a>
+<a id="5490" class="Comment">--                                                                                            ██║  ██║</a>
+<a id="5593" class="Comment">-- ███████╗██╗  ██╗ █████╗ ███╗   ███╗██████╗ ██╗     ███████╗███████╗                        ██║  ██║</a>
+<a id="5696" class="Comment">-- ██╔════╝╚██╗██╔╝██╔══██╗████╗ ████║██╔══██╗██║     ██╔════╝██╔════╝                        ██║  ██║</a>
+<a id="5799" class="Comment">-- █████╗   ╚███╔╝ ███████║██╔████╔██║██████╔╝██║     █████╗  ███████╗ ████████████████████╗  ██║  ██║</a>
+<a id="5902" class="Comment">-- ██╔══╝   ██╔██╗ ██╔══██║██║╚██╔╝██║██╔═══╝ ██║     ██╔══╝  ╚════██║ ╚═════════════════██║  ██║  ██║</a>
+<a id="6005" class="Comment">-- ███████╗██╔╝ ██╗██║  ██║██║ ╚═╝ ██║██║     ███████╗███████╗███████║                   ██║  ██║  ██║</a>
+<a id="6108" class="Comment">-- ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝     ╚══════╝╚══════╝╚══════╝                   ██║  ██║  ██║</a>
+<a id="6211" class="Comment">--                                                                                       ██║  ██║  ██║</a>
+<a id="6314" class="Comment">--------------------------------------------------------------------------------         ██║  ██║  ██║</a>
+<a id="6417" class="Comment">-- You can ignore this bit! We&#39;re just overloading the literals Agda uses for --         ██║  ██║  ██║</a>
+<a id="6520" class="Comment">-- numbers This bit isn&#39;t necessary if you&#39;re just using Nats, or if you      --         ██║  ██║  ██║</a>
+<a id="6623" class="Comment">-- construct your type directly. We only really do it here so that we can use --         ██║  ██║  ██║</a>
+<a id="6726" class="Comment">-- different numeric types in the same file.                                  --         ██║  ██║  ██║</a>
+                                                                              <a id="6907" class="Comment">--         ██║  ██║  ██║</a>
+<a id="6932" class="Keyword">open</a> <a id="6937" class="Keyword">import</a> <a id="6944" href="Agda.Builtin.FromNat.html" class="Module">Agda.Builtin.FromNat</a>                                              <a id="7010" class="Comment">--         ██║  ██║  ██║</a>
+<a id="7035" class="Keyword">open</a> <a id="7040" class="Keyword">import</a> <a id="7047" href="Agda.Builtin.Nat.html" class="Module">Agda.Builtin.Nat</a> <a id="7064" class="Keyword">using</a> <a id="7070" class="Symbol">(</a><a id="7071" href="Agda.Builtin.Nat.html#97" class="Datatype">Nat</a><a id="7074" class="Symbol">)</a>                                      <a id="7113" class="Comment">--         ██║  ██║  ██║</a>
+<a id="7138" class="Keyword">open</a> <a id="7143" class="Keyword">import</a> <a id="7150" href="Agda.Builtin.Int.html" class="Module">Agda.Builtin.Int</a> <a id="7167" class="Keyword">using</a> <a id="7173" class="Symbol">(</a><a id="7174" href="Agda.Builtin.Int.html#178" class="Datatype">Int</a><a id="7177" class="Symbol">)</a>                                      <a id="7216" class="Comment">--         ██║  ██║  ██║</a>
+                                                                              <a id="7319" class="Comment">--         ██║  ██║  ██║</a>
+<a id="7344" class="Keyword">instance</a>                                                                      <a id="7422" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="numberNat"></a><a id="7449" href="README.html#7449" class="Function">numberNat</a> <a id="7459" class="Symbol">:</a> <a id="7461" href="Agda.Builtin.FromNat.html#129" class="Record">Number</a> <a id="7468" href="Agda.Builtin.Nat.html#97" class="Datatype">Nat</a>                                                      <a id="7525" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="7552" href="README.html#7449" class="Function">numberNat</a> <a id="7562" class="Symbol">=</a> <a id="7564" href="Data.Nat.Literals.html#353" class="Function">Data.Nat.Literals.number</a>                                        <a id="7628" class="Comment">--         ██║  ██║  ██║</a>
+    <a id="7657" class="Keyword">where</a> <a id="7663" class="Keyword">import</a> <a id="7670" href="Data.Nat.Literals.html" class="Module">Data.Nat.Literals</a>                                            <a id="7731" class="Comment">--         ██║  ██║  ██║</a>
+                                                                              <a id="7834" class="Comment">--         ██║  ██║  ██║</a>
+<a id="7859" class="Keyword">instance</a>                                                                      <a id="7937" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="numberInt"></a><a id="7964" href="README.html#7964" class="Function">numberInt</a> <a id="7974" class="Symbol">:</a> <a id="7976" href="Agda.Builtin.FromNat.html#129" class="Record">Number</a> <a id="7983" href="Agda.Builtin.Int.html#178" class="Datatype">Int</a>                                                      <a id="8040" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="8067" href="README.html#7964" class="Function">numberInt</a> <a id="8077" class="Symbol">=</a> <a id="8079" href="Data.Integer.Literals.html#386" class="Function">Data.Integer.Literals.number</a>                                    <a id="8143" class="Comment">--         ██║  ██║  ██║</a>
+    <a id="8172" class="Keyword">where</a> <a id="8178" class="Keyword">import</a> <a id="8185" href="Data.Integer.Literals.html" class="Module">Data.Integer.Literals</a>                                        <a id="8246" class="Comment">--         ██║  ██║  ██║</a>
+                                                                              <a id="8349" class="Comment">--         ██║  ██║  ██║</a>
+<a id="8374" class="Comment">--------------------------------------------------------------------------------         ██║  ██║  ██║</a>
+<a id="8477" class="Comment">-- Imports!                                                                   --         ██║  ██║  ██║</a>
+                                                                              <a id="8658" class="Comment">--         ██║  ██║  ██║</a>
+<a id="8683" class="Keyword">open</a> <a id="8688" class="Keyword">import</a> <a id="8695" href="Polynomial.Simple.AlmostCommutativeRing.html" class="Module">Polynomial.Simple.AlmostCommutativeRing</a>                           <a id="8761" class="Comment">--         ██║  ██║  ██║</a>
+<a id="8786" class="Keyword">open</a> <a id="8791" class="Keyword">import</a> <a id="8798" href="Polynomial.Simple.AlmostCommutativeRing.Instances.html" class="Module">Polynomial.Simple.AlmostCommutativeRing.Instances</a>                 <a id="8864" class="Comment">--         ██║  ██║  ██║</a>
+<a id="8889" class="Keyword">open</a> <a id="8894" class="Keyword">import</a> <a id="8901" href="Polynomial.Simple.Reflection.html" class="Module">Polynomial.Simple.Reflection</a>                                      <a id="8967" class="Comment">--         ██║  ██║  ██║</a>
+<a id="8992" class="Comment">--------------------------------------------------------------------------------         ██║  ██║  ██║</a>
+<a id="9095" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
+<a id="9198" class="Comment">--                           8888888888&#39;,8888&#39;                                --         ██║  ██║  ██║</a>
+<a id="9301" class="Comment">--                                  ,8&#39;,8888&#39;                                 --         ██║  ██║  ██║</a>
+<a id="9404" class="Comment">--                                 ,8&#39;,8888&#39;                                  --         ██║  ██║  ██║</a>
+<a id="9507" class="Comment">--                                ,8&#39;,8888&#39;                                   --         ██║  ██║  ██║</a>
+<a id="9610" class="Comment">--                               ,8&#39;,8888&#39;                                    --         ██║  ██║  ██║</a>
+<a id="9713" class="Comment">--                              ,8&#39;,8888&#39;                                     --         ██║  ██║  ██║</a>
+<a id="9816" class="Comment">--                             ,8&#39;,8888&#39;                                      --         ██║  ██║  ██║</a>
+<a id="9919" class="Comment">--                            ,8&#39;,8888&#39;                                       --         ██║  ██║  ██║</a>
+<a id="10022" class="Comment">--                           ,8&#39;,8888&#39;                                        --         ██║  ██║  ██║</a>
+<a id="10125" class="Comment">--                          ,8&#39;,8888888888888                                 --         ██║  ██║  ██║</a>
+<a id="10228" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
+<a id="10331" class="Comment">--------------------------------------------------------------------------------         ██║  ██║  ██║</a>
+<a id="10434" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
+<a id="10537" class="Keyword">module</a> <a id="IntExamples"></a><a id="10544" href="README.html#10544" class="Module">IntExamples</a> <a id="10556" class="Keyword">where</a>                                                      <a id="10615" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="10642" class="Keyword">open</a> <a id="10647" href="Polynomial.Simple.AlmostCommutativeRing.html#941" class="Module">AlmostCommutativeRing</a> <a id="10669" href="Polynomial.Simple.AlmostCommutativeRing.Instances.html#838" class="Function">Int.ring</a>                                         <a id="10718" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="10745" class="Comment">-- Everything is automatic: you just ask Agda to solve it and it does!      --     ██╗ ██║  ██║  ██║</a>
+  <a id="IntExamples.lemma₁"></a><a id="10848" href="README.html#10848" class="Function">lemma₁</a> <a id="10855" class="Symbol">:</a> <a id="10857" class="Symbol">∀</a> <a id="10859" href="README.html#10859" class="Bound">x</a> <a id="10861" href="README.html#10861" class="Bound">y</a> <a id="10863" class="Symbol">→</a> <a id="10865" href="README.html#10859" class="Bound">x</a> <a id="10867" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="10869" href="README.html#10861" class="Bound">y</a> <a id="10871" href="Polynomial.Simple.AlmostCommutativeRing.html#1201" class="Function Operator">*</a> <a id="10873" class="Number">1</a> <a id="10875" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="10877" class="Number">3</a> <a id="10879" href="Polynomial.Simple.AlmostCommutativeRing.html#1115" class="Function Operator">≈</a> <a id="10881" class="Number">3</a> <a id="10883" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="10885" class="Number">1</a> <a id="10887" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="10889" href="README.html#10861" class="Bound">y</a> <a id="10891" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="10893" href="README.html#10859" class="Bound">x</a> <a id="10895" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="10897" href="Polynomial.Simple.AlmostCommutativeRing.html#1243" class="Function Operator">-</a> <a id="10899" class="Number">1</a>                        <a id="10924" class="Comment">--   ████║ ██║  ██║  ██║</a>
+  <a id="10951" href="README.html#10848" class="Function">lemma₁</a> <a id="10958" class="Symbol">=</a> <a id="10960" href="Polynomial.Simple.Reflection.html#8221" class="Macro">solve</a> <a id="10966" href="Polynomial.Simple.AlmostCommutativeRing.Instances.html#838" class="Function">Int.ring</a>                                                     <a id="11027" class="Comment">-- ██████████║  ██║  ██║</a>
+                                                                              <a id="11130" class="Comment">--   ████╔═██║  ██║  ██║</a>
+  <a id="IntExamples.lemma₂"></a><a id="11157" href="README.html#11157" class="Function">lemma₂</a> <a id="11164" class="Symbol">:</a> <a id="11166" class="Symbol">∀</a> <a id="11168" href="README.html#11168" class="Bound">x</a> <a id="11170" href="README.html#11170" class="Bound">y</a> <a id="11172" class="Symbol">→</a> <a id="11174" class="Symbol">(</a><a id="11175" href="README.html#11168" class="Bound">x</a> <a id="11177" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="11179" href="README.html#11170" class="Bound">y</a><a id="11180" class="Symbol">)</a> <a id="11182" href="Polynomial.Simple.AlmostCommutativeRing.html#2094" class="Function Operator">^</a> <a id="11184" class="Number">2</a> <a id="11186" href="Polynomial.Simple.AlmostCommutativeRing.html#1115" class="Function Operator">≈</a> <a id="11188" href="README.html#11168" class="Bound">x</a> <a id="11190" href="Polynomial.Simple.AlmostCommutativeRing.html#2094" class="Function Operator">^</a> <a id="11192" class="Number">2</a> <a id="11194" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="11196" class="Number">2</a> <a id="11198" href="Polynomial.Simple.AlmostCommutativeRing.html#1201" class="Function Operator">*</a> <a id="11200" href="README.html#11168" class="Bound">x</a> <a id="11202" href="Polynomial.Simple.AlmostCommutativeRing.html#1201" class="Function Operator">*</a> <a id="11204" href="README.html#11170" class="Bound">y</a> <a id="11206" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="11208" href="README.html#11170" class="Bound">y</a> <a id="11210" href="Polynomial.Simple.AlmostCommutativeRing.html#2094" class="Function Operator">^</a> <a id="11212" class="Number">2</a>                    <a id="11233" class="Comment">--     ██║ ██║  ██║  ██║</a>
+  <a id="11260" href="README.html#11157" class="Function">lemma₂</a> <a id="11267" class="Symbol">=</a> <a id="11269" href="Polynomial.Simple.Reflection.html#8221" class="Macro">solve</a> <a id="11275" href="Polynomial.Simple.AlmostCommutativeRing.Instances.html#838" class="Function">Int.ring</a>                                                     <a id="11336" class="Comment">--     ╚═╝ ██║  ██║  ██║</a>
+                                                                              <a id="11439" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="11466" class="Keyword">open</a> <a id="11471" class="Keyword">import</a> <a id="11478" href="Function.html" class="Module">Function</a>                                                        <a id="11542" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="11569" class="Keyword">open</a> <a id="11574" class="Keyword">import</a> <a id="11581" href="Relation.Binary.Reasoning.Inference.html" class="Module">Relation.Binary.Reasoning.Inference</a> <a id="11617" href="Algebra.Structures.html#935" class="Function">setoid</a>                      <a id="11645" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="11672" class="Keyword">open</a> <a id="11677" class="Keyword">import</a> <a id="11684" href="Data.List.html" class="Module">Data.List</a> <a id="11694" class="Keyword">using</a> <a id="11700" class="Symbol">(</a><a id="11701" href="Agda.Builtin.List.html#132" class="InductiveConstructor Operator">_∷_</a><a id="11704" class="Symbol">;</a> <a id="11706" href="Data.List.Base.html#9863" class="InductiveConstructor">[]</a><a id="11708" class="Symbol">)</a>                                       <a id="11748" class="Comment">--         ██║  ██║  ██║</a>
+                                                                              <a id="11851" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="11878" class="Comment">-- It can interact with manual proofs as well.                              --         ██║  ██║  ██║</a>
+  <a id="IntExamples.lemma₃"></a><a id="11981" href="README.html#11981" class="Function">lemma₃</a> <a id="11988" class="Symbol">:</a> <a id="11990" class="Symbol">∀</a> <a id="11992" href="README.html#11992" class="Bound">x</a> <a id="11994" href="README.html#11994" class="Bound">y</a> <a id="11996" class="Symbol">→</a> <a id="11998" href="README.html#11992" class="Bound">x</a> <a id="12000" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="12002" href="README.html#11994" class="Bound">y</a> <a id="12004" href="Polynomial.Simple.AlmostCommutativeRing.html#1201" class="Function Operator">*</a> <a id="12006" class="Number">1</a> <a id="12008" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="12010" class="Number">3</a> <a id="12012" href="Polynomial.Simple.AlmostCommutativeRing.html#1115" class="Function Operator">≈</a> <a id="12014" class="Number">2</a> <a id="12016" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="12018" class="Number">1</a> <a id="12020" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="12022" href="README.html#11994" class="Bound">y</a> <a id="12024" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="12026" href="README.html#11992" class="Bound">x</a>                              <a id="12057" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="12084" href="README.html#11981" class="Function">lemma₃</a> <a id="12091" href="README.html#12091" class="Bound">x</a> <a id="12093" href="README.html#12093" class="Bound">y</a> <a id="12095" class="Symbol">=</a> <a id="12097" href="Relation.Binary.Reasoning.Inference.html#1088" class="Function Operator">begin</a>                                                          <a id="12160" class="Comment">--         ██║  ██║  ██║</a>
+    <a id="12189" href="README.html#12091" class="Bound">x</a> <a id="12191" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="12193" href="README.html#12093" class="Bound">y</a> <a id="12195" href="Polynomial.Simple.AlmostCommutativeRing.html#1201" class="Function Operator">*</a> <a id="12197" class="Number">1</a> <a id="12199" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="12201" class="Number">3</a> <a id="12203" href="Relation.Binary.Reasoning.Inference.html#1154" class="Function">≈⟨</a> <a id="12206" href="Algebra.Structures.html#2120" class="Function">+-comm</a> <a id="12213" href="README.html#12091" class="Bound">x</a> <a id="12215" class="Symbol">(</a><a id="12216" href="README.html#12093" class="Bound">y</a> <a id="12218" href="Polynomial.Simple.AlmostCommutativeRing.html#1201" class="Function Operator">*</a> <a id="12220" class="Number">1</a><a id="12221" class="Symbol">)</a> <a id="12223" href="Function.html#2548" class="Function Operator">⟨</a> <a id="12225" href="Algebra.Structures.html#860" class="Function">+-cong</a> <a id="12232" href="Function.html#2548" class="Function Operator">⟩</a> <a id="12234" href="Polynomial.Simple.AlmostCommutativeRing.html#2172" class="Function">refl</a> <a id="12239" href="Relation.Binary.Reasoning.Inference.html#1154" class="Function">⟩</a>                       <a id="12263" class="Comment">--         ██║  ██║  ██║</a>
+    <a id="12292" href="README.html#12093" class="Bound">y</a> <a id="12294" href="Polynomial.Simple.AlmostCommutativeRing.html#1201" class="Function Operator">*</a> <a id="12296" class="Number">1</a> <a id="12298" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="12300" href="README.html#12091" class="Bound">x</a> <a id="12302" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="12304" class="Number">3</a> <a id="12306" href="Relation.Binary.Reasoning.Inference.html#1154" class="Function">≈⟨</a> <a id="12309" href="Polynomial.Simple.Reflection.html#9303" class="Macro">solveOver</a> <a id="12319" class="Symbol">(</a><a id="12320" href="README.html#12091" class="Bound">x</a> <a id="12322" href="Agda.Builtin.List.html#132" class="InductiveConstructor Operator">∷</a> <a id="12324" href="README.html#12093" class="Bound">y</a> <a id="12326" href="Agda.Builtin.List.html#132" class="InductiveConstructor Operator">∷</a> <a id="12328" href="Agda.Builtin.List.html#117" class="InductiveConstructor">[]</a><a id="12330" class="Symbol">)</a> <a id="12332" href="Polynomial.Simple.AlmostCommutativeRing.Instances.html#838" class="Function">Int.ring</a> <a id="12341" href="Relation.Binary.Reasoning.Inference.html#1154" class="Function">⟩</a>                        <a id="12366" class="Comment">--         ██║  ██║  ██║</a>
+    <a id="12395" class="Number">3</a> <a id="12397" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="12399" href="README.html#12093" class="Bound">y</a> <a id="12401" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="12403" href="README.html#12091" class="Bound">x</a>     <a id="12409" href="Relation.Binary.Reasoning.Inference.html#1742" class="Function Operator">≡⟨⟩</a>                                                         <a id="12469" class="Comment">--         ██║  ██║  ██║</a>
+    <a id="12498" class="Number">2</a> <a id="12500" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="12502" class="Number">1</a> <a id="12504" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="12506" href="README.html#12093" class="Bound">y</a> <a id="12508" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="12510" href="README.html#12091" class="Bound">x</a> <a id="12512" href="Relation.Binary.Reasoning.Inference.html#1825" class="Function Operator">∎</a>                                                           <a id="12572" class="Comment">--         ██║  ██║  ██║</a>
+<a id="12597" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
+<a id="12700" class="Comment">--------------------------------------------------------------------------------         ██║  ██║  ██║</a>
+<a id="12803" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
+<a id="12906" class="Comment">--                          b.             8                                  --         ██║  ██║  ██║</a>
+<a id="13009" class="Comment">--                          888o.          8                                  --         ██║  ██║  ██║</a>
+<a id="13112" class="Comment">--                          Y88888o.       8                                  --         ██║  ██║  ██║</a>
+<a id="13215" class="Comment">--                          .`Y888888o.    8                                  --         ██║  ██║  ██║</a>
+<a id="13318" class="Comment">--                          8o. `Y888888o. 8                                  --         ██║  ██║  ██║</a>
+<a id="13421" class="Comment">--                          8`Y8o. `Y88888o8                                  --         ██║  ██║  ██║</a>
+<a id="13524" class="Comment">--                          8   `Y8o. `Y8888                                  --         ██║  ██║  ██║</a>
+<a id="13627" class="Comment">--                          8      `Y8o. `Y8                                  --         ██║  ██║  ██║</a>
+<a id="13730" class="Comment">--                          8         `Y8o.`                                  --         ██║  ██║  ██║</a>
+<a id="13833" class="Comment">--                          8            `Yo                                  --         ██║  ██║  ██║</a>
+<a id="13936" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
+<a id="14039" class="Comment">--------------------------------------------------------------------------------         ██║  ██║  ██║</a>
+<a id="14142" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
+<a id="14245" class="Keyword">module</a> <a id="NatExamples"></a><a id="14252" href="README.html#14252" class="Module">NatExamples</a> <a id="14264" class="Keyword">where</a>                                                      <a id="14323" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="14350" class="Keyword">open</a> <a id="14355" href="Polynomial.Simple.AlmostCommutativeRing.html#941" class="Module">AlmostCommutativeRing</a> <a id="14377" href="Polynomial.Simple.AlmostCommutativeRing.Instances.html#422" class="Function">Nat.ring</a>                                         <a id="14426" class="Comment">--     ██╗ ██║  ██║  ██║</a>
+  <a id="14453" class="Comment">-- The solver is flexible enough to work with Nats (even though it asks     --   ████║ ██║  ██║  ██║</a>
+  <a id="14556" class="Comment">-- for rings!)                                                              -- ██████████║  ██║  ██║</a>
+  <a id="NatExamples.lemma₁"></a><a id="14659" href="README.html#14659" class="Function">lemma₁</a> <a id="14666" class="Symbol">:</a> <a id="14668" class="Symbol">∀</a> <a id="14670" href="README.html#14670" class="Bound">x</a> <a id="14672" href="README.html#14672" class="Bound">y</a> <a id="14674" class="Symbol">→</a> <a id="14676" href="README.html#14670" class="Bound">x</a> <a id="14678" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="14680" href="README.html#14672" class="Bound">y</a> <a id="14682" href="Polynomial.Simple.AlmostCommutativeRing.html#1201" class="Function Operator">*</a> <a id="14684" class="Number">1</a> <a id="14686" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="14688" class="Number">3</a> <a id="14690" href="Polynomial.Simple.AlmostCommutativeRing.html#1115" class="Function Operator">≈</a> <a id="14692" class="Number">2</a> <a id="14694" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="14696" class="Number">1</a> <a id="14698" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="14700" href="README.html#14672" class="Bound">y</a> <a id="14702" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="14704" href="README.html#14670" class="Bound">x</a>                              <a id="14735" class="Comment">--   ████╔═██║  ██║  ██║</a>
+  <a id="14762" href="README.html#14659" class="Function">lemma₁</a> <a id="14769" class="Symbol">=</a> <a id="14771" href="Polynomial.Simple.Reflection.html#8221" class="Macro">solve</a> <a id="14777" href="Polynomial.Simple.AlmostCommutativeRing.Instances.html#422" class="Function">Nat.ring</a>                                                     <a id="14838" class="Comment">--     ██║ ██║  ██║  ██║</a>
+<a id="14863" class="Comment">--                                                                            --     ╚═╝ ██║  ██║  ██║</a>
+<a id="14966" class="Comment">--------------------------------------------------------------------------------         ██║  ██║  ██║</a>
+<a id="15069" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
+<a id="15172" class="Comment">--             8888888 8888888888 8 8888        8 8 8888888888                --         ██║  ██║  ██║</a>
+<a id="15275" class="Comment">--                   8 8888       8 8888        8 8 8888                      --         ██║  ██║  ██║</a>
+<a id="15378" class="Comment">--                   8 8888       8 8888        8 8 8888                      --         ██║  ██║  ██║</a>
+<a id="15481" class="Comment">--                   8 8888       8 8888        8 8 8888                      --         ██║  ██║  ██║</a>
+<a id="15584" class="Comment">--                   8 8888       8 8888        8 8 888888888888              --         ██║  ██║  ██║</a>
+<a id="15687" class="Comment">--                   8 8888       8 8888        8 8 8888                      --         ██║  ██║  ██║</a>
+<a id="15790" class="Comment">--                   8 8888       8 8888888888888 8 8888                      --         ██║  ██║  ██║</a>
+<a id="15893" class="Comment">--                   8 8888       8 8888        8 8 8888                      --         ██║  ██║  ██║</a>
+<a id="15996" class="Comment">--                   8 8888       8 8888        8 8 8888                      --         ██║  ██║  ██║</a>
+<a id="16099" class="Comment">--                   8 8888       8 8888        8 8 888888888888              --         ██║  ██║  ██║</a>
+<a id="16202" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
+<a id="16305" class="Comment">--                 ,o888888o.     8 8888         8 888888888o.                --         ██║  ██║  ██║</a>
+<a id="16408" class="Comment">--              . 8888     `88.   8 8888         8 8888    `^888.             --         ██║  ██║  ██║</a>
+<a id="16511" class="Comment">--             ,8 8888       `8b  8 8888         8 8888        `88.           --         ██║  ██║  ██║</a>
+<a id="16614" class="Comment">--             88 8888        `8b 8 8888         8 8888         `88           --         ██║  ██║  ██║</a>
+<a id="16717" class="Comment">--             88 8888         88 8 8888         8 8888          88           --         ██║  ██║  ██║</a>
+<a id="16820" class="Comment">--             88 8888         88 8 8888         8 8888          88           --         ██║  ██║  ██║</a>
+<a id="16923" class="Comment">--             88 8888        ,8P 8 8888         8 8888         ,88           --         ██║  ██║  ██║</a>
+<a id="17026" class="Comment">--             `8 8888       ,8P  8 8888         8 8888        ,88&#39;           --         ██║  ██║  ██║</a>
+<a id="17129" class="Comment">--              ` 8888     ,88&#39;   8 8888         8 8888    ,o88P&#39;             --         ██║  ██║  ██║</a>
+<a id="17232" class="Comment">--                 `8888888P&#39;     8 888888888888 8 888888888P&#39;                --         ██║  ██║  ██║</a>
+<a id="17335" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
+<a id="17438" class="Comment">--             `8.`888b                 ,8&#39; .8.   `8.`8888.      ,8&#39;          --         ██║  ██║  ██║</a>
+<a id="17541" class="Comment">--              `8.`888b               ,8&#39; .888.   `8.`8888.    ,8&#39;           --         ██║  ██║  ██║</a>
+<a id="17644" class="Comment">--               `8.`888b             ,8&#39; :88888.   `8.`8888.  ,8&#39;            --         ██║  ██║  ██║</a>
+<a id="17747" class="Comment">--                `8.`888b     .b    ,8&#39; . `88888.   `8.`8888.,8&#39;             --         ██║  ██║  ██║</a>
+<a id="17850" class="Comment">--                 `8.`888b    88b  ,8&#39; .8. `88888.   `8.`88888&#39;              --         ██║  ██║  ██║</a>
+<a id="17953" class="Comment">--                  `8.`888b .`888b,8&#39; .8`8. `88888.   `8. 8888               --         ██║  ██║  ██║</a>
+<a id="18056" class="Comment">--                   `8.`888b8.`8888&#39; .8&#39; `8. `88888.   `8 8888               --         ██║  ██║  ██║</a>
+<a id="18159" class="Comment">--                    `8.`888`8.`88&#39; .8&#39;   `8. `88888.   8 8888               --         ██║  ██║  ██║</a>
+<a id="18262" class="Comment">--                     `8.`8&#39; `8,`&#39; .888888888. `88888.  8 8888               --         ██║  ██║  ██║</a>
+<a id="18365" class="Comment">--                      `8.`   `8&#39; .8&#39;       `8. `88888. 8 8888               --         ██║  ██║  ██║</a>
+<a id="18468" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
+<a id="18571" class="Comment">--------------------------------------------------------------------------------         ██║  ██║  ██║</a>
+<a id="18674" class="Comment">-- Previously, you had to construct the expression you wanted to solve twice: --         ██║  ██║  ██║</a>
+<a id="18777" class="Comment">-- once in the type signature, and again using the special solver syntax.     --         ██║  ██║  ██║</a>
+<a id="18880" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
+<a id="18983" class="Comment">-- This is difficult to learn, and error-prone: if I change an x + y          --         ██║  ██║  ██║</a>
+<a id="19086" class="Comment">-- somewhere to a y + x, I *also* have to change the proofs now! The          --         ██║  ██║  ██║</a>
+<a id="19189" class="Comment">-- reflection-based solver will automatically construct the new proof.        --         ██║  ██║  ██║</a>
+<a id="19292" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
+<a id="19395" class="Keyword">module</a> <a id="OldSolver"></a><a id="19402" href="README.html#19402" class="Module">OldSolver</a> <a id="19412" class="Keyword">where</a>                                                        <a id="19473" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="19500" class="Keyword">open</a> <a id="19505" class="Keyword">import</a> <a id="19512" href="Relation.Binary.PropositionalEquality.html" class="Module">Relation.Binary.PropositionalEquality</a>                           <a id="19576" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="19603" class="Keyword">open</a> <a id="19608" class="Keyword">import</a> <a id="19615" href="Data.Nat.html" class="Module">Data.Nat</a>                                                        <a id="19679" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="19706" class="Keyword">open</a> <a id="19711" class="Keyword">import</a> <a id="19718" href="Data.Nat.Solver.html" class="Module">Data.Nat.Solver</a> <a id="19734" class="Keyword">using</a> <a id="19740" class="Symbol">(</a><a id="19741" class="Keyword">module</a> <a id="19748" href="Data.Nat.Solver.html#691" class="Module">+-*-Solver</a><a id="19758" class="Symbol">)</a>                       <a id="19782" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="19809" class="Keyword">open</a> <a id="19814" href="Data.Nat.Solver.html#691" class="Module">+-*-Solver</a>                                                             <a id="19885" class="Comment">--         ██║  ██║  ██║</a>
+                                                                              <a id="19988" class="Comment">--     ██╗ ██║  ██║  ██║</a>
+  <a id="OldSolver.lemma"></a><a id="20015" href="README.html#20015" class="Function">lemma</a> <a id="20021" class="Symbol">:</a> <a id="20023" class="Symbol">∀</a> <a id="20025" href="README.html#20025" class="Bound">x</a> <a id="20027" href="README.html#20027" class="Bound">y</a> <a id="20029" class="Symbol">→</a> <a id="20031" href="README.html#20025" class="Bound">x</a> <a id="20033" href="Agda.Builtin.Nat.html#230" class="Primitive Operator">+</a> <a id="20035" href="README.html#20027" class="Bound">y</a> <a id="20037" href="Agda.Builtin.Nat.html#433" class="Primitive Operator">*</a> <a id="20039" class="Number">1</a> <a id="20041" href="Agda.Builtin.Nat.html#230" class="Primitive Operator">+</a> <a id="20043" class="Number">3</a> <a id="20045" href="Agda.Builtin.Equality.html#83" class="Datatype Operator">≡</a> <a id="20047" class="Number">2</a> <a id="20049" href="Agda.Builtin.Nat.html#230" class="Primitive Operator">+</a> <a id="20051" class="Number">1</a> <a id="20053" href="Agda.Builtin.Nat.html#230" class="Primitive Operator">+</a> <a id="20055" href="README.html#20027" class="Bound">y</a> <a id="20057" href="Agda.Builtin.Nat.html#230" class="Primitive Operator">+</a> <a id="20059" href="README.html#20025" class="Bound">x</a>                               <a id="20091" class="Comment">--   ████║ ██║  ██║  ██║</a>
+  <a id="20118" href="README.html#20015" class="Function">lemma</a> <a id="20124" class="Symbol">=</a> <a id="20126" href="Relation.Binary.Reflection.html#2423" class="Function">+-*-Solver.solve</a> <a id="20143" class="Number">2</a>                                                  <a id="20194" class="Comment">-- ██████████║  ██║  ██║</a>
+    <a id="20223" class="Symbol">(λ</a> <a id="20226" href="README.html#20226" class="Bound">x</a> <a id="20228" href="README.html#20228" class="Bound">y</a> <a id="20230" class="Symbol">→</a> <a id="20232" href="README.html#20226" class="Bound">x</a> <a id="20234" href="Algebra.Solver.Ring.html#2721" class="Function Operator">:+</a> <a id="20237" href="README.html#20228" class="Bound">y</a> <a id="20239" href="Algebra.Solver.Ring.html#2794" class="Function Operator">:*</a> <a id="20242" href="Algebra.Solver.Ring.html#2527" class="InductiveConstructor">con</a> <a id="20246" class="Number">1</a> <a id="20248" href="Algebra.Solver.Ring.html#2721" class="Function Operator">:+</a> <a id="20251" href="Algebra.Solver.Ring.html#2527" class="InductiveConstructor">con</a> <a id="20255" class="Number">3</a> <a id="20257" href="Relation.Binary.Reflection.html#3532" class="Function Operator">:=</a> <a id="20260" href="Algebra.Solver.Ring.html#2527" class="InductiveConstructor">con</a> <a id="20264" class="Number">2</a> <a id="20266" href="Algebra.Solver.Ring.html#2721" class="Function Operator">:+</a> <a id="20269" href="Algebra.Solver.Ring.html#2527" class="InductiveConstructor">con</a> <a id="20273" class="Number">1</a> <a id="20275" href="Algebra.Solver.Ring.html#2721" class="Function Operator">:+</a> <a id="20278" href="README.html#20228" class="Bound">y</a> <a id="20280" href="Algebra.Solver.Ring.html#2721" class="Function Operator">:+</a> <a id="20283" href="README.html#20226" class="Bound">x</a><a id="20284" class="Symbol">)</a> <a id="20286" href="Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a>       <a id="20297" class="Comment">--   ████╔═██║  ██║  ██║</a>
+<a id="20322" class="Comment">--                                                                            --     ██║ ██║  ██║  ██║</a>
+<a id="20425" class="Comment">--------------------------------------------------------------------------------     ╚═╝ ██║  ██║  ██║</a>
+<a id="20528" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
+<a id="20631" class="Comment">--          d888888o.   8888888 8888888888 8 8888888888   8 888888888o        --         ██║  ██║  ██║</a>
+<a id="20734" class="Comment">--        .`8888:&#39; `88.       8 8888       8 8888         8 8888    `88.      --         ██║  ██║  ██║</a>
+<a id="20837" class="Comment">--        8.`8888.   Y8       8 8888       8 8888         8 8888     `88      --         ██║  ██║  ██║</a>
+<a id="20940" class="Comment">--        `8.`8888.           8 8888       8 8888         8 8888     ,88      --         ██║  ██║  ██║</a>
+<a id="21043" class="Comment">--         `8.`8888.          8 8888       8 888888888888 8 8888.   ,88&#39;      --         ██║  ██║  ██║</a>
+<a id="21146" class="Comment">--          `8.`8888.         8 8888       8 8888         8 888888888P&#39;       --         ██║  ██║  ██║</a>
+<a id="21249" class="Comment">--           `8.`8888.        8 8888       8 8888         8 8888              --         ██║  ██║  ██║</a>
+<a id="21352" class="Comment">--       8b   `8.`8888.       8 8888       8 8888         8 8888              --         ██║  ██║  ██║</a>
+<a id="21455" class="Comment">--       `8b.  ;8.`8888       8 8888       8 8888         8 8888              --         ██║  ██║  ██║</a>
+<a id="21558" class="Comment">--        `Y8888P ,88P&#39;       8 8888       8 888888888888 8 8888              --         ██║  ██║  ██║</a>
+<a id="21661" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
+<a id="21764" class="Comment">--                      8 888888888o   `8.`8888.      ,8&#39;                     --         ██║  ██║  ██║</a>
+<a id="21867" class="Comment">--                      8 8888    `88.  `8.`8888.    ,8&#39;                      --         ██║  ██║  ██║</a>
+<a id="21970" class="Comment">--                      8 8888     `88   `8.`8888.  ,8&#39;                       --         ██║  ██║  ██║</a>
+<a id="22073" class="Comment">--                      8 8888     ,88    `8.`8888.,8&#39;                        --         ██║  ██║  ██║</a>
+<a id="22176" class="Comment">--                      8 8888.   ,88&#39;     `8.`88888&#39;                         --         ██║  ██║  ██║</a>
+<a id="22279" class="Comment">--                      8 8888888888        `8. 8888                          --         ██║  ██║  ██║</a>
+<a id="22382" class="Comment">--                      8 8888    `88.       `8 8888                          --         ██║  ██║  ██║</a>
+<a id="22485" class="Comment">--                      8 8888      88        8 8888                          --         ██║  ██║  ██║</a>
+<a id="22588" class="Comment">--                      8 8888    ,88&#39;        8 8888                          --         ██║  ██║  ██║</a>
+<a id="22691" class="Comment">--                      8 888888888P          8 8888                          --         ██║  ██║  ██║</a>
+<a id="22794" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
+<a id="22897" class="Comment">--          d888888o.   8888888 8888888888 8 8888888888   8 888888888o        --         ██║  ██║  ██║</a>
+<a id="23000" class="Comment">--        .`8888:&#39; `88.       8 8888       8 8888         8 8888    `88.      --         ██║  ██║  ██║</a>
+<a id="23103" class="Comment">--        8.`8888.   Y8       8 8888       8 8888         8 8888     `88      --         ██║  ██║  ██║</a>
+<a id="23206" class="Comment">--        `8.`8888.           8 8888       8 8888         8 8888     ,88      --         ██║  ██║  ██║</a>
+<a id="23309" class="Comment">--         `8.`8888.          8 8888       8 888888888888 8 8888.   ,88&#39;      --         ██║  ██║  ██║</a>
+<a id="23412" class="Comment">--          `8.`8888.         8 8888       8 8888         8 888888888P&#39;       --         ██║  ██║  ██║</a>
+<a id="23515" class="Comment">--           `8.`8888.        8 8888       8 8888         8 8888              --         ██║  ██║  ██║</a>
+<a id="23618" class="Comment">--       8b   `8.`8888.       8 8888       8 8888         8 8888              --         ██║  ██║  ██║</a>
+<a id="23721" class="Comment">--       `8b.  ;8.`8888       8 8888       8 8888         8 8888              --         ██║  ██║  ██║</a>
+<a id="23824" class="Comment">--        `Y8888P ,88P&#39;       8 8888       8 888888888888 8 8888              --         ██║  ██║  ██║</a>
+<a id="23927" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
+<a id="24030" class="Comment">--------------------------------------------------------------------------------         ██║  ██║  ██║</a>
+<a id="24133" class="Comment">-- Don&#39;t understand why something works? Wanna get it explained to you? Now   --         ██║  ██║  ██║</a>
+<a id="24236" class="Comment">-- you can! The solver can generate step-by-step, human-readable solutions    --         ██║  ██║  ██║</a>
+<a id="24339" class="Comment">-- for learning purposes.                                                     --         ██║  ██║  ██║</a>
+<a id="24442" class="Comment">--                                                                            --         ██║  ██║  ██║</a>
+<a id="24545" class="Keyword">module</a> <a id="TracedExamples"></a><a id="24552" href="README.html#24552" class="Module">TracedExamples</a> <a id="24567" class="Keyword">where</a>                                                   <a id="24623" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="24650" class="Keyword">import</a> <a id="24657" href="Data.Nat.Show.html" class="Module">Data.Nat.Show</a>                                                        <a id="24726" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="24753" class="Keyword">open</a> <a id="24758" class="Keyword">import</a> <a id="24765" href="Data.List.html" class="Module">Data.List</a> <a id="24775" class="Keyword">using</a> <a id="24781" class="Symbol">(</a><a id="24782" href="Agda.Builtin.List.html#132" class="InductiveConstructor Operator">_∷_</a><a id="24785" class="Symbol">;</a> <a id="24787" href="Data.List.Base.html#9863" class="InductiveConstructor">[]</a><a id="24789" class="Symbol">)</a>                                       <a id="24829" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="24856" class="Keyword">open</a> <a id="24861" class="Keyword">import</a> <a id="24868" href="EqBool.html" class="Module">EqBool</a>                                                          <a id="24932" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="24959" class="Keyword">open</a> <a id="24964" class="Keyword">import</a> <a id="24971" href="Relation.Traced.html" class="Module">Relation.Traced</a> <a id="24987" href="Polynomial.Simple.AlmostCommutativeRing.Instances.html#422" class="Function">Nat.ring</a>  <a id="24997" href="Data.Nat.Show.html#987" class="Function">Data.Nat.Show.show</a> <a id="25016" class="Keyword">public</a>             <a id="25035" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="25062" class="Keyword">open</a> <a id="25067" href="Polynomial.Simple.AlmostCommutativeRing.html#941" class="Module">AlmostCommutativeRing</a> <a id="25089" href="Relation.Traced.html#6131" class="Function">tracedRing</a>                                       <a id="25138" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="25165" class="Keyword">open</a> <a id="25170" class="Keyword">import</a> <a id="25177" href="Relation.Binary.PropositionalEquality.html" class="Module">Relation.Binary.PropositionalEquality</a> <a id="25215" class="Symbol">as</a> <a id="25218" class="Module">≡</a> <a id="25220" class="Keyword">using</a> <a id="25226" class="Symbol">(</a><a id="25227" href="Agda.Builtin.Equality.html#83" class="Datatype Operator">_≡_</a><a id="25230" class="Symbol">)</a>          <a id="25241" class="Comment">--         ██║  ██║  ██║</a>
+                                                                              <a id="25344" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="TracedExamples.lemma"></a><a id="25371" href="README.html#25371" class="Function">lemma</a> <a id="25377" class="Symbol">:</a> <a id="25379" class="Symbol">∀</a> <a id="25381" href="README.html#25381" class="Bound">x</a> <a id="25383" href="README.html#25383" class="Bound">y</a> <a id="25385" class="Symbol">→</a> <a id="25387" href="README.html#25381" class="Bound">x</a> <a id="25389" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="25391" href="README.html#25383" class="Bound">y</a> <a id="25393" href="Polynomial.Simple.AlmostCommutativeRing.html#1201" class="Function Operator">*</a> <a id="25395" class="Number">1</a> <a id="25397" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="25399" class="Number">3</a> <a id="25401" href="Polynomial.Simple.AlmostCommutativeRing.html#1115" class="Function Operator">≈</a> <a id="25403" class="Number">2</a> <a id="25405" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="25407" class="Number">1</a> <a id="25409" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="25411" href="README.html#25383" class="Bound">y</a> <a id="25413" href="Polynomial.Simple.AlmostCommutativeRing.html#1159" class="Function Operator">+</a> <a id="25415" href="README.html#25381" class="Bound">x</a>                               <a id="25447" class="Comment">--         ██║  ██║  ██║</a>
+  <a id="25474" href="README.html#25371" class="Function">lemma</a> <a id="25480" class="Symbol">=</a> <a id="25482" href="Polynomial.Simple.Reflection.html#8221" class="Macro">solve</a> <a id="25488" href="Relation.Traced.html#6131" class="Function">tracedRing</a>                                                    <a id="25550" class="Comment">--         ██║  ██║  ██║</a>
+                                                                              <a id="25653" class="Comment">--      ██╗██║  ██║  ██║</a>
+  <a id="TracedExamples.explained"></a><a id="25680" href="README.html#25680" class="Function">explained</a>                                                                   <a id="25756" class="Comment">--    ████║██║  ██║  ██║</a>
+    <a id="25785" class="Symbol">:</a> <a id="25787" href="Relation.Traced.html#9754" class="Function">showProof</a> <a id="25797" class="Symbol">(</a><a id="25798" href="README.html#25371" class="Function">lemma</a> <a id="25804" class="String">&quot;x&quot;</a> <a id="25808" class="String">&quot;y&quot;</a><a id="25811" class="Symbol">)</a> <a id="25813" href="Agda.Builtin.Equality.html#83" class="Datatype Operator">≡</a> <a id="25815" class="String">&quot;x + y + 3&quot;</a>                                 <a id="25859" class="Comment">--  █████████║  ██║  ██║</a>
+                                <a id="25916" href="Agda.Builtin.List.html#132" class="InductiveConstructor Operator">∷</a> <a id="25918" class="String">&quot;    ={ +-comm(x, y + 3) }&quot;</a>                 <a id="25962" class="Comment">--    ████╔══╝  ██║  ██║</a>
+                                <a id="26019" href="Agda.Builtin.List.html#132" class="InductiveConstructor Operator">∷</a> <a id="26021" class="String">&quot;y + 3 + x&quot;</a>                                 <a id="26065" class="Comment">--      ██║     ██║  ██║</a>
+                                <a id="26122" href="Agda.Builtin.List.html#132" class="InductiveConstructor Operator">∷</a> <a id="26124" class="String">&quot;    ={ +-comm(y, 3) }&quot;</a>                     <a id="26168" class="Comment">--      ╚═╝     ██║  ██║</a>
+                                <a id="26225" href="Agda.Builtin.List.html#132" class="InductiveConstructor Operator">∷</a> <a id="26227" class="String">&quot;3 + y + x&quot;</a>                                 <a id="26271" class="Comment">--              ██║  ██║</a>
+                                <a id="26328" href="Agda.Builtin.List.html#132" class="InductiveConstructor Operator">∷</a> <a id="26330" href="Agda.Builtin.List.html#117" class="InductiveConstructor">[]</a>                                          <a id="26374" class="Comment">--              ██║  ██║</a>
+  <a id="26401" href="README.html#25680" class="Function">explained</a> <a id="26411" class="Symbol">=</a> <a id="26413" href="Agda.Builtin.Equality.html#140" class="InductiveConstructor">≡.refl</a>                                                          <a id="26477" class="Comment">--              ██║  ██║</a>
+<a id="26502" class="Comment">--------------------------------------------------------------------------------              ██║  ██║</a>
+<a id="26605" class="Comment">--                                                                            --              ██║  ██║</a>
+<a id="26708" class="Comment">-- The new solver uses a sparse representation, which is much faster than the --              ██║  ██║</a>
+<a id="26811" class="Comment">-- dense one the old solver used. The following graph shows the time (in      --              ██║  ██║</a>
+<a id="26914" class="Comment">-- seconds) to prove that:                                                    --              ██║  ██║</a>
+<a id="27017" class="Comment">--                                                                            --              ██║  ██║</a>
+<a id="27120" class="Comment">--     (1 + x₁¹ + x₂² + x₃³ + x₄⁴ + x₅⁵)ᵈ                                     --              ██║  ██║</a>
+<a id="27223" class="Comment">--                                                                            --              ██║  ██║</a>
+<a id="27326" class="Comment">-- is equal to its expanded form. (to run the benchmarks yourself, run the    --              ██║  ██║</a>
+<a id="27429" class="Comment">-- run_benchmarks.py file. You&#39;ll need python 3 and sympy.)                   --              ██║  ██║</a>
+<a id="27532" class="Comment">--                                                                            --              ██║  ██║</a>
+<a id="27635" class="Comment">-- 540 |  * = old                                                       *     --              ██║  ██║</a>
+<a id="27738" class="Comment">-- 525 |  + = new                                                       *     --              ██║  ██║</a>
+<a id="27841" class="Comment">-- 510 |                                                                *     --              ██║  ██║</a>
+<a id="27944" class="Comment">-- 495 |                                                                *     --              ██║  ██║</a>
+<a id="28047" class="Comment">-- 480 |                                                                *     --              ██║  ██║</a>
+<a id="28150" class="Comment">-- 465 |                                                               *      --              ██║  ██║</a>
+<a id="28253" class="Comment">-- 450 |                                                               *      --              ██║  ██║</a>
+<a id="28356" class="Comment">-- 435 |                                                               *      --              ██║  ██║</a>
+<a id="28459" class="Comment">-- 420 |                                                              *       --              ██║  ██║</a>
+<a id="28562" class="Comment">-- 405 |                                                              *       --              ██║  ██║</a>
+<a id="28665" class="Comment">-- 390 |                                                              *       --              ██║  ██║</a>
+<a id="28768" class="Comment">-- 375 |                                                             *        --              ██║  ██║</a>
+<a id="28871" class="Comment">-- 360 |                                                             *        --              ██║  ██║</a>
+<a id="28974" class="Comment">-- 345 |                                                             *        --              ██║  ██║</a>
+<a id="29077" class="Comment">-- 330 |                                                            *         --              ██║  ██║</a>
+<a id="29180" class="Comment">-- 315 |                                                            *         --              ██║  ██║</a>
+<a id="29283" class="Comment">-- 300 |                                                            *         --              ██║  ██║</a>
+<a id="29386" class="Comment">-- 285 |                                                           *          --              ██║  ██║</a>
+<a id="29489" class="Comment">-- 270 |                                                           *          --              ██║  ██║</a>
+<a id="29592" class="Comment">-- 255 |                                                           *          --              ██║  ██║</a>
+<a id="29695" class="Comment">-- 240 |                                                          *           --           ██╗██║  ██║</a>
+<a id="29798" class="Comment">-- 225 |                                                          *           --         ████║██║  ██║</a>
+<a id="29901" class="Comment">-- 210 |                                                          *           --       █████████║  ██║</a>
+<a id="30004" class="Comment">-- 195 |                                                         *            --         ████╔══╝  ██║</a>
+<a id="30107" class="Comment">-- 180 |                                                         *            --           ██║     ██║</a>
+<a id="30210" class="Comment">-- 165 |                                                         *            --           ╚═╝     ██║</a>
+<a id="30313" class="Comment">-- 150 |                                                        *             --                   ██║</a>
+<a id="30416" class="Comment">-- 135 |                                                        *             --                   ██║</a>
+<a id="30519" class="Comment">-- 120 |                                                        *             --                   ██║</a>
+<a id="30622" class="Comment">-- 105 |                                                       *              --                   ██║</a>
+<a id="30725" class="Comment">--  90 |                                                      *               --                   ██║</a>
+<a id="30828" class="Comment">--  75 |                                                     *                --                   ██║</a>
+<a id="30931" class="Comment">--  60 |                                                   **                 --                   ██║</a>
+<a id="31034" class="Comment">--  45 |                                                 **                   --                   ██║</a>
+<a id="31137" class="Comment">--  30 |                                               **           +++++     --                   ██║</a>
+<a id="31240" class="Comment">--  15 |                                          *****    +++++++++          --                   ██║</a>
+<a id="31343" class="Comment">--   0 | *****************************************+++++++++                   --                   ██║</a>
+<a id="31446" class="Comment">--     ------------------------------------------------------------------     --                   ██║</a>
+<a id="31549" class="Comment">--   d = 1        2        3        4        5        6        7        8     --                   ██║</a>
+<a id="31652" class="Comment">--------------------------------------------------------------------------------                   ██║</a>
+<a id="31755" class="Comment">--                                                                                                 ██║</a>
+<a id="31858" class="Comment">--                                 ██████████████████████████████████████████████████████████████████║</a>
+<a id="31961" class="Comment">--                                 ██╔═══════════════════════════════════════════════════════════════╝</a>
+<a id="32064" class="Comment">--                             ██████████╗</a>
+<a id="32107" class="Comment">--                               ██████╔═╝</a>
+<a id="32150" class="Comment">--                                 ██╔═╝</a>
+<a id="32191" class="Comment">--                                 ╚═╝</a>
+<a id="32230" class="Comment">--</a>
+<a id="32233" class="Comment">-- * How does it work? Why is it fast?</a>
+<a id="32272" class="Comment">--       The solver works by converting expressions to &quot;Horner Normal Form&quot;.</a>
+<a id="32349" class="Comment">--       This representation is special: x + y is represented in the same way</a>
+<a id="32427" class="Comment">--       as y + x. This is what lets us check that two expressions are equal.</a>
+<a id="32505" class="Comment">--       The implementation here is *sparse*, also, which is why it&#39;s faster</a>
+<a id="32582" class="Comment">--       than the old implementation.</a>
+<a id="32620" class="Comment">--</a>
+<a id="32623" class="Comment">--       Want to learn more? Then this is the place for you:</a>
+<a id="32684" class="Keyword">import</a> <a id="32691" href="Polynomial.NormalForm.html" class="Module">Polynomial.NormalForm</a>
+<a id="32713" class="Comment">--</a>
+<a id="32716" class="Comment">-- * Prove it!</a>
+<a id="32731" class="Comment">--       The type of proofs we need are *homomorphisms*. They basically mean</a>
+<a id="32808" class="Comment">--       that the operations on the normal form correspond to the operations</a>
+<a id="32885" class="Comment">--       on expressions. Also, we don&#39;t use propositional equality: we use</a>
+<a id="32960" class="Comment">--       any equivalence relation the user supplies.</a>
+<a id="33013" class="Comment">--</a>
+<a id="33016" class="Comment">--       Don&#39;t believe me? Check it out:</a>
+<a id="33057" class="Keyword">import</a> <a id="33064" href="Polynomial.Homomorphism.html" class="Module">Polynomial.Homomorphism</a>
+<a id="33088" class="Comment">--</a>
+<a id="33091" class="Comment">-- * How do I use it?</a>
+<a id="33113" class="Comment">--       Copy the examples above! For the full solver, check out:</a>
+<a id="33179" class="Keyword">import</a> <a id="33186" href="Polynomial.Solver.html" class="Module">Polynomial.Solver</a>
+<a id="33204" class="Comment">--</a>
+<a id="33207" class="Comment">-- * Wait! Don&#39;t!</a>
+<a id="33225" class="Comment">--       The &quot;full&quot; solver lets you use different types for the coefficient</a>
+<a id="33301" class="Comment">--       and carrier. You probably don&#39;t want that, unless you need the extra</a>
+<a id="33379" class="Comment">--       efficiency. You&#39;ll want the *simple* solver:</a>
+<a id="33433" class="Keyword">import</a> <a id="33440" href="Polynomial.Simple.Solver.html" class="Module">Polynomial.Simple.Solver</a>
+<a id="33465" class="Comment">--</a>
+<a id="33468" class="Comment">-- * Is that all?</a>
+<a id="33486" class="Comment">--       No! As it happens, even the simple solver is complicated to use.</a>
+<a id="33560" class="Comment">--       You&#39;ll *actually* want to use the reflection-based interface:</a>
+<a id="33631" class="Keyword">import</a> <a id="33638" href="Polynomial.Simple.Reflection.html" class="Module">Polynomial.Simple.Reflection</a>
+<a id="33667" class="Comment">--</a>
+<a id="33670" class="Comment">-- * And what about the step-by-step stuff?</a>
+<a id="33714" class="Comment">--       That all uses the same underlying solver as the other stuff, with a</a>
+<a id="33791" class="Comment">--       special *relation*. You can check that out here:</a>
+<a id="33849" class="Keyword">import</a> <a id="33856" href="Relation.Traced.html" class="Module">Relation.Traced</a>
 </pre></body></html>

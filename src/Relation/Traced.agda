@@ -1,3 +1,5 @@
+{-# OPTIONS --without-K --safe #-}
+
 open import Polynomial.Simple.AlmostCommutativeRing
 open import Relation.Binary
 open import Data.Bool using (Bool; false; true ; _∧_; _∨_; not; if_then_else_)
@@ -75,20 +77,23 @@ data Step : Set c where
   [-distrib] : Expr → Expr → Step
   [-+comm]   : Expr → Expr → Step
 
+_==S_ : Step → Step → Bool
+_==S_ ([sym] x) ([sym] y) = x ==S y
+_==S_ ([cong] x x₁ x₂) ([cong] y y₁ y₂) = x ==S y ∧ x₁ == y₁ ∧ x₂ ==S y₂
+_==S_ ([-cong] x) ([-cong] y) = x ==S y
+_==S_ ([assoc] x x₁ x₂ x₃) ([assoc] y y₁ y₂ y₃) = x == y ∧ x₁ == y₁ ∧ x₂ == y₂ ∧ x₃ == y₃
+_==S_ ([ident] x x₁) ([ident] y y₁) = x == y ∧ x₁ == y₁
+_==S_ ([comm] x x₁ x₂) ([comm] y y₁ y₂) = x == y ∧ x₁ == y₁ ∧ x₂ == y₂
+_==S_ ([zero] x) ([zero] y) = x == y
+_==S_ ([distrib] x x₁ x₂) ([distrib] y y₁ y₂) = x == y ∧ x₁ == y₁ ∧ x₂ == y₂
+_==S_ ([-distrib] x x₁) ([-distrib] y y₁) = x == y ∧ x₁ == y₁
+_==S_ ([-+comm] x x₁) ([-+comm] y y₁) = x == y ∧ x₁ == y₁
+_==S_ ([refl] x) ([refl] y) = x == y
+_==S_ _ _ = false
+
 instance
   eqStep : HasEqBool Step
-  _==_ {{eqStep}} ([sym] x) ([sym] y) = x == y
-  _==_ {{eqStep}} ([cong] x x₁ x₂) ([cong] y y₁ y₂) = x == y ∧ x₁ == y₁ ∧ x₂ == y₂
-  _==_ {{eqStep}} ([-cong] x) ([-cong] y) = x == y
-  _==_ {{eqStep}} ([assoc] x x₁ x₂ x₃) ([assoc] y y₁ y₂ y₃) = x == y ∧ x₁ == y₁ ∧ x₂ == y₂ ∧ x₃ == y₃
-  _==_ {{eqStep}} ([ident] x x₁) ([ident] y y₁) = x == y ∧ x₁ == y₁
-  _==_ {{eqStep}} ([comm] x x₁ x₂) ([comm] y y₁ y₂) = x == y ∧ x₁ == y₁ ∧ x₂ == y₂
-  _==_ {{eqStep}} ([zero] x) ([zero] y) = x == y
-  _==_ {{eqStep}} ([distrib] x x₁ x₂) ([distrib] y y₁ y₂) = x == y ∧ x₁ == y₁ ∧ x₂ == y₂
-  _==_ {{eqStep}} ([-distrib] x x₁) ([-distrib] y y₁) = x == y ∧ x₁ == y₁
-  _==_ {{eqStep}} ([-+comm] x x₁) ([-+comm] y y₁) = x == y ∧ x₁ == y₁
-  _==_ {{eqStep}} ([refl] x) ([refl] y) = x == y
-  _==_ {{eqStep}} _ _ = false
+  _==_ {{eqStep}} = _==S_
 
 record _≈ⁱ_ (x y : Expr) : Set c where
    constructor ~?_

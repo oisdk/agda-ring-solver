@@ -1,3 +1,5 @@
+{-# OPTIONS --without-K --safe #-}
+
 module Data.List.Kleene where
 
 -- This module provides a different definition of lists based on the kleene

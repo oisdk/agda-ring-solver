@@ -1,3 +1,5 @@
+{-# OPTIONS --without-K --safe #-}
+
 module Polynomial.Simple.Solver where
 
 open import Polynomial.Expr public

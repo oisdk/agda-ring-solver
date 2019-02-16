@@ -1,3 +1,5 @@
+{-# OPTIONS --without-K --safe #-}
+
 open import Algebra
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 

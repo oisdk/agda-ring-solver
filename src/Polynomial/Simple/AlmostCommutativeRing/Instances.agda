@@ -1,3 +1,5 @@
+{-# OPTIONS --without-K --safe #-}
+
 module Polynomial.Simple.AlmostCommutativeRing.Instances where
 
 open import Polynomial.Simple.AlmostCommutativeRing

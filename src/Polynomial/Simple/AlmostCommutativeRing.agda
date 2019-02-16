@@ -1,3 +1,5 @@
+{-# OPTIONS --without-K --safe #-}
+
 module Polynomial.Simple.AlmostCommutativeRing where
 
 import Algebra.Solver.Ring.AlmostCommutativeRing as Complex

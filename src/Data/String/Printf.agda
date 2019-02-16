@@ -1,3 +1,5 @@
+{-# OPTIONS --without-K --safe #-}
+
 module Data.String.Printf where
 
 open import Data.List using (List; []; _∷_; foldr)

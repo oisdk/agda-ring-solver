@@ -1,3 +1,5 @@
+{-# OPTIONS --without-K --safe #-}
+
 module Polynomial.Simple.Reflection where
 
 open import Agda.Builtin.Reflection

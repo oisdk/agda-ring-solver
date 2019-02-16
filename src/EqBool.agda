@@ -1,3 +1,5 @@
+{-# OPTIONS --without-K --safe #-}
+
 module EqBool where
 
 open import Data.Bool
@@ -8,12 +10,16 @@ record HasEqBool {a} (A : Set a) : Set a where
 open HasEqBool ⦃ ... ⦄ public
 
 open import Data.List as List using (List; _∷_; [])
+
+==[] : ∀ {a} {A : Set a} → ⦃ _ : HasEqBool A ⦄ → List A → List A → Bool
+==[] [] [] = true
+==[] [] (x ∷ ys) = false
+==[] (x ∷ xs) [] = false
+==[] (x ∷ xs) (y ∷ ys) = x == y ∧ ==[] xs ys
+
 instance
   eqList : ∀ {a} {A : Set a} → ⦃ _ : HasEqBool A ⦄ → HasEqBool (List A)
-  _==_ ⦃ eqList ⦄ [] [] = true
-  _==_ ⦃ eqList ⦄ [] (x ∷ ys) = false
-  _==_ ⦃ eqList ⦄ (x ∷ xs) [] = false
-  _==_ ⦃ eqList ⦄ (x ∷ xs) (y ∷ ys) = x == y ∧ xs == ys
+  _==_ ⦃ eqList ⦄ = ==[]
 
 open import Data.Nat using (ℕ)
 instance

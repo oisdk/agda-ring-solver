@@ -1,3 +1,5 @@
+{-# OPTIONS --without-K --safe #-}
+
 module Reader where
 
 -- The reader monad (mainly used for nice syntax with idiom brackets)
