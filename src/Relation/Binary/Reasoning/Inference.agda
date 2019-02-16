@@ -1,3 +1,16 @@
+--------------------------------------------------------------------------------
+-- Equational reasoning combinators
+--
+-- These are different from the equational reasoning combinators in the order of
+-- their arguments. This helps (and speeds up) type checking, and lets us use
+-- the combinators with the automated solver.
+--
+-- It's worth noting that all of this is just an implementation detail: the
+-- combinators can be used in the same way that the old ones are.
+--
+-- https://lists.chalmers.se/pipermail/agda/2016/009090.html
+--------------------------------------------------------------------------------
+
 {-# OPTIONS --without-K --safe #-}
 
 open import Relation.Binary
@@ -16,9 +29,6 @@ infix  3 _∎
 infixr 2 step-≈ step-≈˘ step-≡ step-≡˘
 infixr 2 _≡⟨⟩_
 infix  1 begin_
-
--- This seemingly unnecessary type is used to make it possible to
--- infer arguments even if the underlying equality evaluates.
 
 data _IsRelatedTo_ (x y : Carrier) : Set ℓ where
   relTo : (x≈y : x ≈ y) → x IsRelatedTo y
