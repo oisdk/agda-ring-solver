@@ -213,33 +213,33 @@ showProof′ (inj₂ y ◅ xs) = toExplanation y ∷ showProof′ xs
 open import Data.String.Printf
 open Printf standard
 
-prettyStep : Step → String
-prettyStep ([sym] x)              = printf "sym (%s)" (prettyStep x)
-prettyStep ([cong] x [+] x₂)      = printf "(%s) + (%s)" (prettyStep x) (prettyStep x₂)
-prettyStep ([cong] x [*] x₂)      = printf "(%s) * (%s)" (prettyStep x) (prettyStep x₂)
-prettyStep ([-cong] x)            = printf "- (%s)" (prettyStep x)
-prettyStep ([refl] x)             = "eval"
-prettyStep ([assoc] [+] x₁ x₂ x₃) = printf "+-assoc(%s, %s, %s)" (prettyExpr x₁) (prettyExpr x₂) (prettyExpr x₂)
-prettyStep ([assoc] [*] x₁ x₂ x₃) = printf "*-assoc(%s, %s, %s)" (prettyExpr x₁) (prettyExpr x₂) (prettyExpr x₂)
-prettyStep ([ident] [+] x₁)       = printf "+-ident(%s)" (prettyExpr x₁)
-prettyStep ([ident] [*] x₁)       = printf "*-ident(%s)" (prettyExpr x₁)
-prettyStep ([comm] [+] x₁ x₂)     = printf "+-comm(%s, %s)" (prettyExpr x₁) (prettyExpr x₂)
-prettyStep ([comm] [*] x₁ x₂)     = printf "*-comm(%s, %s)" (prettyExpr x₁) (prettyExpr x₂)
-prettyStep ([zero] x)             = printf "*-zero(%s)" (prettyExpr x)
-prettyStep ([distrib] x x₁ x₂)    = printf "*-distrib(%s, %s, %s)" (prettyExpr x) (prettyExpr x₁) (prettyExpr x₂)
-prettyStep ([-distrib] x x₁)      = printf "-‿distrib(%s, %s)" (prettyExpr x) (prettyExpr x₁)
-prettyStep ([-+comm] x x₁)        = printf "-+-comm(%s, %s)" (prettyExpr x) (prettyExpr x₁)
+⟨_⟩ₛ : Step → String
+⟨ [sym] x  ⟩ₛ             = printf "sym (%s)" ⟨ x ⟩ₛ
+⟨ [cong] x [+] x₂ ⟩ₛ      = printf "(%s) + (%s)" ⟨ x ⟩ₛ ⟨ x₂ ⟩ₛ
+⟨ [cong] x [*] x₂ ⟩ₛ      = printf "(%s) * (%s)" ⟨ x ⟩ₛ ⟨ x₂ ⟩ₛ
+⟨ [-cong] x ⟩ₛ            = printf "- (%s)" ⟨ x ⟩ₛ
+⟨ [refl] x ⟩ₛ             = "eval"
+⟨ [assoc] [+] x₁ x₂ x₃ ⟩ₛ = printf "+-assoc(%s, %s, %s)" ⟨ x₁ ⟩ₑ  ⟨ x₂ ⟩ₑ ⟨ x₃ ⟩ₑ
+⟨ [assoc] [*] x₁ x₂ x₃ ⟩ₛ = printf "*-assoc(%s, %s, %s)" ⟨ x₁ ⟩ₑ  ⟨ x₂ ⟩ₑ ⟨ x₃ ⟩ₑ
+⟨ [ident] [+] x₁ ⟩ₛ       = printf "+-ident(%s)" ⟨ x₁ ⟩ₑ
+⟨ [ident] [*] x₁ ⟩ₛ       = printf "*-ident(%s)" ⟨ x₁ ⟩ₑ
+⟨ [comm] [+] x₁ x₂ ⟩ₛ     = printf "+-comm(%s, %s)" ⟨ x₁ ⟩ₑ ⟨ x₂ ⟩ₑ
+⟨ [comm] [*] x₁ x₂ ⟩ₛ     = printf "*-comm(%s, %s)" ⟨ x₁ ⟩ₑ ⟨ x₂ ⟩ₑ
+⟨ [zero] x ⟩ₛ             = printf "*-zero(%s)" ⟨ x ⟩ₑ
+⟨ [distrib] x x₁ x₂ ⟩ₛ    = printf "*-distrib(%s, %s, %s)" ⟨ x ⟩ₑ ⟨ x₁ ⟩ₑ  ⟨ x₂ ⟩ₑ
+⟨ [-distrib] x x₁ ⟩ₛ      = printf "-‿distrib(%s, %s)" ⟨ x ⟩ₑ ⟨ x₁ ⟩ₑ
+⟨ [-+comm] x x₁ ⟩ₛ        = printf "-+-comm(%s, %s)" ⟨ x ⟩ₑ ⟨ x₁ ⟩ₑ
 
 showProof : ∀ {x y} → EqClosure _≈ⁱ_ x y → List String
 showProof = List.foldr unparse [] ∘ List.foldr spotReverse [] ∘ List.mapMaybe interesting′ ∘ showProof′
   where
   unparse : Explanation Expr → List String → List String
-  unparse (lhs₁ ≈⟨ step₁ ⟩≈ rhs₁) [] = prettyExpr lhs₁ ∷ ("    ={ " ++ prettyStep step₁ ++ " }") ∷ prettyExpr rhs₁ ∷ []
+  unparse (lhs₁ ≈⟨ step₁ ⟩≈ rhs₁) [] = ⟨ lhs₁ ⟩ₑ ∷ ("    ={ " ++ ⟨ step₁ ⟩ₛ ++ " }") ∷ ⟨ rhs₁ ⟩ₑ ∷ []
   unparse (lhs₁ ≈⟨ step₁ ⟩≈ rhs₁) (y ∷ ys) = if r == y then l ∷ m ∷ y ∷ ys else l ∷ m ∷ r ∷ "    ={ eval }" ∷ y ∷ ys
     where
-    l = prettyExpr lhs₁
-    m = "    ={ " ++ prettyStep step₁ ++ " }"
-    r = prettyExpr rhs₁
+    l = ⟨ lhs₁ ⟩ₑ
+    m = "    ={ " ++ ⟨ step₁ ⟩ₛ ++ " }"
+    r = ⟨ rhs₁ ⟩ₑ
 
   spotReverse : Explanation Expr → List (Explanation Expr) → List (Explanation Expr)
   spotReverse x [] = x ∷ []

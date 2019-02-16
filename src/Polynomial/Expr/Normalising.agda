@@ -128,9 +128,9 @@ flatten (x ⊗ y) = prd (x ⊗⋆ [ y ⊗⋆ [] ])
   x ⊗⋆ xs = prodCons (flatten x) xs
 flatten (⊝ x) = neg (flatten x)
 
-prettyExpr : Expr → String
-prettyExpr (C x) = show x
-prettyExpr (O x) = Data.String.fromList (go add (flatten x) List.[])
+⟨_⟩ₑ : Expr → String
+⟨ C x ⟩ₑ = show x
+⟨ O x ⟩ₑ = Data.String.fromList (go add (flatten x) List.[])
   where
   import Data.String
   open import Data.Char using (Char)
