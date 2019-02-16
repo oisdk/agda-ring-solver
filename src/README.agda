@@ -130,16 +130,15 @@ module IntExamples where                                                      --
   lemma₂ : ∀ x y → (x + y) ^ 2 ≈ x ^ 2 + 2 * x * y + y ^ 2                    --     ██║ ██║  ██║  ██║
   lemma₂ = solve Int.ring                                                     --     ╚═╝ ██║  ██║  ██║
                                                                               --         ██║  ██║  ██║
-  open import Relation.Binary.EqReasoning setoid                              --         ██║  ██║  ██║
   open import Function                                                        --         ██║  ██║  ██║
-  open import Relation.Binary.Reasoning.Inference _≈_ refl trans              --         ██║  ██║  ██║
+  open import Relation.Binary.Reasoning.Inference setoid                      --         ██║  ██║  ██║
   open import Data.List using (_∷_; [])                                       --         ██║  ██║  ██║
                                                                               --         ██║  ██║  ██║
   -- It can interact with manual proofs as well.                              --         ██║  ██║  ██║
   lemma₃ : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x                              --         ██║  ██║  ██║
   lemma₃ x y = begin                                                          --         ██║  ██║  ██║
     x + y * 1 + 3 ≈⟨ +-comm x (y * 1) ⟨ +-cong ⟩ refl ⟩                       --         ██║  ██║  ██║
-    y * 1 + x + 3 ≋⟨ solveOver (x ∷ y ∷ []) Int.ring ⟩                        --         ██║  ██║  ██║
+    y * 1 + x + 3 ≈⟨ solveOver (x ∷ y ∷ []) Int.ring ⟩                        --         ██║  ██║  ██║
     3 + y + x     ≡⟨ refl ⟩                                                   --         ██║  ██║  ██║
     2 + 1 + y + x ∎                                                           --         ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║

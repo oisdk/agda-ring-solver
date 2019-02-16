@@ -212,7 +212,7 @@ macro
 --   lemma₃ : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x
 --   lemma₃ x y = begin
 --     x + y * 1 + 3 ≈⟨ +-comm x (y * 1) ⟨ +-cong ⟩ refl ⟩
---     y * 1 + x + 3 ≋⟨ solveOver (x ∷ y ∷ []) Int.ring ⟩
+--     y * 1 + x + 3 ≈⟨ solveOver (x ∷ y ∷ []) Int.ring ⟩
 --     3 + y + x     ≡⟨ refl ⟩
 --     2 + 1 + y + x ∎
 --
@@ -221,7 +221,8 @@ macro
 --
 -- One thing to note here is that we need to be able to infer *both* sides of
 -- the equality, which the normal equaltional reasoning combinators don't let you
--- do. You'll need a special combinator, defined in Relation.Binary.Reasoning.Inference.
+-- do. You'll need the combinators defined in Relation.Binary.Reasoning.Inference.
+-- These are just as powerful as the others, but have slightly better inference properties.
 
 macro
   solveOver : Term → Name → Term → TC ⊤
