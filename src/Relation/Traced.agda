@@ -234,11 +234,11 @@ showProof : ∀ {x y} → EqClosure _≈ⁱ_ x y → List String
 showProof = List.foldr unparse [] ∘ List.foldr spotReverse [] ∘ List.mapMaybe interesting′ ∘ showProof′
   where
   unparse : Explanation Expr → List String → List String
-  unparse (lhs₁ ≈⟨ step₁ ⟩≈ rhs₁) [] = ⟨ lhs₁ ⟩ₑ ∷ ("    ={ " ++ ⟨ step₁ ⟩ₛ ++ " }") ∷ ⟨ rhs₁ ⟩ₑ ∷ []
+  unparse (lhs₁ ≈⟨ step₁ ⟩≈ rhs₁) [] = ⟨ lhs₁ ⟩ₑ ∷ printf "    ={ %s }" ⟨ step₁ ⟩ₛ ∷ ⟨ rhs₁ ⟩ₑ ∷ []
   unparse (lhs₁ ≈⟨ step₁ ⟩≈ rhs₁) (y ∷ ys) = if r == y then l ∷ m ∷ y ∷ ys else l ∷ m ∷ r ∷ "    ={ eval }" ∷ y ∷ ys
     where
     l = ⟨ lhs₁ ⟩ₑ
-    m = "    ={ " ++ ⟨ step₁ ⟩ₛ ++ " }"
+    m = printf "    ={ %s }" ⟨ step₁ ⟩ₛ
     r = ⟨ rhs₁ ⟩ₑ
 
   spotReverse : Explanation Expr → List (Explanation Expr) → List (Explanation Expr)
