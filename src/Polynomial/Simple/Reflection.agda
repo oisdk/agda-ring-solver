@@ -9,11 +9,13 @@ open import Data.Unit using (⊤)
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.List as List using (List; _∷_; []; foldr)
 
-_>>=_ : {A B : Set} → TC A → (A → TC B) → TC B
-_>>=_ = bindTC
+module MonadOperators where
+  _>>=_ : {A B : Set} → TC A → (A → TC B) → TC B
+  _>>=_ = bindTC
 
-_>>_ : {A B : Set} → TC A → TC B → TC B
-xs >> ys = xs >>= const ys
+  _>>_ : {A B : Set} → TC A → TC B → TC B
+  xs >> ys = xs >>= const ys
+open MonadOperators
 
 module Internal (rng : Term) where
   open import Polynomial.Simple.Solver renaming (solve to solve′)
