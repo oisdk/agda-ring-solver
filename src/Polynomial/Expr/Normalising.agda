@@ -1,3 +1,5 @@
+{-# OPTIONS --without-K --safe #-}
+
 open import Algebra
 open import Relation.Binary
 open import Relation.Binary.PropositionalEquality
@@ -24,14 +26,17 @@ data Open : Set r where
   _⊗_ : Open → Open → Open
   ⊝_ : Open → Open
 
+_==O_ : Open → Open → Bool
+_==O_ (V v) (V y) = v == y
+_==O_ (K k) (K y) = k == y
+_==O_ (x₁ ⊕ y₁) (x₂ ⊕ y₂) = x₁ ==O x₂ ∧ y₁ ==O y₂
+_==O_ (x₁ ⊗ y₁) (x₂ ⊗ y₂) = x₁ ==O x₂ ∧ y₁ ==O y₂
+_==O_ (⊝ x) (⊝ y) = x ==O y
+_==O_ _ _ = false
+
 instance
   eqOpen : HasEqBool Open
-  _==_ ⦃ eqOpen ⦄ (V v) (V y) = v == y
-  _==_ ⦃ eqOpen ⦄ (K k) (K y) = k == y
-  _==_ ⦃ eqOpen ⦄ (x₁ ⊕ y₁) (x₂ ⊕ y₂) = x₁ == x₂ ∧ y₁ == y₂
-  _==_ ⦃ eqOpen ⦄ (x₁ ⊗ y₁) (x₂ ⊗ y₂) = x₁ == x₂ ∧ y₁ == y₂
-  _==_ ⦃ eqOpen ⦄ (⊝ x) (⊝ y) = x == y
-  _==_ ⦃ eqOpen ⦄ _ _ = false
+  _==_ ⦃ eqOpen ⦄ = _==O_
 
 -- An expression which might not have any free variables
 data Expr : Set r where
