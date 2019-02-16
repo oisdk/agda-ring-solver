@@ -205,22 +205,25 @@ showProof′ ε = []
 showProof′ (inj₁ x ◅ xs) = toExplanation x ∷ showProof′ xs
 showProof′ (inj₂ y ◅ xs) = toExplanation y ∷ showProof′ xs
 
+open import Data.String.Printf
+open Printf standard
+
 prettyStep : Step → String
-prettyStep ([sym] x) = "sym (" ++ prettyStep x ++ ")"
-prettyStep ([cong] x [+] x₂) = "(" ++ prettyStep x ++ ") + (" ++ prettyStep x₂ ++ ")"
-prettyStep ([cong] x [*] x₂) = "(" ++ prettyStep x ++ ") * (" ++ prettyStep x₂ ++ ")"
-prettyStep ([-cong] x) = "- (" ++ prettyStep x ++ ")"
-prettyStep ([refl] x) = "eval"
-prettyStep ([assoc] [+] x₁ x₂ x₃) = "+-assoc(" ++ prettyExpr x₁ ++ ", " ++ prettyExpr x₂ ++ ", " ++ prettyExpr x₂ ++ ")"
-prettyStep ([assoc] [*] x₁ x₂ x₃) = "*-assoc(" ++ prettyExpr x₁ ++ ", " ++ prettyExpr x₂ ++ ", " ++ prettyExpr x₂ ++ ")"
-prettyStep ([ident] [+] x₁) = "+-ident(" ++ prettyExpr x₁ ++ ")"
-prettyStep ([ident] [*] x₁) = "*-ident(" ++ prettyExpr x₁ ++ ")"
-prettyStep ([comm] [+] x₁ x₂) = "+-comm(" ++ prettyExpr x₁ ++ ", " ++ prettyExpr x₂ ++ ")"
-prettyStep ([comm] [*] x₁ x₂) = "*-comm(" ++ prettyExpr x₁ ++ ", " ++ prettyExpr x₂ ++ ")"
-prettyStep ([zero] x) = "*-zero(" ++ prettyExpr x ++ ")"
-prettyStep ([distrib] x x₁ x₂) = "*-distrib(" ++ prettyExpr x ++ ", " ++ prettyExpr x₁ ++ ", " ++ prettyExpr x₂ ++ ")"
-prettyStep ([-distrib] x x₁) = "-distrib(" ++ prettyExpr x ++ ", " ++ prettyExpr x₁ ++ ")"
-prettyStep ([-+comm] x x₁) = "-+-comm(" ++ prettyExpr x ++ ", " ++ prettyExpr x₁ ++ ")"
+prettyStep ([sym] x)              = printf "sym (%s)" (prettyStep x)
+prettyStep ([cong] x [+] x₂)      = printf "(%s) + (%s)" (prettyStep x) (prettyStep x₂)
+prettyStep ([cong] x [*] x₂)      = printf "(%s) * (%s)" (prettyStep x) (prettyStep x₂)
+prettyStep ([-cong] x)            = printf "- (%s)" (prettyStep x)
+prettyStep ([refl] x)             = "eval"
+prettyStep ([assoc] [+] x₁ x₂ x₃) = printf "+-assoc(%s, %s, %s)" (prettyExpr x₁) (prettyExpr x₂) (prettyExpr x₂)
+prettyStep ([assoc] [*] x₁ x₂ x₃) = printf "*-assoc(%s, %s, %s)" (prettyExpr x₁) (prettyExpr x₂) (prettyExpr x₂)
+prettyStep ([ident] [+] x₁)       = printf "+-ident(%s)" (prettyExpr x₁)
+prettyStep ([ident] [*] x₁)       = printf "*-ident(%s)" (prettyExpr x₁)
+prettyStep ([comm] [+] x₁ x₂)     = printf "+-comm(%s, %s)" (prettyExpr x₁) (prettyExpr x₂)
+prettyStep ([comm] [*] x₁ x₂)     = printf "*-comm(%s, %s)" (prettyExpr x₁) (prettyExpr x₂)
+prettyStep ([zero] x)             = printf "*-zero(%s)" (prettyExpr x)
+prettyStep ([distrib] x x₁ x₂)    = printf "*-distrib(%s, %s, %s)" (prettyExpr x) (prettyExpr x₁) (prettyExpr x₂)
+prettyStep ([-distrib] x x₁)      = printf "-‿distrib(%s, %s)" (prettyExpr x) (prettyExpr x₁)
+prettyStep ([-+comm] x x₁)        = printf "-+-comm(%s, %s)" (prettyExpr x) (prettyExpr x₁)
 
 showProof : ∀ {x y} → EqClosure _≈ⁱ_ x y → List String
 showProof = List.foldr unparse [] ∘ List.foldr spotReverse [] ∘ List.mapMaybe interesting′ ∘ showProof′
