@@ -8,14 +8,8 @@ open import Function
 open import Data.Unit using (⊤)
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.List as List using (List; _∷_; []; foldr)
+open import Reflection.Helpers
 
-module MonadOperators where
-  _>>=_ : {A B : Set} → TC A → (A → TC B) → TC B
-  _>>=_ = bindTC
-
-  _>>_ : {A B : Set} → TC A → TC B → TC B
-  xs >> ys = xs >>= const ys
-open MonadOperators
 
 module Internal (rng : Term) where
   open import Polynomial.Simple.Solver renaming (solve to solve′)
@@ -26,36 +20,6 @@ module Internal (rng : Term) where
   open import Data.Maybe as Maybe using (Maybe; just; nothing)
 
   open import Data.Nat.Table
-
-  -- Some patterns to decrease verbosity
-  infixr 5 _⟨∷⟩_ _⟅∷⟆_
-  pattern _⟨∷⟩_ x xs = arg (arg-info visible relevant) x ∷ xs
-  pattern _⟅∷⟆_ x xs = arg (arg-info hidden relevant) x ∷ xs
-
-  infixr 5 _⋯⟅∷⟆_
-  _⋯⟅∷⟆_ : ℕ → List (Arg Term) → List (Arg Term)
-  zero  ⋯⟅∷⟆ xs = xs
-  suc i ⋯⟅∷⟆ xs = unknown ⟅∷⟆ i ⋯⟅∷⟆ xs
-
-  natTerm : ℕ → Term
-  natTerm zero = quote zero ⟨ con ⟩ []
-  natTerm (suc i) = quote suc ⟨ con ⟩ natTerm i ⟨∷⟩ []
-
-  finTerm : ℕ → Term
-  finTerm zero = quote Fin.zero ⟨ con ⟩ 1 ⋯⟅∷⟆ []
-  finTerm (suc i) = quote Fin.suc ⟨ con ⟩ 1 ⋯⟅∷⟆ finTerm i ⟨∷⟩ []
-
-  curriedTerm : Table → Term
-  curriedTerm = List.foldr go (quote Vec.[] ⟨ con ⟩ 2 ⋯⟅∷⟆ []) ∘ Data.Nat.Table.toList
-    where
-    go : ℕ → Term → Term
-    go x xs = quote Vec._∷_ ⟨ con ⟩ 3 ⋯⟅∷⟆ var x [] ⟨∷⟩ xs ⟨∷⟩ []
-
-  hlams : List String → Term → Term
-  hlams vs xs = foldr (λ v vs → lam hidden (abs v vs)) xs vs
-
-  vlams : List String → Term → Term
-  vlams vs xs = foldr (λ v vs → lam visible (abs v vs)) xs vs
 
   module _ (numVars : ℕ) where
 
