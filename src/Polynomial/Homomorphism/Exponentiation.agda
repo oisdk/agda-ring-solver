@@ -64,8 +64,6 @@ pow-eval-hom x (suc i) = (*-homo _ x) ⟨ trans ⟩ (≪* pow-eval-hom x i)
       1# * (⟦ x ⟧ Ρ RawPow.^ i +1)
     ≈⟨ *-identityˡ _ ⟩
       ⟦ x ⟧ Ρ RawPow.^ i +1
-    -- ≈⟨ pow-cong-+1 i (sym ((≪+ zeroʳ _) ⟨ trans ⟩ +-identityˡ _)) ⟩
-    --   (ρ′ * 0# + ⟦ x ⟧ Ρ) RawPow.^ i +1
     ∎
   rearrange j@(suc j′) =
     begin
@@ -74,8 +72,6 @@ pow-eval-hom x (suc i) = (*-homo _ x) ⟨ trans ⟩ (≪* pow-eval-hom x i)
       ((ρ′ RawPow.^ j′ +1) RawPow.^ i +1) * (⟦ x ⟧ Ρ RawPow.^ i +1)
     ≈⟨ sym (pow-distrib-+1 _ (⟦ x ⟧ Ρ) i) ⟩
       ((ρ′ RawPow.^ j′ +1) * ⟦ x ⟧ Ρ) RawPow.^ i +1
-    -- ≈⟨ pow-cong-+1 i (sym (*≫ ((≪+ zeroʳ _) ⟨ trans ⟩ +-identityˡ _))) ⟩
-    --   ((ρ′ * 0# + ⟦ x ⟧ Ρ) *⟨ ρ′ ⟩^ j) RawPow.^ i +1
     ∎
 
 ⊡-hom : ∀ {n} → (xs : Poly n) → (i : ℕ) → ∀ ρ → ⟦ xs ⊡ i ⟧ ρ ≈ ⟦ xs ⟧ ρ RawPow.^ i

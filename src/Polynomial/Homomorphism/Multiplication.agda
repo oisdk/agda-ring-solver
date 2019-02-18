@@ -194,14 +194,6 @@ mutual
     ≈⟨ *≫ sym (pow-opt _ ρ j) ⟩
       Σ⟦ xs ⟧ (ρ , Ρ) * (⟦ y ⟧ Ρ *⟨ ρ ⟩^ j)
     ∎
-     -- poly-mapR ρ Ρ
-     --   (smallStep a y)
-     --   (λ z → ( z * ⟦ y ⟧ Ρ ) ⍓⋆ j)
-     --   {!!}
-     --   {!!}
-     --   {!!}
-     --   {!!}
-     --   xs
   ⊠-coeffs-hom a xs (y ≠0 Δ j & [ ys ]) (ρ , Ρ) =
     let xs′ = Σ⟦ xs ⟧ (ρ , Ρ)
         y′  = ⟦ y ⟧ Ρ
@@ -215,8 +207,6 @@ mutual
      ρ ^ j * (xs′ * (ρ * ys′ + y′))
     ≈⟨ sym (*-assoc _ _ _) ⟨ trans ⟩ (≪* *-comm _ _) ⟨ trans ⟩ *-assoc _ _ _ ⟨ trans ⟩ (*≫ sym (pow-opt _ ρ j))⟩
       xs′ * ((ρ * ys′ + y′) *⟨ ρ ⟩^ j)
-    -- ≈⟨ *≫ pow-mul-cong (sym (⟦∷⟧-hom y ys ρ Ρ)) ρ j ⟩
-    --   xs′ * ( ((y , ys) ⟦∷⟧ (ρ , Ρ)) *⟨ ρ ⟩^ j )
     ∎
 
   ⊠-cons-hom : ∀ {n}
