@@ -9,7 +9,7 @@ module Polynomial.Reasoning
   where
 
 open AlmostCommutativeRing ring
-open import Relation.Binary.EqReasoning setoid public
+open import Relation.Binary.Reasoning.Inference setoid public
 
 infixr 1 ≪+_ +≫_ ≪*_ *≫_
 ≪+_ : ∀ {x₁ x₂ y} → x₁ ≈ x₂ → x₁ + y ≈ x₂ + y
