@@ -267,7 +267,7 @@ module TracedExamples where                                                   --
   open AlmostCommutativeRing tracedRing                                       --         ██║  ██║  ██║
   open import Relation.Binary.PropositionalEquality as ≡ using (_≡_)          --         ██║  ██║  ██║
                                                                               --         ██║  ██║  ██║
-  lemma : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x                               --         ██║  ██║  ██║
+  lemma : ∀ x y → (x + y) ^ 2 ≈ x ^ 2 + 2 * x * y + y ^ 2
   lemma = solve tracedRing                                                    --         ██║  ██║  ██║
   explained : _                                                                            --      ██╗██║  ██║  ██║
   explained                                                                   --    ████║██║  ██║  ██║

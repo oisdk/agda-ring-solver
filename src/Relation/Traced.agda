@@ -103,31 +103,29 @@ open _≈ⁱ_
 
 
 interesting : Step → Maybe Step
+interesting ([refl] x) = nothing
 interesting ([sym] x) = interesting x
 interesting ([-cong] x) = interesting x
-interesting ([refl] x) = nothing
-interesting ([assoc] x x₁ x₂ x₃) = nothing
-interesting ([ident] x x₁) = nothing
-interesting ([zero] x) = nothing
 interesting ([cong] x x₁ x₂) with interesting x | interesting x₂
 interesting ([cong] x x₁ x₂) | just res₁ | just res₂ = just ([cong] res₁ x₁ res₂)
 interesting ([cong] x x₁ x₂) | just res₁ | nothing  = just res₁
 interesting ([cong] x x₁ x₂) | nothing | just res₂ = just res₂
 interesting ([cong] x x₁ x₂) | nothing | nothing  = nothing
-interesting s@([comm] _ x y) with x == y
-interesting s@([comm] _ x y) | true = nothing
-interesting s@([comm] o (C x) (C y))    | false = nothing
-interesting s@([comm] [+] (C x) x₂)     | false = if x == 0# then nothing else just s
-interesting s@([comm] [+] (O x) (C x₁)) | false = if x₁ == 0# then nothing else just s
-interesting s@([comm] [+] (O x) (O x₁)) | false = just s
-interesting s@([comm] [*] (C x) x₂)     | false = if (x == 0# ∨ x == 1#) then nothing else just s
-interesting s@([comm] [*] (O x) (C x₁)) | false = if (x₁ == 0# ∨ x₁ == 1#) then nothing else just s
-interesting s@([comm] [*] (O x) (O x₁)) | false = just s
-interesting s@([distrib] (C _) (C _) (C _)) = nothing
-interesting s@([distrib] (C x) x₁ x₂) = if (x == 0# ∨ x == 1#) then nothing else just s
-interesting s@([distrib] x x₁ x₂) = just s
-interesting s@([-distrib] x x₁) = nothing
-interesting s@([-+comm] x x₁) = nothing
+interesting s = just s
+-- interesting s@([comm] _ _ _) = just s
+-- interesting s@([comm] _ x y) | true = nothing
+-- interesting s@([comm] o (C x) (C y))    | false = nothing
+-- interesting s@([comm] [+] (C x) x₂)     | false = if x == 0# then nothing else just s
+-- interesting s@([comm] [+] (O x) (C x₁)) | false = if x₁ == 0# then nothing else just s
+-- interesting s@([comm] [+] (O x) (O x₁)) | false = just s
+-- interesting s@([comm] [*] (C x) x₂)     | false = if (x == 0# ∨ x == 1#) then nothing else just s
+-- interesting s@([comm] [*] (O x) (C x₁)) | false = if (x₁ == 0# ∨ x₁ == 1#) then nothing else just s
+-- interesting s@([comm] [*] (O x) (O x₁)) | false = just s
+-- interesting s@([distrib] (C _) (C _) (C _)) = nothing
+-- interesting s@([distrib] (C x) x₁ x₂) = if (x == 0# ∨ x == 1#) then nothing else just s
+-- interesting s@([distrib] x x₁ x₂) = just s
+-- interesting s@([-distrib] x x₁) = nothing
+-- interesting s@([-+comm] x x₁) = nothing
 
 neg-cong : ∀ {x y} → x ≈ⁱ y → ⊟_  x ≈ⁱ ⊟_  y
 neg-cong (~? reason) = ~? ( [-cong] reason)
@@ -236,16 +234,16 @@ open import Agda.Builtin.Nat using (_<_)
 Distances : Set c
 Distances = List (Explanation Expr × ℕ)
 
-addNew : Explanation Expr × ℕ → Distances → Distances
-addNew (e , d) [] = []
-addNew (e , d) ((x , xd) ∷ xs) = if rhs e == rhs x then if xd < d then ((x , xd) ∷ xs) else ((e , d) ∷ xs) else (x , xd) ∷ (addNew (e , d) xs)
+addNew : (ℕ × Distances) → Explanation Expr → (ℕ × Distances)
+addNew (d , []) e = (ℕ.suc d , (e , d) ∷ [])
+addNew (d , (x , xd) ∷ xs) e = if rhs e == rhs x then if xd < d then (ℕ.suc xd , ((x , xd) ∷ xs)) else (ℕ.suc d , ((e , d) ∷ xs)) else Prod.map₂ ((x , xd) ∷_) (addNew (d , xs) e)
 
 withInds : ∀ {a} {A : Set a} → List A → List (A × ℕ)
 withInds xs = List.foldr (λ x xs n → (x , n) ∷ xs (ℕ.suc n)) (const []) xs ℕ.zero
 
 shorten : List (Explanation Expr) → List (Explanation Expr)
 shorten [] = []
-shorten xs@(y ∷ ys) = List.reverse (reconstruct (last′ y ys) (Vec.fromList (List.map proj₁ (List.foldr addNew [] (withInds xs)))))
+shorten xs@(y ∷ ys) = List.reverse (reconstruct (last′ y ys) (Vec.fromList (List.map proj₁ (proj₂ (List.foldl addNew (ℕ.zero , []) xs)))))
   where
   open import Data.Vec as Vec using (Vec; _∷_; [])
 
@@ -267,7 +265,7 @@ shorten xs@(y ∷ ys) = List.reverse (reconstruct (last′ y ys) (Vec.fromList (
 
 
 showProof : ∀ {x y} → EqClosure _≈ⁱ_ x y → List String
-showProof {x} {y} pr = start ∘ List.foldr unparse [] ∘ shorten ∘ List.mapMaybe interesting′ $ steps
+showProof {x} {y} pr = start ∘ List.foldr unparse [] ∘ List.mapMaybe interesting′ ∘ shorten $ steps
   where
   steps : List (Explanation Expr)
   steps = showProof′ pr
@@ -292,10 +290,9 @@ showProof {x} {y} pr = start ∘ List.foldr unparse [] ∘ shorten ∘ List.mapM
     r = ⟨ rhs₁ ⟩ₑ
 
   interesting′ : Explanation Expr → Maybe (Explanation Expr)
-  interesting′ = just
-  -- interesting′ (lhs ≈⟨ stp ⟩≈ rhs) with interesting stp
-  -- interesting′ (lhs ≈⟨ stp ⟩≈ rhs) | just x = just (lhs ≈⟨ x ⟩≈ rhs)
-  -- interesting′ (lhs ≈⟨ stp ⟩≈ rhs) | nothing = nothing
+  interesting′ (lhs ≈⟨ stp ⟩≈ rhs) with interesting stp
+  interesting′ (lhs ≈⟨ stp ⟩≈ rhs) | just x = just (lhs ≈⟨ x ⟩≈ rhs)
+  interesting′ (lhs ≈⟨ stp ⟩≈ rhs) | nothing = nothing
 
 open import Agda.Builtin.FromString using (IsString; fromString) public
 import Data.String.Literals

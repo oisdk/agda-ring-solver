@@ -59,13 +59,13 @@ normalise (O x) = go x
   go (K k) = C k
   go (x ⊕ y) with go x | go y
   go (x ⊕ y) | C x₁ | C x₂ = C (x₁ + x₂)
-  go (x ⊕ y) | C x₁ | O x₂ = if x₁ == 0# then O x₂ else O (K x₁ ⊕ x₂)
-  go (x ⊕ y) | O x₁ | C x₂ = if x₂ == 0# then O x₁ else O (x₁ ⊕ K x₂)
+  go (x ⊕ y) | C x₁ | O x₂ = O (K x₁ ⊕ x₂)
+  go (x ⊕ y) | O x₁ | C x₂ = O (x₁ ⊕ K x₂)
   go (x ⊕ y) | O x₁ | O x₂ = O (x₁ ⊕ x₂)
   go (x ⊗ y) with go x | go y
-  go (x ⊗ y) | C x₁ | C x₂ = C (x₁ + x₂)
-  go (x ⊗ y) | C x₁ | O x₂ = if x₁ == 0# then C 0# else if x₁ == 1# then O x₂ else O (K x₁ ⊗ x₂)
-  go (x ⊗ y) | O x₁ | C x₂ = if x₂ == 0# then C 0# else if x₂ == 1# then O x₁ else O (x₁ ⊗ K x₂)
+  go (x ⊗ y) | C x₁ | C x₂ = C (x₁ * x₂)
+  go (x ⊗ y) | C x₁ | O x₂ = O (K x₁ ⊗ x₂)
+  go (x ⊗ y) | O x₁ | C x₂ = O (x₁ ⊗ K x₂)
   go (x ⊗ y) | O x₁ | O x₂ = O (x₁ ⊗ x₂)
   go (⊝ x) with go x
   go (⊝ x) | C x₁ = C (- x₁)
