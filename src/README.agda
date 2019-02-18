@@ -269,15 +269,15 @@ module TracedExamples where                                                   --
                                                                               --         ██║  ██║  ██║
   lemma : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x                               --         ██║  ██║  ██║
   lemma = solve tracedRing                                                    --         ██║  ██║  ██║
-                                                                              --      ██╗██║  ██║  ██║
+  explained : _                                                                            --      ██╗██║  ██║  ██║
   explained                                                                   --    ████║██║  ██║  ██║
-    : showProof (lemma "x" "y") ≡ "x + y + 3"                                 --  █████████║  ██║  ██║
-                                ∷ "    ={ +-comm(x, y + 3) }"                 --    ████╔══╝  ██║  ██║
-                                ∷ "y + 3 + x"                                 --      ██║     ██║  ██║
-                                ∷ "    ={ +-comm(y, 3) }"                     --      ╚═╝     ██║  ██║
-                                ∷ "3 + y + x"                                 --              ██║  ██║
-                                ∷ []                                          --              ██║  ██║
-  explained = ≡.refl                                                          --              ██║  ██║
+    = showProof (lemma "x" "y") -- ≡ "x + y + 3"                                 --  █████████║  ██║  ██║
+                                -- ∷ "    ={ eval }"                             --    ████╔══╝  ██║  ██║
+                                -- ∷ "y + 3 + x"                                 --      ██║     ██║  ██║
+                                -- ∷ "    ={ +-comm(y, 3) }"                     --      ╚═╝     ██║  ██║
+                                -- ∷ "3 + y + x"                                 --              ██║  ██║
+                                -- ∷ []                                          --              ██║  ██║
+open TracedExamples public using (explained)
 --------------------------------------------------------------------------------              ██║  ██║
 --                                                                            --              ██║  ██║
 -- The new solver uses a sparse representation, which is much faster than the --              ██║  ██║

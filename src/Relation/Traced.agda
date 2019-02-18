@@ -230,25 +230,72 @@ open Printf standard
 ⟨ [-distrib] x x₁ ⟩ₛ      = printf "-‿distrib(%s, %s)" ⟨ x ⟩ₑ ⟨ x₁ ⟩ₑ
 ⟨ [-+comm] x x₁ ⟩ₛ        = printf "-+-comm(%s, %s)" ⟨ x ⟩ₑ ⟨ x₁ ⟩ₑ
 
-showProof : ∀ {x y} → EqClosure _≈ⁱ_ x y → List String
-showProof = List.foldr unparse [] ∘ List.foldr spotReverse [] ∘ List.mapMaybe interesting′ ∘ showProof′
+open import Data.Product as Prod
+open import Agda.Builtin.Nat using (_<_)
+
+Distances : Set c
+Distances = List (Explanation Expr × ℕ)
+
+addNew : Explanation Expr × ℕ → Distances → Distances
+addNew (e , d) [] = []
+addNew (e , d) ((x , xd) ∷ xs) = if rhs e == rhs x then if xd < d then ((x , xd) ∷ xs) else ((e , d) ∷ xs) else (x , xd) ∷ (addNew (e , d) xs)
+
+withInds : ∀ {a} {A : Set a} → List A → List (A × ℕ)
+withInds xs = List.foldr (λ x xs n → (x , n) ∷ xs (ℕ.suc n)) (const []) xs ℕ.zero
+
+shorten : List (Explanation Expr) → List (Explanation Expr)
+shorten [] = []
+shorten xs@(y ∷ ys) = List.reverse (reconstruct (last′ y ys) (Vec.fromList (List.map proj₁ (List.foldr addNew [] (withInds xs)))))
   where
+  open import Data.Vec as Vec using (Vec; _∷_; [])
+
+  last′ : ∀ {a} {A : Set a} → A → List A → A
+  last′ x [] = x
+  last′ _ (x ∷ xs) = last′ x xs
+
+  pop : ∀ {n a} {A : Set a} → (A → Bool) → Vec A (ℕ.suc n) → Maybe (A × Vec A n)
+  pop p (x ∷ xs) with p x
+  pop p (x ∷ []) | false = nothing
+  pop p (x₁ ∷ x₂ ∷ xs) | false = Data.Maybe.map (Prod.map₂ (x₁ ∷_)) (pop p (x₂ ∷ xs))
+  pop p (x ∷ xs) | true = just (x , xs)
+
+  reconstruct : ∀ {n} → Explanation Expr → Vec (Explanation Expr) n → List (Explanation Expr)
+  reconstruct e [] = e ∷ []
+  reconstruct e xs@(_ ∷ _) with pop (λ x → rhs x == lhs e) xs
+  reconstruct e (_ ∷ _) | just (y , ys) = e ∷ reconstruct y ys
+  reconstruct e (_ ∷ _) | nothing = e ∷ []
+
+
+showProof : ∀ {x y} → EqClosure _≈ⁱ_ x y → List String
+showProof {x} {y} pr = start ∘ List.foldr unparse [] ∘ shorten ∘ List.mapMaybe interesting′ $ steps
+  where
+  steps : List (Explanation Expr)
+  steps = showProof′ pr
+
+  start : List String → List String
+  start [] = []
+  start p@(s ∷ _) = if s == x′ then p else x′ ∷ "    ={ eval }" ∷ p
+    where
+    x′ = ⟨ x ⟩ₑ
+
   unparse : Explanation Expr → List String → List String
-  unparse (lhs₁ ≈⟨ step₁ ⟩≈ rhs₁) [] = ⟨ lhs₁ ⟩ₑ ∷ printf "    ={ %s }" ⟨ step₁ ⟩ₛ ∷ ⟨ rhs₁ ⟩ₑ ∷ []
+  unparse (lhs₁ ≈⟨ step₁ ⟩≈ rhs₁) [] = if r′ == r then l ∷ m ∷ r ∷ [] else l ∷ m ∷ r ∷ "    ={ eval }" ∷ r′ ∷ []
+    where
+    l = ⟨ lhs₁ ⟩ₑ
+    m = printf "    ={ %s }" ⟨ step₁ ⟩ₛ
+    r′ = ⟨ y ⟩ₑ
+    r = ⟨ rhs₁ ⟩ₑ
   unparse (lhs₁ ≈⟨ step₁ ⟩≈ rhs₁) (y ∷ ys) = if r == y then l ∷ m ∷ y ∷ ys else l ∷ m ∷ r ∷ "    ={ eval }" ∷ y ∷ ys
     where
     l = ⟨ lhs₁ ⟩ₑ
     m = printf "    ={ %s }" ⟨ step₁ ⟩ₛ
     r = ⟨ rhs₁ ⟩ₑ
 
-  spotReverse : Explanation Expr → List (Explanation Expr) → List (Explanation Expr)
-  spotReverse x [] = x ∷ []
-  spotReverse x (y ∷ xs) = if lhs x == rhs y then xs else x ∷ y ∷ xs
-
   interesting′ : Explanation Expr → Maybe (Explanation Expr)
-  interesting′ (lhs ≈⟨ stp ⟩≈ rhs) with interesting stp
-  interesting′ (lhs ≈⟨ stp ⟩≈ rhs) | just x = just (lhs ≈⟨ x ⟩≈ rhs)
-  interesting′ (lhs ≈⟨ stp ⟩≈ rhs) | nothing = nothing
+  interesting′ = just
+  -- interesting′ (lhs ≈⟨ stp ⟩≈ rhs) with interesting stp
+  -- interesting′ (lhs ≈⟨ stp ⟩≈ rhs) | just x = just (lhs ≈⟨ x ⟩≈ rhs)
+  -- interesting′ (lhs ≈⟨ stp ⟩≈ rhs) | nothing = nothing
 
 open import Agda.Builtin.FromString using (IsString; fromString) public
 import Data.String.Literals
