@@ -19,23 +19,23 @@ open RawCoeff (Homomorphism.coeffs homo)
 
 data 1*x*1 : Set ℓ₁ where
   1* : 1*x*1
-  ⟨_⟩ : Carrier → 1*x*1
+  1≠_ : Carrier → 1*x*1
 
 ⟦_⟧-1 : 1*x*1 → Carrier
 ⟦ 1* ⟧-1 = 1#
-⟦ ⟨ x ⟩ ⟧-1 = x
+⟦ 1≠ x ⟧-1 = x
 
 1-coeff : RawCoeff ℓ₁
 1-coeff = record
   { coeffs = record
     { Carrier = 1*x*1
-    ; _+_ = λ x y → ⟨ ⟦ x ⟧-1 + ⟦ y ⟧-1 ⟩
-    ; _*_ = λ { 1* y → y ; ⟨ x ⟩ 1* → ⟨ x ⟩ ; ⟨ x ⟩ ⟨ y ⟩ → ⟨ x * y ⟩}
-    ; -_  = λ x → ⟨ - ⟦ x ⟧-1 ⟩
-    ; 0#  = ⟨ 0# ⟩
+    ; _+_ = λ x y → 1≠ (⟦ x ⟧-1 + ⟦ y ⟧-1)
+    ; _*_ = λ { 1* y → y ; (1≠ x) 1* → 1≠ x ; (1≠ x) (1≠ y) → 1≠ (x * y)}
+    ; -_  = λ x → 1≠ (- ⟦ x ⟧-1)
+    ; 0#  = 1≠ 0#
     ; 1#  = 1*
     }
-  ; Zero-C = λ { 1* → false ; ⟨ x ⟩ → Zero-C x}
+  ; Zero-C = λ { 1* → false ; (1≠ x) → Zero-C x}
   }
 
 open _-Raw-AlmostCommutative⟶_
@@ -45,8 +45,8 @@ open IsAlmostCommutativeRing (Homomorphism.isAlmostCommutativeRing homo)
 ⟦ 1-morph ⟧ x = Homomorphism.⟦ homo ⟧ᵣ ⟦ x ⟧-1
 +-homo 1-morph x y = Homomorphism.+-homo homo ⟦ x ⟧-1 ⟦ y ⟧-1
 *-homo 1-morph 1* y = sym (trans (*-cong (Homomorphism.1-homo homo) refl) (*-identityˡ _))
-*-homo 1-morph ⟨ x ⟩ 1* = sym (trans (*-cong refl (Homomorphism.1-homo homo)) (*-identityʳ _))
-*-homo 1-morph ⟨ x ⟩ ⟨ y ⟩ = Homomorphism.*-homo homo x y
+*-homo 1-morph (1≠ x) 1* = sym (trans (*-cong refl (Homomorphism.1-homo homo)) (*-identityʳ _))
+*-homo 1-morph (1≠ x) (1≠ y) = Homomorphism.*-homo homo x y
 -‿homo 1-morph x = Homomorphism.-‿homo homo ⟦ x ⟧-1
 0-homo 1-morph = Homomorphism.0-homo homo
 1-homo 1-morph = Homomorphism.1-homo homo
@@ -56,5 +56,5 @@ open IsAlmostCommutativeRing (Homomorphism.isAlmostCommutativeRing homo)
   { coeffs = 1-coeff
   ; ring = Homomorphism.ring homo
   ; morphism = 1-morph
-  ; Zero-C⟶Zero-R = λ { 1* → λ () ; ⟨ x ⟩ → Homomorphism.Zero-C⟶Zero-R homo x}
+  ; Zero-C⟶Zero-R = λ { 1* → λ () ; (1≠ x) → Homomorphism.Zero-C⟶Zero-R homo x}
   }

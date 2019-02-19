@@ -7,8 +7,13 @@ open import Polynomial.Parameters
 
 module Polynomial.Homomorphism
   {r₁ r₂ r₃}
-  (homo : Homomorphism r₁ r₂ r₃)
+  (homo′ : Homomorphism r₁ r₂ r₃)
   where
+
+import Polynomial.VisibleOne
+
+homo : Homomorphism r₁ r₂ r₃
+homo = Polynomial.VisibleOne.1*-homo homo′
 
 -- The lemmas are the general-purpose proofs we reuse in each other section
 open import Polynomial.Homomorphism.Lemmas         homo using (pow-cong) public

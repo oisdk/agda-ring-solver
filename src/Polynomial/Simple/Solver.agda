@@ -11,48 +11,24 @@ open import Function
 open import Data.Maybe
 open import Data.Vec.N-ary
 
-
 module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
   open AlmostCommutativeRing ring
-
-  ⟦_⟧ : ∀ {n} → Expr Carrier n → Vec Carrier n → Carrier
-  ⟦ Κ x ⟧ ρ = x
-  ⟦ Ι x ⟧ ρ = lookup x ρ
-  ⟦ x ⊕ y ⟧ ρ = ⟦ x ⟧ ρ + ⟦ y ⟧ ρ
-  ⟦ x ⊗ y ⟧ ρ = ⟦ x ⟧ ρ * ⟦ y ⟧ ρ
-  ⟦ ⊝ x ⟧ ρ = - ⟦ x ⟧ ρ
-  ⟦ x ⊛ i ⟧ ρ = ⟦ x ⟧ ρ ^ i
+  import Algebra.Solver.Ring.AlmostCommutativeRing as UnDec
 
   rawCoeff : RawCoeff ℓ₁
   rawCoeff = record
     { coeffs = rawRing
     ; Zero-C = λ x → is-just (0≟ x)
     }
-  open import Polynomial.NormalForm.Definition rawCoeff
-  open import Polynomial.NormalForm.Operations rawCoeff
-
-  norm : ∀ {n} → Expr Carrier n → Poly n
-  norm = go
-    where
-    go : ∀ {n} → Expr Carrier n → Poly n
-    go (Κ x) = κ x
-    go (Ι x) = ι x
-    go (x ⊕ y) = go x ⊞ go y
-    go (x ⊗ y) = go x ⊠ go y
-    go (⊝ x) = ⊟ go x
-    go (x ⊛ i) = go x ⊡ i
-  {-# INLINE norm #-}
-
-  import Algebra.Solver.Ring.AlmostCommutativeRing as UnDec
 
   complex : UnDec.AlmostCommutativeRing ℓ₁ ℓ₂
   complex = record
     { isAlmostCommutativeRing = record
-        { isCommutativeSemiring = isCommutativeSemiring
-        ; -‿cong = -‿cong
-        ; -‿*-distribˡ = -‿*-distribˡ
-        ; -‿+-comm = -‿+-comm
-        }
+      { isCommutativeSemiring = isCommutativeSemiring
+      ; -‿cong = -‿cong
+      ; -‿*-distribˡ = -‿*-distribˡ
+      ; -‿+-comm = -‿+-comm
+      }
     }
 
   open import Data.Bool using (T)
@@ -60,7 +36,6 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
   zero-homo x prf with 0≟ x
   zero-homo x prf | just x₁ = x₁
   zero-homo x () | nothing
-  {-# INLINE zero-homo #-}
 
   homo : Homomorphism ℓ₁ ℓ₁ ℓ₂
   homo = record
@@ -70,10 +45,39 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
     ; Zero-C⟶Zero-R = zero-homo
     }
 
+  open import Polynomial.VisibleOne homo using (1≠_; 1*; 1*-homo)
+
+  ⟦_⟧ : ∀ {n} → Expr Carrier n → Vec Carrier n → Carrier
+  ⟦ Κ x ⟧ ρ = x
+  ⟦ Ι x ⟧ ρ = lookup x ρ
+  ⟦ x ⊕ y ⟧ ρ = ⟦ x ⟧ ρ + ⟦ y ⟧ ρ
+  ⟦ x ⊗ y ⟧ ρ = ⟦ x ⟧ ρ * ⟦ y ⟧ ρ
+  ⟦ ⊝ x ⟧ ρ = - ⟦ x ⟧ ρ
+  ⟦ x ⊛ i ⟧ ρ = ⟦ x ⟧ ρ ^ i
+
+  open import Polynomial.NormalForm.Definition (Homomorphism.coeffs 1*-homo)
+  open import Polynomial.NormalForm.Operations (Homomorphism.coeffs 1*-homo)
+
+  norm : ∀ {n} → Expr Carrier n → Poly n
+  norm = go
+    where
+    go : ∀ {n} → Expr Carrier n → Poly n
+    go (Κ x) = κ (1≠ x)
+    go (Ι x) = ι x
+    go (x ⊕ y) = go x ⊞ go y
+    go (x ⊗ y) = go x ⊠ go y
+    go (⊝ x) = ⊟ go x
+    go (x ⊛ i) = go x ⊡ i
+  {-# INLINE norm #-}
+
+
+
+
+
   ⟦_⇓⟧ : ∀ {n} → Expr Carrier n → Vec Carrier n → Carrier
   ⟦ expr ⇓⟧ = ⟦ norm expr ⟧ₚ where
 
-    open import Polynomial.NormalForm.Semantics homo
+    open import Polynomial.NormalForm.Semantics 1*-homo
       renaming (⟦_⟧ to ⟦_⟧ₚ)
   {-# INLINE ⟦_⇓⟧ #-}
 
@@ -83,7 +87,7 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
     open import Polynomial.Homomorphism homo
 
     go : ∀ (expr : Expr Carrier n) ρ → ⟦ expr ⇓⟧ ρ ≈ ⟦ expr ⟧ ρ
-    go (Κ x) ρ = κ-hom x ρ
+    go (Κ x) ρ = κ-hom (1≠ x) ρ
     go (Ι x) ρ = ι-hom x ρ
     go (x ⊕ y) ρ = ⊞-hom (norm x) (norm y) ρ ⟨ trans ⟩ (go x ρ ⟨ +-cong ⟩ go y ρ)
     go (x ⊗ y) ρ = ⊠-hom (norm x) (norm y) ρ ⟨ trans ⟩ (go x ρ ⟨ *-cong ⟩ go y ρ)
