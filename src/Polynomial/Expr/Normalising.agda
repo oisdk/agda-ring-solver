@@ -1,5 +1,8 @@
 {-# OPTIONS --without-K --safe #-}
 
+-- This module primarily deals with expressions for pretty-printing,
+-- for the step-by-step output from the solver.
+
 open import Algebra
 open import Relation.Binary
 open import Relation.Binary.PropositionalEquality

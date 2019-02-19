@@ -19,6 +19,9 @@ mutual
       tail : A ⋆
 open _⁺ public
 
+infixr 5 _∹_
+pattern _∹_ x xs = [ x & xs ]
+
 module _ {a b} {A : Set a} {B : Set b} (f : A → B → B) (b : B) where
   mutual
     foldr⁺ : A ⁺ → B
