@@ -21,6 +21,13 @@ module Internal (rng : Term) where
 
   open import Data.Nat.Table
 
+  getName : Name → TC (Maybe Name)
+  getName nm = go <$> normalise (nm ⟨ def ⟩ 2 ⋯⟅∷⟆ rng ⟨∷⟩ [])
+    where
+    go : Term → Maybe Name
+    go (def f args) = just f
+    go _ = nothing
+
   module _ (numVars : ℕ) where
 
     -- This function applies the hidden arguments that the constructors
@@ -39,7 +46,13 @@ module Internal (rng : Term) where
     constExpr : Term → Term
     constExpr x = quote Κ ⟨ con ⟩ E⟅∷⟆ x ⟨∷⟩ []
 
-    module ToExpr (varExpr : ℕ → Maybe Term) where
+    matchName : Maybe Name → Name → TC ⊤
+    matchName nothing _ = typeError []
+    matchName (just x) y with x ≟-Name y
+    ... | yes p = pure tt
+    ... | no ¬p = typeError []
+
+    module ToExpr (varExpr : ℕ → Maybe Term) (+-nm : Maybe Name) (*-nm : Maybe Name) (^-nm : Maybe Name) (-‿nm : Maybe Name)  where
       mutual
         -- Application of a ring operator often doesn't have a type as
         -- simple as "Carrier → Carrier → Carrier": there may be hidden
@@ -76,13 +89,22 @@ module Internal (rng : Term) where
         toExpr (def (quote _*_) xs) = getBinOp (quote _⊗_) xs
         toExpr (def (quote _^_) xs) = getExp xs
         toExpr (def (quote -_) xs) = getUnOp (quote ⊝_) xs
+        toExpr (def nm xs) = (matchName +-nm nm >> getBinOp (quote _⊕_) xs)
+                         <|> (matchName *-nm nm >> getBinOp (quote _⊗_) xs)
+                         <|> (matchName ^-nm nm >> getExp xs)
+                         <|> (matchName -‿nm nm >> getUnOp (quote ⊝_) xs)
+                         <|> pure (constExpr (def nm xs))
         toExpr v@(var x _) = pure $ Maybe.fromMaybe (constExpr v) (varExpr x)
         toExpr t = pure $ constExpr t
 
     callSolver : List String → Term → Term → TC (List (Arg Type))
     callSolver nms lhs rhs = do
-      lhs′ ← toExpr lhs
-      rhs′ ← toExpr rhs
+      +-nm ← getName (quote _+_)
+      *-nm ← getName (quote _*_)
+      ^-nm ← getName (quote _^_)
+      -‿nm ← getName (quote -_)
+      lhs′ ← toExpr +-nm *-nm ^-nm -‿nm lhs
+      rhs′ ← toExpr +-nm *-nm ^-nm -‿nm rhs
       pure $
         2 ⋯⟅∷⟆
         rng ⟨∷⟩
@@ -99,8 +121,12 @@ module Internal (rng : Term) where
 
     constructSoln : Table → Term → Term → TC Term
     constructSoln t lhs rhs = do
-      lhs′ ← toExpr lhs
-      rhs′ ← toExpr rhs
+      +-nm ← getName (quote _+_)
+      *-nm ← getName (quote _*_)
+      ^-nm ← getName (quote _^_)
+      -‿nm ← getName (quote -_)
+      lhs′ ← toExpr +-nm *-nm ^-nm -‿nm lhs
+      rhs′ ← toExpr +-nm *-nm ^-nm -‿nm rhs
       pure $
         quote trans ⟨ def ⟩
           2 ⋯⟅∷⟆
