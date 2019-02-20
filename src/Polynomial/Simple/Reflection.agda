@@ -9,6 +9,7 @@ open import Data.Unit using (⊤; tt)
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.List as List using (List; _∷_; []; foldr)
 open import Reflection.Helpers
+open import Data.Bool as Bool using (Bool; if_then_else_; true; false)
 
 module Internal (rng : Term) where
   open import Polynomial.Simple.Solver renaming (solve to solve′)
@@ -46,11 +47,11 @@ module Internal (rng : Term) where
     constExpr : Term → Term
     constExpr x = quote Κ ⟨ con ⟩ E⟅∷⟆ x ⟨∷⟩ []
 
-    matchName : Maybe Name → Name → TC ⊤
-    matchName nothing _ = typeError []
+    matchName : Maybe Name → Name → Bool
+    matchName nothing _ = false
     matchName (just x) y with x ≟-Name y
-    ... | yes p = pure tt
-    ... | no ¬p = typeError []
+    ... | yes p = true
+    ... | no ¬p = false
 
     module ToExpr (varExpr : ℕ → Maybe Term) (+-nm : Maybe Name) (*-nm : Maybe Name) (^-nm : Maybe Name) (-‿nm : Maybe Name)  where
       mutual
@@ -89,11 +90,11 @@ module Internal (rng : Term) where
         toExpr (def (quote _*_) xs) = getBinOp (quote _⊗_) xs
         toExpr (def (quote _^_) xs) = getExp xs
         toExpr (def (quote -_) xs) = getUnOp (quote ⊝_) xs
-        toExpr (def nm xs) = (matchName +-nm nm >> getBinOp (quote _⊕_) xs)
-                         <|> (matchName *-nm nm >> getBinOp (quote _⊗_) xs)
-                         <|> (matchName ^-nm nm >> getExp xs)
-                         <|> (matchName -‿nm nm >> getUnOp (quote ⊝_) xs)
-                         <|> pure (constExpr (def nm xs))
+        toExpr (def nm xs) = if (matchName +-nm nm) then ( getBinOp (quote _⊕_) xs) else
+                          if (matchName *-nm nm) then ( getBinOp (quote _⊗_) xs) else
+                          if (matchName ^-nm nm) then ( getExp xs) else
+                          if (matchName -‿nm nm) then ( getUnOp (quote ⊝_) xs) else
+                          pure (constExpr (def nm xs))
         toExpr v@(var x _) = pure $ Maybe.fromMaybe (constExpr v) (varExpr x)
         toExpr t = pure $ constExpr t
 
