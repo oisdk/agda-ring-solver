@@ -110,7 +110,7 @@ open import Polynomial.Simple.Reflection                                      --
 open import Data.List as List using (List; _∷_; [])                           --         ██║  ██║  ██║
 open import Function                                                          --         ██║  ██║  ██║
 open import Relation.Binary.PropositionalEquality as ≡ using (subst; _≡_)     --         ██║  ██║  ██║
-open import Data.Bool as Bool using (Bool; if_then_else_)                     --         ██║  ██║  ██║
+open import Data.Bool as Bool using (Bool; true; false)                       --         ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║
 --------------------------------------------------------------------------------         ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║
@@ -194,22 +194,21 @@ module NatExamples where                                                      --
    -- A Skew Heap, indexed by its size.                                       --         ██║  ██║  ██║
    data Tree : ℕ → Set a where                                                --         ██║  ██║  ██║
      leaf : Tree 0                                                            --         ██║  ██║  ██║
-     node : ∀ {n m} → A → Tree n → Tree m → Tree (1 + n + m)                  --         ██║  ██║  ██║
+     node : ∀ {n m} → A → Tree n → Tree m → Tree (n + m + 1)                  --         ██║  ██║  ██║
                                                                               --         ██║  ██║  ██║
    -- A substitution operator, to clean things up.                            --         ██║  ██║  ██║
-   _⇒_⟅_⟆ : ∀ {n} → Tree n → ∀ m → n ≈ m → Tree m                             --         ██║  ██║  ██║
-   x ⇒ _ ⟅ n≈m ⟆ = subst Tree n≈m x                                           --         ██║  ██║  ██║
+   _⇒⟅_⟆ : ∀ {n} → Tree n → ∀ {m} → n ≈ m → Tree m                            --         ██║  ██║  ██║
+   x ⇒⟅ n≈m ⟆ = subst Tree n≈m x                                              --         ██║  ██║  ██║
                                                                               --         ██║  ██║  ██║
    _∪_ : ∀ {n m} → Tree n → Tree m → Tree (n + m)                             --         ██║  ██║  ██║
    leaf ∪ ys = ys                                                             --         ██║  ██║  ██║
    node {a} {b} x xl xr ∪ leaf =                                              --         ██║  ██║  ██║
-     node x xl xr ⇒ (1 + a + b) + 0 ⟅ solveOver (a ∷ b ∷ []) Nat.ring ⟆       --     ██╗ ██║  ██║  ██║
-   node {a} {b} x xl xr ∪ node {c} {d} y yl yr =                              --   ████║ ██║  ██║  ██║
-     let sz = (1 + a + b) + (1 + c + d)                                       -- ██████████║  ██║  ██║
-         vs = a ∷ b ∷ c ∷ d ∷ []                                              --   ████╔═██║  ██║  ██║
-     in if x ≤ y                                                              --     ██║ ██║  ██║  ██║
-          then node x (node y yl yr ∪ xr) xl ⇒ sz ⟅ solveOver vs Nat.ring ⟆   --     ╚═╝ ██║  ██║  ██║
-          else node y (node x xl xr ∪ yr) yl ⇒ sz ⟅ solveOver vs Nat.ring ⟆   --         ██║  ██║  ██║
+     node x xl xr ⇒⟅ solveOver (a ∷ b ∷ []) Nat.ring ⟆                        --     ██╗ ██║  ██║  ██║
+   node {a} {b} x xl xr ∪ node {c} {d} y yl yr with x ≤ y                     --   ████║ ██║  ██║  ██║
+   ... | true  = node x (node y yl yr ∪ xr) xl                                -- ██████████║  ██║  ██║
+                   ⇒⟅ solveOver (a ∷ b ∷ c ∷ d ∷ []) Nat.ring ⟆               --   ████╔═██║  ██║  ██║
+   ... | false = node y (node x xl xr ∪ yr) yl                                --     ██║ ██║  ██║  ██║
+                   ⇒⟅ solveOver (a ∷ b ∷ c ∷ d ∷ []) Nat.ring ⟆               --     ╚═╝ ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║
 --------------------------------------------------------------------------------         ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║
