@@ -1,4 +1,3 @@
-{-# OPTIONS --without-K --safe #-}
 
 -- ------------------------------------------------------------------------------------------------------
 -- | ███████╗ ██████╗ ██╗     ██╗   ██╗██╗███╗   ██╗ ██████╗     ██████╗ ██╗███╗   ██╗ ██████╗ ███████╗ |
@@ -89,16 +88,16 @@ module README where
 -- different numeric types in the same file.                                  --         ██║  ██║  ██║
                                                                               --         ██║  ██║  ██║
 open import Agda.Builtin.FromNat                                              --         ██║  ██║  ██║
-open import Agda.Builtin.Nat using (Nat)                                      --         ██║  ██║  ██║
-open import Agda.Builtin.Int using (Int)                                      --         ██║  ██║  ██║
+open import Data.Nat using (ℕ)                                                --         ██║  ██║  ██║
+open import Data.Integer using (ℤ)                                            --         ██║  ██║  ██║
                                                                               --         ██║  ██║  ██║
 instance                                                                      --         ██║  ██║  ██║
-  numberNat : Number Nat                                                      --         ██║  ██║  ██║
+  numberNat : Number ℕ                                                        --         ██║  ██║  ██║
   numberNat = Data.Nat.Literals.number                                        --         ██║  ██║  ██║
     where import Data.Nat.Literals                                            --         ██║  ██║  ██║
                                                                               --         ██║  ██║  ██║
 instance                                                                      --         ██║  ██║  ██║
-  numberInt : Number Int                                                      --         ██║  ██║  ██║
+  numberInt : Number ℤ                                                        --         ██║  ██║  ██║
   numberInt = Data.Integer.Literals.number                                    --         ██║  ██║  ██║
     where import Data.Integer.Literals                                        --         ██║  ██║  ██║
                                                                               --         ██║  ██║  ██║
@@ -108,6 +107,11 @@ instance                                                                      --
 open import Polynomial.Simple.AlmostCommutativeRing                           --         ██║  ██║  ██║
 open import Polynomial.Simple.AlmostCommutativeRing.Instances                 --         ██║  ██║  ██║
 open import Polynomial.Simple.Reflection                                      --         ██║  ██║  ██║
+open import Data.List as List using (List; _∷_; [])                           --         ██║  ██║  ██║
+open import Function                                                          --         ██║  ██║  ██║
+open import Relation.Binary.PropositionalEquality as ≡ using (subst; _≡_)     --         ██║  ██║  ██║
+open import Data.Bool as Bool using (Bool; if_then_else_)                     --         ██║  ██║  ██║
+--                                                                            --         ██║  ██║  ██║
 --------------------------------------------------------------------------------         ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║
 --                           8888888888',8888'                                --         ██║  ██║  ██║
@@ -132,9 +136,7 @@ module IntExamples where                                                      --
   lemma₂ : ∀ x y → (x + y) ^ 2 ≈ x ^ 2 + 2 * x * y + y ^ 2                    --     ██║ ██║  ██║  ██║
   lemma₂ = solve Int.ring                                                     --     ╚═╝ ██║  ██║  ██║
                                                                               --         ██║  ██║  ██║
-  open import Function                                                        --         ██║  ██║  ██║
   open import Relation.Binary.Reasoning.Inference setoid                      --         ██║  ██║  ██║
-  open import Data.List using (_∷_; [])                                       --         ██║  ██║  ██║
                                                                               --         ██║  ██║  ██║
   -- It can interact with manual proofs as well.                              --         ██║  ██║  ██║
   lemma₃ : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x                              --         ██║  ██║  ██║
@@ -166,6 +168,49 @@ module NatExamples where                                                      --
   lemma₁ : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x                              --   ████╔═██║  ██║  ██║
   lemma₁ = solve Nat.ring                                                     --     ██║ ██║  ██║  ██║
 --                                                                            --     ╚═╝ ██║  ██║  ██║
+--------------------------------------------------------------------------------         ██║  ██║  ██║
+--                                                                            --         ██║  ██║  ██║
+--          #####  #     # #######  #####  #    # ### #     #  #####          --         ██║  ██║  ██║
+--         #     # #     # #       #     # #   #   #  ##    # #     #         --         ██║  ██║  ██║
+--         #       #     # #       #       #  #    #  # #   # #               --         ██║  ██║  ██║
+--         #       ####### #####   #       ###     #  #  #  # #  ####         --         ██║  ██║  ██║
+--         #       #     # #       #       #  #    #  #   # # #     #         --         ██║  ██║  ██║
+--         #     # #     # #       #     # #   #   #  #    ## #     #         --         ██║  ██║  ██║
+--          #####  #     # #######  #####  #    # ### #     #  #####          --         ██║  ██║  ██║
+--                                                                            --         ██║  ██║  ██║
+--   ### #     # #     #    #    ######  ###    #    #     # #######  #####   --         ██║  ██║  ██║
+--    #  ##    # #     #   # #   #     #  #    # #   ##    #    #    #     #  --         ██║  ██║  ██║
+--    #  # #   # #     #  #   #  #     #  #   #   #  # #   #    #    #        --         ██║  ██║  ██║
+--    #  #  #  # #     # #     # ######   #  #     # #  #  #    #     #####   --         ██║  ██║  ██║
+--    #  #   # #  #   #  ####### #   #    #  ####### #   # #    #          #  --         ██║  ██║  ██║
+--    #  #    ##   # #   #     # #    #   #  #     # #    ##    #    #     #  --         ██║  ██║  ██║
+--   ### #     #    #    #     # #     # ### #     # #     #    #     #####   --         ██║  ██║  ██║
+--                                                                            --         ██║  ██║  ██║
+--------------------------------------------------------------------------------         ██║  ██║  ██║
+-- The solver makes it easy to prove invariants, without having to rewrite    --         ██║  ██║  ██║
+-- proof code every time something changes in the data structure.             --         ██║  ██║  ██║
+--                                                                            --         ██║  ██║  ██║
+  module _ {a} {A : Set a} (_≤_ : A → A → Bool) where                         --         ██║  ██║  ██║
+   -- A Skew Heap, indexed by its size.                                       --         ██║  ██║  ██║
+   data Tree : ℕ → Set a where                                                --         ██║  ██║  ██║
+     leaf : Tree 0                                                            --         ██║  ██║  ██║
+     node : ∀ {n m} → A → Tree n → Tree m → Tree (1 + n + m)                  --         ██║  ██║  ██║
+                                                                              --         ██║  ██║  ██║
+   -- A substitution operator, to clean things up.                            --         ██║  ██║  ██║
+   _⇒_⟅_⟆ : ∀ {n} → Tree n → ∀ m → n ≈ m → Tree m                             --         ██║  ██║  ██║
+   x ⇒ _ ⟅ n≈m ⟆ = subst Tree n≈m x                                           --         ██║  ██║  ██║
+                                                                              --         ██║  ██║  ██║
+   _∪_ : ∀ {n m} → Tree n → Tree m → Tree (n + m)                             --         ██║  ██║  ██║
+   leaf ∪ ys = ys                                                             --         ██║  ██║  ██║
+   node {a} {b} x xl xr ∪ leaf =                                              --         ██║  ██║  ██║
+     node x xl xr ⇒ (1 + a + b) + 0 ⟅ solveOver (a ∷ b ∷ []) Nat.ring ⟆       --     ██╗ ██║  ██║  ██║
+   node {a} {b} x xl xr ∪ node {c} {d} y yl yr =                              --   ████║ ██║  ██║  ██║
+     let sz = (1 + a + b) + (1 + c + d)                                       -- ██████████║  ██║  ██║
+         vs = a ∷ b ∷ c ∷ d ∷ []                                              --   ████╔═██║  ██║  ██║
+     in if x ≤ y                                                              --     ██║ ██║  ██║  ██║
+          then node x (node y yl yr ∪ xr) xl ⇒ sz ⟅ solveOver vs Nat.ring ⟆   --     ╚═╝ ██║  ██║  ██║
+          else node y (node x xl xr ∪ yr) yl ⇒ sz ⟅ solveOver vs Nat.ring ⟆   --         ██║  ██║  ██║
+--                                                                            --         ██║  ██║  ██║
 --------------------------------------------------------------------------------         ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║
 --             8888888 8888888888 8 8888        8 8 8888888888                --         ██║  ██║  ██║
@@ -210,14 +255,13 @@ module NatExamples where                                                      --
 -- reflection-based solver will automatically construct the new proof.        --         ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║
 module OldSolver where                                                        --         ██║  ██║  ██║
-  open import Relation.Binary.PropositionalEquality                           --         ██║  ██║  ██║
   open import Data.Nat                                                        --         ██║  ██║  ██║
   open import Data.Nat.Solver using (module +-*-Solver)                       --         ██║  ██║  ██║
   open +-*-Solver                                                             --         ██║  ██║  ██║
                                                                               --     ██╗ ██║  ██║  ██║
   lemma : ∀ x y → x + y * 1 + 3 ≡ 2 + 1 + y + x                               --   ████║ ██║  ██║  ██║
   lemma = +-*-Solver.solve 2                                                  -- ██████████║  ██║  ██║
-    (λ x y → x :+ y :* con 1 :+ con 3 := con 2 :+ con 1 :+ y :+ x) refl       --   ████╔═██║  ██║  ██║
+    (λ x y → x :+ y :* con 1 :+ con 3 := con 2 :+ con 1 :+ y :+ x) ≡.refl     --   ████╔═██║  ██║  ██║
 --                                                                            --     ██║ ██║  ██║  ██║
 --------------------------------------------------------------------------------     ╚═╝ ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║
@@ -261,11 +305,9 @@ module OldSolver where                                                        --
 --                                                                            --         ██║  ██║  ██║
 module TracedExamples where                                                   --         ██║  ██║  ██║
   import Data.Nat.Show                                                        --         ██║  ██║  ██║
-  open import Data.List using (_∷_; [])                                       --         ██║  ██║  ██║
   open import EqBool                                                          --         ██║  ██║  ██║
   open import Relation.Traced Nat.ring  Data.Nat.Show.show public             --         ██║  ██║  ██║
   open AlmostCommutativeRing tracedRing                                       --         ██║  ██║  ██║
-  open import Relation.Binary.PropositionalEquality as ≡ using (_≡_)          --         ██║  ██║  ██║
                                                                               --         ██║  ██║  ██║
   lemma : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x                               --         ██║  ██║  ██║
   lemma = solve tracedRing                                                    --         ██║  ██║  ██║
