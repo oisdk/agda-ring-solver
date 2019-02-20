@@ -14,18 +14,31 @@ open import Data.Nat.Table as Table using (Table)
 open import Data.String using (String)
 open import Data.Maybe as Maybe using (Maybe; just; nothing)
 
+module _ {a} {A : Set a} where
+  pure : A → TC A
+  pure = returnTC
+
+  infixl 3 _<|>_
+  _<|>_ : TC A → TC A → TC A
+  _<|>_ = catchTC
+
 module _ {a b} {A : Set a} {B : Set b} where
+  infixl 1 _>>=_ _>>_
   _>>=_ : TC A → (A → TC B) → TC B
   _>>=_ = bindTC
 
   _>>_ : TC A → TC B → TC B
   xs >> ys = xs ⟨ bindTC ⟩ λ _ → ys
 
+  infixl 4 _<$>_ _<*>_ _<$_
   _<*>_ : TC (A → B) → TC A → TC B
   fs <*> xs = fs ⟨ bindTC ⟩ λ f → xs ⟨ bindTC ⟩ λ x → returnTC (f x)
 
-pure : ∀ {a} {A : Set a} → A → TC A
-pure = returnTC
+  _<$>_ : (A → B) → TC A → TC B
+  f <$> xs = xs ⟨ bindTC ⟩ λ x → pure (f x)
+
+  _<$_ : A → TC B → TC A
+  x <$ xs = xs ⟨ bindTC ⟩ λ _ → pure x
 
 infixr 5 _⟨∷⟩_ _⟅∷⟆_
 pattern _⟨∷⟩_ x xs = arg (arg-info visible relevant) x ∷ xs
@@ -55,3 +68,7 @@ hlams vs xs = List.foldr (λ v vs → lam hidden (abs v vs)) xs vs
 
 vlams : List String → Term → Term
 vlams vs xs = List.foldr (λ v vs → lam visible (abs v vs)) xs vs
+
+
+example : TC Term → TC (List (Arg Term)) → TC (List (Arg Term))
+example x xs = ⦇ x ⟨∷⟩ xs ⦈

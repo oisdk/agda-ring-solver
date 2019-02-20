@@ -5,11 +5,10 @@ module Polynomial.Simple.Reflection where
 open import Agda.Builtin.Reflection
 open import Reflection
 open import Function
-open import Data.Unit using (⊤)
+open import Data.Unit using (⊤; tt)
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 open import Data.List as List using (List; _∷_; []; foldr)
 open import Reflection.Helpers
-
 
 module Internal (rng : Term) where
   open import Polynomial.Simple.Solver renaming (solve to solve′)
@@ -18,6 +17,7 @@ module Internal (rng : Term) where
   import Data.Vec as Vec
   import Data.Fin as Fin
   open import Data.Maybe as Maybe using (Maybe; just; nothing)
+  open AlmostCommutativeRing
 
   open import Data.Nat.Table
 
@@ -31,7 +31,7 @@ module Internal (rng : Term) where
     infixr 5 E⟅∷⟆_
     E⟅∷⟆_ : List (Arg Term) → List (Arg Term)
     E⟅∷⟆ xs = 1 ⋯⟅∷⟆
-              (quote AlmostCommutativeRing.Carrier ⟨ def ⟩ 2 ⋯⟅∷⟆ rng ⟨∷⟩ []) ⟅∷⟆
+              (quote Carrier ⟨ def ⟩ 2 ⋯⟅∷⟆ rng ⟨∷⟩ []) ⟅∷⟆
               natTerm numVars ⟅∷⟆
               xs
 
@@ -45,20 +45,20 @@ module Internal (rng : Term) where
         -- simple as "Carrier → Carrier → Carrier": there may be hidden
         -- arguments, etc. Here, we do our best to handle those cases,
         -- by just taking the last two explicit arguments.
-        getBinOp : Name → List (Arg Term) → Term
-        getBinOp nm (x ⟨∷⟩ y ⟨∷⟩ []) = nm ⟨ con ⟩ E⟅∷⟆ toExpr x ⟨∷⟩ toExpr y ⟨∷⟩ []
+        getBinOp : Name → List (Arg Term) → TC Term
+        getBinOp nm (x ⟨∷⟩ y ⟨∷⟩ []) = con nm ∘′ E⟅∷⟆_ <$> ⦇ toExpr x ⟨∷⟩ ⦇ toExpr y ⟨∷⟩ pure [] ⦈ ⦈
         getBinOp nm (x ∷ xs) = getBinOp nm xs
-        getBinOp _ _ = unknown
+        getBinOp _ _ = typeError (strErr "getBinOp" ∷ [])
 
-        getUnOp : Name → List (Arg Term) → Term
-        getUnOp nm (x ⟨∷⟩ []) = nm ⟨ con ⟩ E⟅∷⟆ toExpr x ⟨∷⟩ []
+        getUnOp : Name → List (Arg Term) → TC Term
+        getUnOp nm (x ⟨∷⟩ []) = (λ x′ → nm ⟨ con ⟩ E⟅∷⟆ x′ ⟨∷⟩ []) <$> toExpr x
         getUnOp nm (x ∷ xs) = getUnOp nm xs
-        getUnOp _ _ = unknown
+        getUnOp _ _ = typeError (strErr "getUnOp" ∷ [])
 
-        getExp : List (Arg Term) → Term
-        getExp (x ⟨∷⟩ y ⟨∷⟩ []) = quote _⊛_ ⟨ con ⟩ E⟅∷⟆ toExpr x ⟨∷⟩ y ⟨∷⟩ []
+        getExp : List (Arg Term) → TC Term
+        getExp (x ⟨∷⟩ y ⟨∷⟩ []) = (λ x′ → quote _⊛_ ⟨ con ⟩ E⟅∷⟆ x′ ⟨∷⟩ y ⟨∷⟩ []) <$> toExpr x
         getExp (x ∷ xs) = getExp xs
-        getExp _ = unknown
+        getExp _ = typeError (strErr "getExp" ∷ [])
 
         -- When trying to figure out the shape of an expression, one of
         -- the difficult tasks is recognizing where constants in the
@@ -71,21 +71,24 @@ module Internal (rng : Term) where
         -- We're in luck, though, because all other cases in the following
         -- function *are* recognizable. As a result, the "catch-all" case
         -- will just assume that it has a constant expression.
-        toExpr : Term → Term
-        toExpr (def (quote AlmostCommutativeRing._+_) xs) = getBinOp (quote _⊕_) xs
-        toExpr (def (quote AlmostCommutativeRing._*_) xs) = getBinOp (quote _⊗_) xs
-        toExpr (def (quote AlmostCommutativeRing._^_) xs) = getExp xs
-        toExpr (def (quote AlmostCommutativeRing.-_) xs) = getUnOp (quote ⊝_) xs
-        toExpr v@(var x _) = Maybe.fromMaybe (constExpr v) (varExpr x)
-        toExpr t = constExpr t
+        toExpr : Term → TC Term
+        toExpr (def (quote _+_) xs) = getBinOp (quote _⊕_) xs
+        toExpr (def (quote _*_) xs) = getBinOp (quote _⊗_) xs
+        toExpr (def (quote _^_) xs) = getExp xs
+        toExpr (def (quote -_) xs) = getUnOp (quote ⊝_) xs
+        toExpr v@(var x _) = pure $ Maybe.fromMaybe (constExpr v) (varExpr x)
+        toExpr t = pure $ constExpr t
 
-    mkSolver : List String → Term → Term → List (Arg Type)
-    mkSolver nms lhs rhs =
+    callSolver : List String → Term → Term → TC (List (Arg Type))
+    callSolver nms lhs rhs = do
+      lhs′ ← toExpr lhs
+      rhs′ ← toExpr rhs
+      pure $
         2 ⋯⟅∷⟆
         rng ⟨∷⟩
         natTerm numVars ⟨∷⟩
-        vlams nms (quote _⊜_ ⟨ def ⟩ 2 ⋯⟅∷⟆ rng ⟨∷⟩ natTerm numVars ⟨∷⟩ toExpr lhs ⟨∷⟩ toExpr rhs ⟨∷⟩ []) ⟨∷⟩
-        hlams nms (quote AlmostCommutativeRing.refl ⟨ def ⟩ 2 ⋯⟅∷⟆ rng ⟨∷⟩ 1 ⋯⟅∷⟆ []) ⟨∷⟩
+        vlams nms (quote _⊜_ ⟨ def ⟩ 2 ⋯⟅∷⟆ rng ⟨∷⟩ natTerm numVars ⟨∷⟩ lhs′ ⟨∷⟩ rhs′ ⟨∷⟩ []) ⟨∷⟩
+        hlams nms (quote refl ⟨ def ⟩ 2 ⋯⟅∷⟆ rng ⟨∷⟩ 1 ⋯⟅∷⟆ []) ⟨∷⟩
         []
       where
       varExpr : ℕ → Maybe Term
@@ -94,21 +97,24 @@ module Internal (rng : Term) where
       ... | no _ = nothing
       open ToExpr varExpr
 
-    mkSolver′ : Table → Term → Term → Term
-    mkSolver′ t lhs rhs =
-      quote AlmostCommutativeRing.trans ⟨ def ⟩
-        2 ⋯⟅∷⟆
-        rng ⟨∷⟩
-        3 ⋯⟅∷⟆
-        (quote AlmostCommutativeRing.sym ⟨ def ⟩
-            (2 ⋯⟅∷⟆
-            rng ⟨∷⟩
-            2 ⋯⟅∷⟆
-            (quote Ops.correct ⟨ def ⟩ 2 ⋯⟅∷⟆ rng ⟨∷⟩ 1 ⋯⟅∷⟆ toExpr lhs ⟨∷⟩ ρ ⟨∷⟩ []) ⟨∷⟩
-            []))
-        ⟨∷⟩
-        (quote Ops.correct ⟨ def ⟩ 2 ⋯⟅∷⟆ rng ⟨∷⟩ 1 ⋯⟅∷⟆ toExpr rhs ⟨∷⟩ ρ ⟨∷⟩ []) ⟨∷⟩
-        []
+    constructSoln : Table → Term → Term → TC Term
+    constructSoln t lhs rhs = do
+      lhs′ ← toExpr lhs
+      rhs′ ← toExpr rhs
+      pure $
+        quote trans ⟨ def ⟩
+          2 ⋯⟅∷⟆
+          rng ⟨∷⟩
+          3 ⋯⟅∷⟆
+          (quote sym ⟨ def ⟩
+              (2 ⋯⟅∷⟆
+              rng ⟨∷⟩
+              2 ⋯⟅∷⟆
+              (quote Ops.correct ⟨ def ⟩ 2 ⋯⟅∷⟆ rng ⟨∷⟩ 1 ⋯⟅∷⟆ lhs′ ⟨∷⟩ ρ ⟨∷⟩ []) ⟨∷⟩
+              []))
+          ⟨∷⟩
+          (quote Ops.correct ⟨ def ⟩ 2 ⋯⟅∷⟆ rng ⟨∷⟩ 1 ⋯⟅∷⟆ rhs′ ⟨∷⟩ ρ ⟨∷⟩ []) ⟨∷⟩
+          []
       where
       varExpr : ℕ → Maybe Term
       varExpr i = Maybe.map (λ x → quote Ι ⟨ con ⟩ E⟅∷⟆ finTerm x ⟨∷⟩ []) (member i t)
@@ -121,9 +127,9 @@ module Internal (rng : Term) where
   toSoln t′ = go 0 id t′
     where
     go : ℕ → (List String → List String) → Term → TC Term
-    go i k (def f (            lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = returnTC $ quote solve′ ⟨ def ⟩ mkSolver i (k []) lhs rhs
-    go i k (def f (    _ ∷ _ ∷ lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = returnTC $ quote solve′ ⟨ def ⟩ mkSolver i (k []) lhs rhs
-    go i k (def f (_ ∷ _ ∷ _ ∷ lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = returnTC $ quote solve′ ⟨ def ⟩ mkSolver i (k []) lhs rhs
+    go i k (def f (            lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = def (quote solve′) <$> callSolver i (k []) lhs rhs
+    go i k (def f (    _ ∷ _ ∷ lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = def (quote solve′) <$> callSolver i (k []) lhs rhs
+    go i k (def f (_ ∷ _ ∷ _ ∷ lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = def (quote solve′) <$> callSolver i (k []) lhs rhs
     go i k (pi a (abs s x)) = go (suc i) (k ∘ (s ∷_)) x
     go i k t = typeError (strErr "Malformed call to solve." ∷
                           strErr "Expected target type to be like: ∀ x y → x + y ≈ y + x." ∷
@@ -133,7 +139,7 @@ module Internal (rng : Term) where
 
   listType : Term → TC Term
   listType t =
-    checkType t (def (quote List) (1 ⋯⟅∷⟆ def (quote AlmostCommutativeRing.Carrier) (2 ⋯⟅∷⟆ rng ⟨∷⟩ []) ⟨∷⟩ [])) ⟨ bindTC ⟩ normalise
+    checkType t (def (quote List) (1 ⋯⟅∷⟆ def (quote Carrier) (2 ⋯⟅∷⟆ rng ⟨∷⟩ []) ⟨∷⟩ [])) ⟨ bindTC ⟩ normalise
 
   checkRing : TC Term
   checkRing = checkType rng (def (quote AlmostCommutativeRing) (unknown ⟨∷⟩ unknown ⟨∷⟩ []))
@@ -142,9 +148,9 @@ module Internal (rng : Term) where
   toSoln′ t′ xs′ = go [] t′ xs′
     where
     go′ : Table → Term → TC Term
-    go′ i (def f (            lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = returnTC $ mkSolver′ (List.length i) i lhs rhs
-    go′ i (def f (_ ∷ _ ∷     lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = returnTC $ mkSolver′ (List.length i) i lhs rhs
-    go′ i (def f (_ ∷ _ ∷ _ ∷ lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = returnTC $ mkSolver′ (List.length i) i lhs rhs
+    go′ i (def f (            lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = constructSoln (List.length i) i lhs rhs
+    go′ i (def f (_ ∷ _ ∷     lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = constructSoln (List.length i) i lhs rhs
+    go′ i (def f (_ ∷ _ ∷ _ ∷ lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = constructSoln (List.length i) i lhs rhs
     go′ _ _ = typeError (strErr "Malformed call to solveOver." ∷
                          strErr "Target type should be an equality like x + y ≈ y + x." ∷
                          strErr "Instead: " ∷
@@ -173,7 +179,9 @@ macro
   solve rng′ hole = do
     rng ← checkRing (def rng′ [])
     commitTC
-    inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ toSoln rng ⟨ bindTC ⟩ unify hole
+    soln ← inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ toSoln rng
+    commitTC
+    unify hole soln
 
 -- Use this macro when you want to solve something *under* a lambda. For example:
 -- say you have a long proof, and you just want the solver to deal with an
@@ -201,4 +209,6 @@ macro
     commitTC
     i ← listType rng i′
     commitTC
-    inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ toSoln′ rng i ⟨ bindTC ⟩ unify hole
+    soln ← inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ toSoln′ rng i
+    commitTC
+    unify hole soln
