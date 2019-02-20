@@ -251,12 +251,13 @@ drop-1⇒lookup (Fin.suc i) (ρ ∷ ρs) = drop-1⇒lookup i ρs
 poly-foldR : ∀ {n} ρ ρs
         → ([f] : Fold n)
         → (f : Carrier → Carrier)
+        → (∀ {x y} → x ≈ y → f x ≈ f y)
         → (∀ x y → x * f y ≈ f (x * y))
-        → (∀ y {ys} zs → Σ?⟦ ys ⟧ (ρ , ρs) ≈ f (Σ?⟦ zs ⟧ (ρ , ρs)) → [f] (y , ys) ⟦∷⟧ (ρ , ρs) ≈ f ((y , zs) ⟦∷⟧ (ρ , ρs)) )
+        → (∀ y {ys} zs → Σ?⟦ ys ⟧ (ρ , ρs) ≈ f (Σ?⟦ zs ⟧ (ρ , ρs)) → [f] (y , ys) ⟦∷⟧? (ρ , ρs) ≈ f ((y , zs) ⟦∷⟧? (ρ , ρs)) )
         → (f 0# ≈ 0#)
         → ∀ xs
         → Σ?⟦ para [f] xs ⟧ (ρ , ρs) ≈ f (Σ⟦ xs ⟧ (ρ , ρs))
-poly-foldR ρ ρs f e dist step base (x ≠0 Δ suc i & []) =
+poly-foldR ρ ρs f e cng dist step base (x ≠0 Δ suc i & []) =
   let y,ys = f (x , [])
       y = proj₁ y,ys
       ys = proj₂ y,ys
@@ -265,12 +266,16 @@ poly-foldR ρ ρs f e dist step base (x ≠0 Δ suc i & []) =
     Σ?⟦ y Δ suc i ∷↓ ys ⟧ (ρ , ρs)
   ≈⟨ ∷↓-hom-s y i ys ρ ρs ⟩
     (ρ ^ i +1) * ((y , ys) ⟦∷⟧ (ρ , ρs))
+  ≈˘⟨ *≫ ⟦∷⟧?-hom y ys ρ ρs ⟩
+    (ρ ^ i +1) * ((y , ys) ⟦∷⟧? (ρ , ρs))
   ≈⟨ *≫ step x [] (sym base) ⟩
+    (ρ ^ i +1) * e ((x , []) ⟦∷⟧? (ρ , ρs))
+  ≈⟨ *≫ cng (⟦∷⟧?-hom x [] ρ ρs) ⟩
     (ρ ^ i +1) * e ((x , []) ⟦∷⟧ (ρ , ρs))
   ≈⟨ dist _ _   ⟩
     e (ρ ^ i +1 * ((x , []) ⟦∷⟧ (ρ , ρs)))
   ∎
-poly-foldR ρ ρs f e dist step base (x ≠0 Δ suc i & [ xs ]) =
+poly-foldR ρ ρs f e cng dist step base (x ≠0 Δ suc i & [ xs ]) =
   let ys = para f xs
       y,zs = f (x , ys)
       y = proj₁ y,zs
@@ -280,12 +285,16 @@ poly-foldR ρ ρs f e dist step base (x ≠0 Δ suc i & [ xs ]) =
     Σ?⟦ y Δ suc i ∷↓ zs ⟧ (ρ , ρs)
   ≈⟨ ∷↓-hom-s y i zs ρ ρs ⟩
     (ρ ^ i +1) * ((y , zs) ⟦∷⟧ (ρ , ρs))
-  ≈⟨ *≫ step x [ xs ] (poly-foldR ρ ρs f e dist step base xs) ⟩
+  ≈˘⟨ *≫ ⟦∷⟧?-hom y zs ρ ρs ⟩
+    (ρ ^ i +1) * ((y , zs) ⟦∷⟧? (ρ , ρs))
+  ≈⟨ *≫ step x [ xs ] (poly-foldR ρ ρs f e cng dist step base xs) ⟩
+    (ρ ^ i +1) * e ((x , [ xs ]) ⟦∷⟧? (ρ , ρs))
+  ≈⟨ *≫ cng (⟦∷⟧?-hom x [ xs ] ρ ρs) ⟩
     (ρ ^ i +1) * e ((x , [ xs ]) ⟦∷⟧ (ρ , ρs))
   ≈⟨ dist _ _   ⟩
     e (ρ ^ i +1 * ((x , [ xs ]) ⟦∷⟧ (ρ , ρs)))
   ∎
-poly-foldR ρ ρs f e dist step base (x ≠0 Δ ℕ.zero & []) =
+poly-foldR ρ ρs f e cng dist step base (x ≠0 Δ ℕ.zero & []) =
   let y,zs = f (x , [])
       y = proj₁ y,zs
       zs = proj₂ y,zs
@@ -294,10 +303,14 @@ poly-foldR ρ ρs f e dist step base (x ≠0 Δ ℕ.zero & []) =
     Σ?⟦ y Δ ℕ.zero ∷↓ zs ⟧ (ρ , ρs)
   ≈⟨ ∷↓-hom-0 y zs ρ ρs ⟩
     ((y , zs) ⟦∷⟧ (ρ , ρs))
+  ≈˘⟨ ⟦∷⟧?-hom y zs ρ ρs ⟩
+    ((y , zs) ⟦∷⟧? (ρ , ρs))
   ≈⟨ step x [] (sym base) ⟩
+    e ((x , []) ⟦∷⟧? (ρ , ρs))
+  ≈⟨ cng (⟦∷⟧?-hom x [] ρ ρs) ⟩
     e ((x , []) ⟦∷⟧ (ρ , ρs))
   ∎
-poly-foldR ρ ρs f e dist step base (x ≠0 Δ ℕ.zero & [ xs ]) =
+poly-foldR ρ ρs f e cng dist step base (x ≠0 Δ ℕ.zero & [ xs ]) =
   let ys = para f xs
       y,zs = f (x , ys)
       y = proj₁ y,zs
@@ -307,58 +320,34 @@ poly-foldR ρ ρs f e dist step base (x ≠0 Δ ℕ.zero & [ xs ]) =
     Σ?⟦ y Δ ℕ.zero ∷↓ zs ⟧ (ρ , ρs)
   ≈⟨ ∷↓-hom-0 y zs ρ ρs ⟩
     ((y , zs) ⟦∷⟧ (ρ , ρs))
-  ≈⟨ step x [ xs ] (poly-foldR ρ ρs f e dist step base xs) ⟩
+  ≈˘⟨ ⟦∷⟧?-hom y zs ρ ρs ⟩
+    ((y , zs) ⟦∷⟧? (ρ , ρs))
+  ≈⟨ step x [ xs ] (poly-foldR ρ ρs f e cng dist step base xs) ⟩
+    e ((x , [ xs ]) ⟦∷⟧ (ρ , ρs))
+  ≈⟨ cng (⟦∷⟧?-hom x [ xs ] ρ ρs) ⟩
     e ((x , [ xs ]) ⟦∷⟧ (ρ , ρs))
   ∎
 
 poly-mapR : ∀ {n} ρ ρs
           → ([f] : Poly n → Poly n)
           → (f : Carrier → Carrier)
+          → (∀ {x y} → x ≈ y → f x ≈ f y)
           → (∀ x y → x * f y ≈ f (x * y))
           → (∀ x y → f (x + y) ≈ f x + f y)
           → (∀ y → ⟦ [f] y ⟧ ρs ≈ f (⟦ y ⟧ ρs) )
           → (f 0# ≈ 0#)
           → ∀ xs
           → Σ?⟦ poly-map [f] xs ⟧ (ρ , ρs) ≈ f (Σ⟦ xs ⟧ (ρ , ρs))
-poly-mapR ρ ρs [f] f *-dist +-dist step′ base xs = poly-foldR ρ ρs (map₁ [f]) f *-dist step base xs
+poly-mapR ρ ρs [f] f cng *-dist +-dist step′ base xs = poly-foldR ρ ρs (map₁ [f]) f cng *-dist step base xs
   where
-  step : ∀ y {ys} zs → Σ?⟦ ys ⟧ (ρ , ρs) ≈ f (Σ?⟦ zs ⟧ (ρ , ρs)) →(map₁ [f] (y , ys) ⟦∷⟧ (ρ , ρs)) ≈ f ((y , zs) ⟦∷⟧ (ρ , ρs))
-  step y {[]} [] ys≋zs = step′ y
-  step y {[]} [ zs ] ys≋zs =
+  step : ∀ y {ys} zs → Σ?⟦ ys ⟧ (ρ , ρs) ≈ f (Σ?⟦ zs ⟧ (ρ , ρs)) →(map₁ [f] (y , ys) ⟦∷⟧? (ρ , ρs)) ≈ f ((y , zs) ⟦∷⟧? (ρ , ρs))
+  step y {ys} zs ys≋zs =
     begin
-      ⟦ [f] y ⟧ ρs
-    ≈⟨ step′ y ⟩
-      f (⟦ y ⟧ ρs)
-    ≈⟨ sym (+-identityˡ _) ⟩
-      0# + f (⟦ y ⟧ ρs)
-    ≈⟨ ≪+ sym (zeroʳ _) ⟩
-      ρ * 0# + f (⟦ y ⟧ ρs)
-    ≈⟨ ≪+ *≫ ys≋zs ⟩
-      ρ * f (Σ⟦ zs ⟧ (ρ , ρs)) + f (⟦ y ⟧ ρs)
-    ≈⟨ ≪+ (*-dist _ _) ⟩
-      f (ρ * Σ⟦ zs ⟧ (ρ , ρs)) + f (⟦ y ⟧ ρs)
-    ≈⟨ sym (+-dist _ _) ⟩
-      f (ρ * Σ⟦ zs ⟧ (ρ , ρs) + ⟦ y ⟧ ρs)
-    ∎
-  step y {[ ys ]} [] ys≋zs =
-    begin
-      ρ * Σ⟦ ys ⟧ (ρ , ρs) + ⟦ [f] y ⟧ ρs
-    ≈⟨ ≪+ *≫ (ys≋zs ⟨ trans ⟩ base) ⟩
-      ρ * 0# + ⟦ [f] y ⟧ ρs
-    ≈⟨ ≪+ zeroʳ _ ⟩
-      0# + ⟦ [f] y ⟧ ρs
-    ≈⟨ +-identityˡ _ ⟩
-      ⟦ [f] y ⟧ ρs
-    ≈⟨ step′ y ⟩
-      f (⟦ y ⟧ ρs)
-    ∎
-  step y {[ ys ]} [ zs ] ys≋zs =
-    begin
-      map₁ [f] (y , [ ys ]) ⟦∷⟧ (ρ , ρs)
+      map₁ [f] (y , ys) ⟦∷⟧? (ρ , ρs)
     ≡⟨⟩
-      ρ * Σ⟦ ys ⟧ (ρ , ρs) + ⟦ [f] y ⟧ ρs
+      ρ * Σ?⟦ ys ⟧ (ρ , ρs) + ⟦ [f] y ⟧ ρs
     ≈⟨ ((*≫ ys≋zs) ⟨ trans ⟩ *-dist ρ _) ⟨ +-cong ⟩ step′ y ⟩
-      f (ρ * Σ⟦ zs ⟧ (ρ , ρs)) + f (⟦ y ⟧ ρs)
+      f (ρ * Σ?⟦ zs ⟧ (ρ , ρs)) + f (⟦ y ⟧ ρs)
     ≈⟨ sym (+-dist _ _) ⟩
-      f ((y , [ zs ]) ⟦∷⟧ (ρ , ρs))
+      f ((y , zs) ⟦∷⟧? (ρ , ρs))
     ∎

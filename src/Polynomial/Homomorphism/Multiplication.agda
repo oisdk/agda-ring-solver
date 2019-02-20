@@ -72,6 +72,7 @@ mutual
       Ρ
       (⊠-Κ a x)
       (⟦ x ⟧ᵣ *_)
+      (*-cong refl)
       reassoc
       (distribˡ ⟦ x ⟧ᵣ)
       (λ ys → ⊠-Κ-hom a x ys Ρ)
@@ -136,6 +137,7 @@ mutual
       Σ?⟦ poly-map ( (⊠-Σ-inj (wf _ j≤n) i≤j-1 xs)) ys ⟧ (ρ , Ρ)
     ≈⟨ poly-mapR ρ Ρ (⊠-Σ-inj (wf _ j≤n) i≤j-1 xs)
                      (_ *_)
+                     (*-cong refl)
                      reassoc
                      (distribˡ _)
                      (λ y → ⊠-Σ-inj-hom (wf _ j≤n) i≤j-1 xs y _)
@@ -154,6 +156,7 @@ mutual
       Σ?⟦ poly-map ( (⊠-Σ-inj (wf _ i≤n) j≤i-1 ys)) xs ⟧ (ρ , Ρ)
     ≈⟨ poly-mapR ρ Ρ (⊠-Σ-inj (wf _ i≤n) j≤i-1 ys)
                      (_ *_)
+                     (*-cong refl)
                      reassoc
                      (distribˡ _)
                      (λ x → ⊠-Σ-inj-hom (wf _ i≤n) j≤i-1 ys x _)
@@ -183,7 +186,7 @@ mutual
       Σ?⟦ poly-map (⊠-step′ a y) xs ⍓⋆ j ⟧ (ρ , Ρ)
     ≈⟨ sym (pow′-hom j (poly-map (⊠-step′ a y) xs) ρ Ρ) ⟩
       Σ?⟦ poly-map (⊠-step′ a y) xs ⟧ (ρ , Ρ) *⟨ ρ ⟩^ j
-    ≈⟨ pow-mul-cong (poly-mapR ρ Ρ (⊠-step′ a y) (⟦ y ⟧ Ρ *_) reassoc (distribˡ _) (λ z → ⊠-step′-hom a y z Ρ) (zeroʳ _) xs) ρ j ⟩
+    ≈⟨ pow-mul-cong (poly-mapR ρ Ρ (⊠-step′ a y) (⟦ y ⟧ Ρ *_) (*-cong refl) reassoc (distribˡ _) (λ z → ⊠-step′-hom a y z Ρ) (zeroʳ _) xs) ρ j ⟩
       (⟦ y ⟧ Ρ * Σ⟦ xs ⟧ (ρ , Ρ)) *⟨ ρ ⟩^ j
     ≈⟨ pow-opt _ ρ j ⟩
       (ρ ^ j) * (⟦ y ⟧ Ρ * Σ⟦ xs ⟧ (ρ , Ρ))
@@ -219,7 +222,7 @@ mutual
              → Σ?⟦ para (⊠-cons a y ys) xs ⟧ (ρ , Ρ)
              ≈ Σ⟦ xs ⟧ (ρ , Ρ) * (ρ * Σ⟦ ys ⟧ (ρ , Ρ) + ⟦ y ⟧ Ρ)
   -- ⊠-cons-hom a y [] xs ρ Ρ = {!!}
-  ⊠-cons-hom a y ys xs ρ Ρ = poly-foldR ρ Ρ (⊠-cons a y ys) (_* (ρ * Σ⟦ ys ⟧ (ρ , Ρ) + ⟦ y ⟧ Ρ)) (λ x y → sym (*-assoc x y _)) step (zeroˡ _) xs
+  ⊠-cons-hom a y ys xs ρ Ρ = poly-foldR ρ Ρ (⊠-cons a y ys) (_* (ρ * Σ⟦ ys ⟧ (ρ , Ρ) + ⟦ y ⟧ Ρ)) (flip *-cong refl) (λ x y → sym (*-assoc x y _)) step (zeroˡ _) xs
     where
     step = λ { (z Π j≤n) {ys₁} zs ys≋zs →
       let x′  = ⟦ z Π j≤n ⟧ Ρ
@@ -229,13 +232,10 @@ mutual
           step = λ y → ⊠-step-hom a z j≤n y Ρ
       in
       begin
-        (⊠-step a z j≤n y , ⊞-coeffs (poly-map ( (⊠-step a z j≤n)) ys) ys₁) ⟦∷⟧ (ρ , Ρ)
-      ≈⟨ ⟦∷⟧-hom (⊠-step a z j≤n y) (⊞-coeffs (poly-map ( (⊠-step a z j≤n)) ys) ys₁) ρ Ρ ⟩
-
         ρ * Σ?⟦ ⊞-coeffs (poly-map ( (⊠-step a z j≤n)) ys) ys₁ ⟧ (ρ , Ρ) + ⟦ ⊠-step a z j≤n y ⟧ Ρ
       ≈⟨ (*≫ ⊞-coeffs-hom (poly-map (⊠-step a z j≤n) ys) _ (ρ , Ρ)) ⟨ +-cong ⟩ ⊠-step-hom a z j≤n y Ρ ⟩
         ρ * (Σ?⟦ poly-map (⊠-step a z j≤n) ys ⟧ (ρ , Ρ) + Σ?⟦ ys₁ ⟧ (ρ , Ρ)) + x′ * y′
-      ≈⟨ ≪+ *≫ (poly-mapR ρ Ρ (⊠-step a z j≤n) (x′ *_) reassoc (distribˡ _) step (zeroʳ _) ys ⟨ +-cong ⟩ ys≋zs) ⟩
+      ≈⟨ ≪+ *≫ (poly-mapR ρ Ρ (⊠-step a z j≤n) (x′ *_) (*-cong refl) reassoc (distribˡ _) step (zeroʳ _) ys ⟨ +-cong ⟩ ys≋zs) ⟩
         ρ * (x′ * ys′ + xs′ * (ρ * ys′ + y′)) + (x′ * y′)
       ≈⟨ ≪+ distribˡ _ _ _ ⟩
         ρ * (x′ * ys′) + ρ * (xs′ * (ρ * ys′ + y′)) + (x′ * y′)
@@ -245,8 +245,6 @@ mutual
         ρ * xs′ * (ρ * ys′ + y′) + x′ * (ρ * ys′ + y′)
       ≈⟨ sym (distribʳ _ _ _) ⟩
         (ρ * xs′ + x′) * (ρ * ys′ + y′)
-      ≈⟨ ≪* sym (⟦∷⟧-hom (z Π j≤n) zs ρ Ρ) ⟩
-        (((z Π j≤n) , zs) ⟦∷⟧ (ρ , Ρ)) * (ρ * ys′ + y′)
       ∎ }
 
 ⊠-hom : ∀ {n}
