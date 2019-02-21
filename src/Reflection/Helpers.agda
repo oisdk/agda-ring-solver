@@ -17,31 +17,39 @@ open import Data.Maybe as Maybe using (Maybe; just; nothing)
 module _ {a} {A : Set a} where
   pure : A → TC A
   pure = returnTC
+  {-# INLINE pure #-}
 
   infixl 3 _<|>_
   _<|>_ : TC A → TC A → TC A
   _<|>_ = catchTC
+  {-# INLINE _<|>_ #-}
 
 module _ {a b} {A : Set a} {B : Set b} where
   infixl 1 _>>=_ _>>_ _<&>_
   _>>=_ : TC A → (A → TC B) → TC B
   _>>=_ = bindTC
+  {-# INLINE _>>=_ #-}
 
   _>>_ : TC A → TC B → TC B
-  xs >> ys = xs ⟨ bindTC ⟩ λ _ → ys
+  xs >> ys = bindTC xs (λ _ → ys)
+  {-# INLINE _>>_ #-}
 
   infixl 4 _<$>_ _<*>_ _<$_
   _<*>_ : TC (A → B) → TC A → TC B
-  fs <*> xs = fs ⟨ bindTC ⟩ λ f → xs ⟨ bindTC ⟩ λ x → returnTC (f x)
+  fs <*> xs = bindTC fs (λ f → bindTC xs (λ x → returnTC (f x)))
+  {-# INLINE _<*>_ #-}
 
   _<$>_ : (A → B) → TC A → TC B
-  f <$> xs = xs ⟨ bindTC ⟩ λ x → pure (f x)
+  f <$> xs = bindTC xs (λ x → returnTC (f x))
+  {-# INLINE _<$>_ #-}
 
   _<$_ : A → TC B → TC A
-  x <$ xs = xs ⟨ bindTC ⟩ λ _ → pure x
+  x <$ xs = bindTC xs (λ _ → returnTC x)
+  {-# INLINE _<$_ #-}
 
   _<&>_ : TC A → (A → B) → TC B
-  xs <&> f = xs ⟨ bindTC ⟩ λ x → pure (f x)
+  xs <&> f = bindTC xs (λ x → returnTC (f x))
+  {-# INLINE _<&>_ #-}
 
 infixr 5 _⟨∷⟩_ _⟅∷⟆_
 pattern _⟨∷⟩_ x xs = arg (arg-info visible relevant) x ∷ xs
@@ -51,6 +59,7 @@ infixr 5 _⋯⟅∷⟆_
 _⋯⟅∷⟆_ : ℕ → List (Arg Term) → List (Arg Term)
 zero  ⋯⟅∷⟆ xs = xs
 suc i ⋯⟅∷⟆ xs = unknown ⟅∷⟆ i ⋯⟅∷⟆ xs
+{-# INLINE _⋯⟅∷⟆_ #-}
 
 ℕ′ : ℕ → Term
 ℕ′ zero = quote zero ⟨ con ⟩ []
