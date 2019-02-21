@@ -196,26 +196,29 @@ macro
 -- do. You'll need the combinators defined in Relation.Binary.Reasoning.Inference.
 -- These are just as powerful as the others, but have slightly better inference properties.
 
+solveOver-macro : Term → Name → Term → TC ⊤
+solveOver-macro i ring hole = do
+  ring′ ← def ring [] ∈Ring
+  commitTC
+  let open OverRing ring′
+  nms ← ring⇓
+  i′ ← i ∈List⟨Carrier⟩
+  commitTC
+  hole′ ← inferType hole >>= reduce
+  just vars′ ← pure (vars i′)
+    where nothing → typeError (strErr "Malformed call to solveOver." ∷
+                                strErr "First argument should be a list of free variables." ∷
+                                strErr "Instead: " ∷
+                                termErr i′ ∷
+                                [])
+  just (lhs ∷ rhs ∷ []) ← pure (getArgs 2 hole′)
+    where nothing → typeError (strErr "Malformed call to solveOver." ∷
+                                strErr "First argument should be a list of free variables." ∷
+                                strErr "Instead: " ∷
+                                termErr hole′ ∷
+                                [])
+  unify hole (constructSoln nms (List.length vars′) vars′ lhs rhs)
+
 macro
   solveOver : Term → Name → Term → TC ⊤
-  solveOver i ring hole = do
-    ring′ ← def ring [] ∈Ring
-    commitTC
-    let open OverRing ring′
-    nms ← ring⇓
-    i′ ← i ∈List⟨Carrier⟩
-    commitTC
-    hole′ ← inferType hole >>= reduce
-    just vars′ ← pure (vars i′)
-      where nothing → typeError (strErr "Malformed call to solveOver." ∷
-                                 strErr "First argument should be a list of free variables." ∷
-                                 strErr "Instead: " ∷
-                                 termErr i′ ∷
-                                 [])
-    just (lhs ∷ rhs ∷ []) ← pure (getArgs 2 hole′)
-      where nothing → typeError (strErr "Malformed call to solveOver." ∷
-                                 strErr "First argument should be a list of free variables." ∷
-                                 strErr "Instead: " ∷
-                                 termErr hole′ ∷
-                                 [])
-    unify hole (constructSoln nms (List.length vars′) vars′ lhs rhs)
+  solveOver = solveOver-macro

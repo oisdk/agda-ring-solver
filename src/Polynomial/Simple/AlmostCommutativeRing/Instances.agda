@@ -17,6 +17,15 @@ module Nat where
       *-+-commutativeSemiring
       λ { zero → just refl; _ → nothing }
 
+  module Reflection where
+    open import Polynomial.Simple.Reflection using (solveOver-macro)
+    open import Reflection using (Term; TC)
+    open import Data.Unit using (⊤)
+
+    macro
+      ∀⟨_⟩ : Term → Term → TC ⊤
+      ∀⟨ n ⟩ = solveOver-macro n (quote ring)
+
 module Int where
   open import Data.Nat using (zero)
   open import Data.Integer using (+_)
@@ -29,3 +38,12 @@ module Int where
     fromCommutativeRing
       +-*-commutativeRing
       λ { (+ zero) → just refl; _ → nothing }
+
+  module Reflection where
+    open import Polynomial.Simple.Reflection using (solveOver-macro)
+    open import Reflection using (Term; TC)
+    open import Data.Unit using (⊤)
+
+    macro
+      ∀⟨_⟩ : Term → Term → TC ⊤
+      ∀⟨ n ⟩ = solveOver-macro n (quote ring)

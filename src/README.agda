@@ -145,6 +145,16 @@ module IntExamples where                                                      --
     y * 1 + x + 3 ≈⟨ solveOver (x ∷ y ∷ []) Int.ring ⟩                        --         ██║  ██║  ██║
     3 + y + x     ≡⟨⟩                                                         --         ██║  ██║  ██║
     2 + 1 + y + x ∎                                                           --         ██║  ██║  ██║
+                                                                              --         ██║  ██║  ██║
+  open Int.Reflection                                                         --         ██║  ██║  ██║
+                                                                              --         ██║  ██║  ██║
+  -- There's a shorthand included for Int and Nat.                            --         ██║  ██║  ██║
+  lemma₄ : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x                              --         ██║  ██║  ██║
+  lemma₄ x y = begin                                                          --         ██║  ██║  ██║
+    x + y * 1 + 3 ≈⟨ +-comm x (y * 1) ⟨ +-cong ⟩ refl ⟩                       --         ██║  ██║  ██║
+    y * 1 + x + 3 ≈⟨ ∀⟨ x ∷ y ∷ [] ⟩ ⟩                                        --         ██║  ██║  ██║
+    3 + y + x     ≡⟨⟩                                                         --         ██║  ██║  ██║
+    2 + 1 + y + x ∎                                                           --         ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║
 --------------------------------------------------------------------------------         ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║
@@ -197,18 +207,20 @@ module NatExamples where                                                      --
      node : ∀ {n m} → A → Tree n → Tree m → Tree (n + m + 1)                  --         ██║  ██║  ██║
                                                                               --         ██║  ██║  ██║
    -- A substitution operator, to clean things up.                            --         ██║  ██║  ██║
-   _⇒⟅_⟆ : ∀ {n} → Tree n → ∀ {m} → n ≈ m → Tree m                            --         ██║  ██║  ██║
-   x ⇒⟅ n≈m ⟆ = subst Tree n≈m x                                              --         ██║  ██║  ██║
+   _⇒_ : ∀ {n} → Tree n → ∀ {m} → n ≈ m → Tree m                              --         ██║  ██║  ██║
+   x ⇒ n≈m  = subst Tree n≈m x                                                --         ██║  ██║  ██║
+                                                                              --         ██║  ██║  ██║
+   open Nat.Reflection                                                        --         ██║  ██║  ██║
                                                                               --         ██║  ██║  ██║
    _∪_ : ∀ {n m} → Tree n → Tree m → Tree (n + m)                             --         ██║  ██║  ██║
    leaf ∪ ys = ys                                                             --         ██║  ██║  ██║
    node {a} {b} x xl xr ∪ leaf =                                              --         ██║  ██║  ██║
-     node x xl xr ⇒⟅ solveOver (a ∷ b ∷ []) Nat.ring ⟆                        --     ██╗ ██║  ██║  ██║
+     node x xl xr ⇒ ∀⟨ a ∷ b ∷ [] ⟩                                           --     ██╗ ██║  ██║  ██║
    node {a} {b} x xl xr ∪ node {c} {d} y yl yr with x ≤ y                     --   ████║ ██║  ██║  ██║
    ... | true  = node x (node y yl yr ∪ xr) xl                                -- ██████████║  ██║  ██║
-                   ⇒⟅ solveOver (a ∷ b ∷ c ∷ d ∷ []) Nat.ring ⟆               --   ████╔═██║  ██║  ██║
+                   ⇒ ∀⟨ a ∷ b ∷ c ∷ d ∷ [] ⟩                                  --   ████╔═██║  ██║  ██║
    ... | false = node y (node x xl xr ∪ yr) yl                                --     ██║ ██║  ██║  ██║
-                   ⇒⟅ solveOver (a ∷ b ∷ c ∷ d ∷ []) Nat.ring ⟆               --     ╚═╝ ██║  ██║  ██║
+                   ⇒ ∀⟨ a ∷ b ∷ c ∷ d ∷ [] ⟩                                  --     ╚═╝ ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║
 --------------------------------------------------------------------------------         ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║
