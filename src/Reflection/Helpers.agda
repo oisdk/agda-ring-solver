@@ -23,7 +23,7 @@ module _ {a} {A : Set a} where
   _<|>_ = catchTC
 
 module _ {a b} {A : Set a} {B : Set b} where
-  infixl 1 _>>=_ _>>_
+  infixl 1 _>>=_ _>>_ _<&>_
   _>>=_ : TC A → (A → TC B) → TC B
   _>>=_ = bindTC
 
@@ -40,6 +40,9 @@ module _ {a b} {A : Set a} {B : Set b} where
   _<$_ : A → TC B → TC A
   x <$ xs = xs ⟨ bindTC ⟩ λ _ → pure x
 
+  _<&>_ : TC A → (A → B) → TC B
+  xs <&> f = xs ⟨ bindTC ⟩ λ x → pure (f x)
+
 infixr 5 _⟨∷⟩_ _⟅∷⟆_
 pattern _⟨∷⟩_ x xs = arg (arg-info visible relevant) x ∷ xs
 pattern _⟅∷⟆_ x xs = arg (arg-info hidden  relevant) x ∷ xs
@@ -49,13 +52,13 @@ _⋯⟅∷⟆_ : ℕ → List (Arg Term) → List (Arg Term)
 zero  ⋯⟅∷⟆ xs = xs
 suc i ⋯⟅∷⟆ xs = unknown ⟅∷⟆ i ⋯⟅∷⟆ xs
 
-natTerm : ℕ → Term
-natTerm zero = quote zero ⟨ con ⟩ []
-natTerm (suc i) = quote suc ⟨ con ⟩ natTerm i ⟨∷⟩ []
+ℕ′ : ℕ → Term
+ℕ′ zero = quote zero ⟨ con ⟩ []
+ℕ′ (suc i) = quote suc ⟨ con ⟩ ℕ′ i ⟨∷⟩ []
 
-finTerm : ℕ → Term
-finTerm zero = quote Fin.zero ⟨ con ⟩ 1 ⋯⟅∷⟆ []
-finTerm (suc i) = quote Fin.suc ⟨ con ⟩ 1 ⋯⟅∷⟆ finTerm i ⟨∷⟩ []
+Fin′ : ℕ → Term
+Fin′ zero = quote Fin.zero ⟨ con ⟩ 1 ⋯⟅∷⟆ []
+Fin′ (suc i) = quote Fin.suc ⟨ con ⟩ 1 ⋯⟅∷⟆ Fin′ i ⟨∷⟩ []
 
 curriedTerm : Table → Term
 curriedTerm = List.foldr go (quote Vec.[] ⟨ con ⟩ 2 ⋯⟅∷⟆ []) ∘ Table.toList
@@ -63,12 +66,35 @@ curriedTerm = List.foldr go (quote Vec.[] ⟨ con ⟩ 2 ⋯⟅∷⟆ []) ∘ Tab
   go : ℕ → Term → Term
   go x xs = quote Vec._∷_ ⟨ con ⟩ 3 ⋯⟅∷⟆ var x [] ⟨∷⟩ xs ⟨∷⟩ []
 
-hlams : List String → Term → Term
-hlams vs xs = List.foldr (λ v vs → lam hidden (abs v vs)) xs vs
+hlams : ∀ {n} → Vec String n → Term → Term
+hlams vs xs = Vec.foldr (const Term) (λ v vs → lam hidden (abs v vs)) xs vs
 
-vlams : List String → Term → Term
-vlams vs xs = List.foldr (λ v vs → lam visible (abs v vs)) xs vs
+vlams : ∀ {n} → Vec String n → Term → Term
+vlams vs xs = Vec.foldr (const Term) (λ v vs → lam visible (abs v vs)) xs vs
 
+getVisible : Arg Term → Maybe Term
+getVisible (arg (arg-info visible relevant) x) = just x
+getVisible (arg (arg-info visible irrelevant) x) = nothing
+getVisible (arg (arg-info hidden r) x) = nothing
+getVisible (arg (arg-info instance′ r) x) = nothing
 
-example : TC Term → TC (List (Arg Term)) → TC (List (Arg Term))
-example x xs = ⦇ x ⟨∷⟩ xs ⦈
+getArgs : ∀ n → Term → Maybe (Vec Term n)
+getArgs n (def _ xs) = Maybe.map Vec.reverse (List.foldl f b (List.mapMaybe getVisible xs) n)
+  where
+  f : (∀ n → Maybe (Vec Term n)) → Term → ∀ n → Maybe (Vec Term n)
+  f xs x zero = just Vec.[]
+  f xs x (suc n) = Maybe.map (x Vec.∷_) (xs n)
+
+  b : ∀ n → Maybe (Vec Term n)
+  b zero = just Vec.[]
+  b (suc _ ) = nothing
+getArgs _ _ = nothing
+
+open import Data.Product
+
+underPi : Term → ∃[ n ] (Vec String n × Term)
+underPi = go (λ xs y → _ , xs , y)
+  where
+  go : {A : Set} → (∀ {n} → Vec String n → Term → A) → Term → A
+  go k (pi a (abs s x)) = go (k ∘ (s Vec.∷_)) x
+  go k t = k Vec.[] t

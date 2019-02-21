@@ -2,193 +2,155 @@
 
 module Polynomial.Simple.Reflection where
 
-open import Agda.Builtin.Reflection
 open import Reflection
-open import Function
-open import Data.Unit using (⊤; tt)
-open import Data.Nat as ℕ using (ℕ; suc; zero)
-open import Data.List as List using (List; _∷_; []; foldr)
+open import Agda.Builtin.Reflection using (primQNameEquality; commitTC; reduce)
 open import Reflection.Helpers
-open import Data.Bool as Bool using (Bool; if_then_else_; true; false)
 
-module Internal (rng : Term) where
-  open import Polynomial.Simple.Solver renaming (solve to solve′)
-  open import Data.String
-  open import Relation.Nullary using (Dec; yes; no)
-  import Data.Vec as Vec
-  import Data.Fin as Fin
-  open import Data.Maybe as Maybe using (Maybe; just; nothing)
-  open AlmostCommutativeRing
+open import Polynomial.Simple.Solver renaming (solve to solve-fn)
+open AlmostCommutativeRing
 
-  open import Data.Nat.Table
+open import Data.Nat.Table
 
-  listType : Term → TC Term
-  listType t = checkType t (def (quote List) (1 ⋯⟅∷⟆ def (quote Carrier) (2 ⋯⟅∷⟆ rng ⟨∷⟩ []) ⟨∷⟩ [])) ⟨ bindTC ⟩ normalise
+open import Data.Fin   as Fin   using (Fin)
+open import Data.Vec   as Vec   using (Vec; _∷_; [])
+open import Data.List  as List  using (List; _∷_; [])
+open import Data.Maybe as Maybe using (Maybe; just; nothing; fromMaybe)
+open import Agda.Builtin.Nat    using (_<_)
+open import Data.Nat            using (ℕ; suc; zero)
+open import Data.Bool           using (Bool; if_then_else_; true; false)
+open import Data.Unit           using (⊤)
+open import Data.String         using (String)
+open import Data.Product        using (_,_)
+open import Function
 
-  checkRing : TC Term
-  checkRing = checkType rng (def (quote AlmostCommutativeRing) (unknown ⟨∷⟩ unknown ⟨∷⟩ []))
+module Internal where
+  _∈Ring : Term → TC Term
+  ring ∈Ring = checkType ring (def (quote AlmostCommutativeRing) (unknown ⟨∷⟩ unknown ⟨∷⟩ []))
 
-  getName : Name → TC (Maybe Name)
-  getName nm = go <$> normalise (nm ⟨ def ⟩ 2 ⋯⟅∷⟆ rng ⟨∷⟩ [])
+  vars : Term → Maybe Table
+  vars = go []
     where
-    go : Term → Maybe Name
-    go (def f args) = just f
-    go _ = nothing
+    go : Table → Term → Maybe Table
+    go t (con (quote List._∷_) (_ ∷ _ ∷ var i [] ⟨∷⟩ xs ⟨∷⟩ _)) = go (insert i t) xs
+    go t (con (quote List.List.[]) _) = just t
+    go _ _ = nothing
 
-  record RingNames : Set where
-    constructor ringNames
-    field +′ *′ ^′ -′ : Maybe Name
+  module OverRing (ring : Term) where
+    _∈List⟨Carrier⟩ : Term → TC Term
+    t ∈List⟨Carrier⟩ =
+      checkType t
+        (quote List ⟨ def ⟩ 1 ⋯⟅∷⟆ def (quote Carrier) (2 ⋯⟅∷⟆ ring ⟨∷⟩ []) ⟨∷⟩ []) >>= normalise
 
-  getRingNames : TC RingNames
-  getRingNames = ⦇ ringNames (getName (quote _+_))
-                             (getName (quote _*_))
-                             (getName (quote _^_))
-                             (getName (quote -_)) ⦈
-  module _ (nms : RingNames) where
-    open RingNames nms
+    record Ring⇓ : Set where
+      constructor +⇒_*⇒_^⇒_-⇒_
+      field +′ *′ ^′ -′ : Maybe Name
 
-    module _ (numVars : ℕ) where
+    ring⇓ : TC Ring⇓
+    ring⇓ = ⦇ +⇒ ⟦ quote _+_ ⇓⟧ₙ *⇒ ⟦ quote _*_ ⇓⟧ₙ ^⇒ ⟦ quote _^_ ⇓⟧ₙ -⇒ ⟦ quote -_ ⇓⟧ₙ ⦈
+      where
+      ⟦_⇓⟧ₙ : Name → TC (Maybe Name)
+      ⟦ nm ⇓⟧ₙ =
+        normalise (nm ⟨ def ⟩ 2 ⋯⟅∷⟆ ring ⟨∷⟩ [])
+          <&> λ where (def f args) → just f
+                      _ → nothing
 
-      -- This function applies the hidden arguments that the constructors
-      -- that Expr needs. The first is the universe level, the second is the
-      -- type it contains, and the third is the number of variables it's
-      -- indexed by. All three of these could likely be inferred, but to
-      -- make things easier we supply the third because we know it.
-      infixr 5 E⟅∷⟆_
-      E⟅∷⟆_ : List (Arg Term) → List (Arg Term)
-      E⟅∷⟆ xs = 1 ⋯⟅∷⟆
-                (quote Carrier ⟨ def ⟩ 2 ⋯⟅∷⟆ rng ⟨∷⟩ []) ⟅∷⟆
-                natTerm numVars ⟅∷⟆
-                xs
+    module _ (nms : Ring⇓) where
+      open Ring⇓ nms
 
-      -- A constant expression.
-      constExpr : Term → Term
-      constExpr x = quote Κ ⟨ con ⟩ E⟅∷⟆ x ⟨∷⟩ []
+      module _ (numVars : ℕ) where
 
-      matchName : Maybe Name → Name → Bool
-      matchName nothing _ = false
-      matchName (just x) y = primQNameEquality x y
-      {-# INLINE matchName #-}
+        -- This function applies the hidden arguments that the constructors
+        -- that Expr needs. The first is the universe level, the second is the
+        -- type it contains, and the third is the number of variables it's
+        -- indexed by. All three of these could likely be inferred, but to
+        -- make things easier we supply the third because we know it.
+        infixr 5 E⟅∷⟆_
+        E⟅∷⟆_ : List (Arg Term) → List (Arg Term)
+        E⟅∷⟆ xs = 1 ⋯⟅∷⟆
+                  (quote Carrier ⟨ def ⟩ 2 ⋯⟅∷⟆ ring ⟨∷⟩ []) ⟅∷⟆
+                  ℕ′ numVars ⟅∷⟆
+                  xs
 
-      module ToExpr (varExpr : ℕ → Maybe Term) where
-        mutual
-          -- Application of a ring operator often doesn't have a type as
-          -- simple as "Carrier → Carrier → Carrier": there may be hidden
-          -- arguments, etc. Here, we do our best to handle those cases,
-          -- by just taking the last two explicit arguments.
-          getBinOp : Name → List (Arg Term) → Term
-          getBinOp nm (x ⟨∷⟩ y ⟨∷⟩ []) = nm ⟨ con ⟩ E⟅∷⟆ toExpr x ⟨∷⟩ toExpr y ⟨∷⟩ []
-          getBinOp nm (x ∷ xs) = getBinOp nm xs
-          getBinOp _ _ = unknown
+        -- A constant expression.
+        Κ′ : Term → Term
+        Κ′ x = quote Κ ⟨ con ⟩ E⟅∷⟆ x ⟨∷⟩ []
 
-          getUnOp : Name → List (Arg Term) → Term
-          getUnOp nm (x ⟨∷⟩ []) = nm ⟨ con ⟩ E⟅∷⟆ toExpr x ⟨∷⟩ []
-          getUnOp nm (x ∷ xs) = getUnOp nm xs
-          getUnOp _ _ = unknown
+        _⇓≟_ : Maybe Name → Name → Bool
+        nothing ⇓≟ _ = false
+        just x  ⇓≟ y = primQNameEquality x y
+        {-# INLINE _⇓≟_ #-}
 
-          getExp : List (Arg Term) → Term
-          getExp (x ⟨∷⟩ y ⟨∷⟩ []) = quote _⊛_ ⟨ con ⟩ E⟅∷⟆ toExpr x ⟨∷⟩ y ⟨∷⟩ []
-          getExp (x ∷ xs) = getExp xs
-          getExp _ = unknown
+        module ToExpr (Ι′ : ℕ → Maybe Term) where
+          mutual
+            -- Application of a ring operator often doesn't have a type as
+            -- simple as "Carrier → Carrier → Carrier": there may be hidden
+            -- arguments, etc. Here, we do our best to handle those cases,
+            -- by just taking the last two explicit arguments.
+            E⟨_⟩₂ : Name → List (Arg Term) → Term
+            E⟨ nm ⟩₂ (x ⟨∷⟩ y ⟨∷⟩ []) = nm ⟨ con ⟩ E⟅∷⟆ E x ⟨∷⟩ E y ⟨∷⟩ []
+            E⟨ nm ⟩₂ (x ∷ xs) = E⟨ nm ⟩₂ xs
+            E⟨ nm ⟩₂ _ = unknown
 
-          -- When trying to figure out the shape of an expression, one of
-          -- the difficult tasks is recognizing where constants in the
-          -- underlying ring are used. If we were only dealing with ℕ, we
-          -- might look for its constructors: however, we want to deal with
-          -- arbitrary types which implement AlmostCommutativeRing. If the
-          -- Term type contained type information we might be able to
-          -- recognize it there, but it doesn't.
-          --
-          -- We're in luck, though, because all other cases in the following
-          -- function *are* recognizable. As a result, the "catch-all" case
-          -- will just assume that it has a constant expression.
-          toExpr : Term → Term
-          toExpr (def (quote _+_) xs) = getBinOp (quote _⊕_) xs
-          toExpr (def (quote _*_) xs) = getBinOp (quote _⊗_) xs
-          toExpr (def (quote _^_) xs) = getExp xs
-          toExpr (def (quote -_) xs) = getUnOp (quote ⊝_) xs
-          toExpr (def nm xs) = if (matchName +′ nm) then (getBinOp (quote _⊕_) xs) else
-                               if (matchName *′ nm) then (getBinOp (quote _⊗_) xs) else
-                               if (matchName ^′ nm) then (getExp xs) else
-                               if (matchName -′ nm) then (getUnOp (quote ⊝_) xs) else
-                               constExpr (def nm xs)
-          toExpr v@(var x _) = Maybe.fromMaybe (constExpr v) (varExpr x)
-          toExpr t = constExpr t
+            E⟨_⟩₁ : Name → List (Arg Term) → Term
+            E⟨ nm ⟩₁ (x ⟨∷⟩ []) = nm ⟨ con ⟩ E⟅∷⟆ E x ⟨∷⟩ []
+            E⟨ nm ⟩₁ (x ∷ xs) = E⟨ nm ⟩₁ xs
+            E⟨ _ ⟩₁ _ = unknown
 
-      callSolver : List String → Term → Term → List (Arg Type)
-      callSolver nms lhs rhs =
-          2 ⋯⟅∷⟆
-          rng ⟨∷⟩
-          natTerm numVars ⟨∷⟩
-          vlams nms (quote _⊜_ ⟨ def ⟩ 2 ⋯⟅∷⟆ rng ⟨∷⟩ natTerm numVars ⟨∷⟩ toExpr lhs ⟨∷⟩ toExpr rhs ⟨∷⟩ []) ⟨∷⟩
-          hlams nms (quote refl ⟨ def ⟩ 2 ⋯⟅∷⟆ rng ⟨∷⟩ 1 ⋯⟅∷⟆ []) ⟨∷⟩
-          []
-        where
-        varExpr : ℕ → Maybe Term
-        varExpr i with i ℕ.<? numVars
-        ... | yes _ = just (var i [])
-        ... | no _ = nothing
-        open ToExpr varExpr
+            E⟨^⟩ : List (Arg Term) → Term
+            E⟨^⟩ (x ⟨∷⟩ y ⟨∷⟩ []) = quote _⊛_ ⟨ con ⟩ E⟅∷⟆ E x ⟨∷⟩ y ⟨∷⟩ []
+            E⟨^⟩ (x ∷ xs) = E⟨^⟩ xs
+            E⟨^⟩ _ = unknown
 
-      constructSoln : Table → Term → Term → Term
-      constructSoln t lhs rhs =
-          quote trans ⟨ def ⟩
-            2 ⋯⟅∷⟆
-            rng ⟨∷⟩
-            3 ⋯⟅∷⟆
-            (quote sym ⟨ def ⟩
-                (2 ⋯⟅∷⟆
-                rng ⟨∷⟩
-                2 ⋯⟅∷⟆
-                (quote Ops.correct ⟨ def ⟩ 2 ⋯⟅∷⟆ rng ⟨∷⟩ 1 ⋯⟅∷⟆ toExpr lhs ⟨∷⟩ ρ ⟨∷⟩ []) ⟨∷⟩
-                []))
-            ⟨∷⟩
-            (quote Ops.correct ⟨ def ⟩ 2 ⋯⟅∷⟆ rng ⟨∷⟩ 1 ⋯⟅∷⟆ toExpr rhs ⟨∷⟩ ρ ⟨∷⟩ []) ⟨∷⟩
+            -- When trying to figure out the shape of an expression, one of
+            -- the difficult tasks is recognizing where constants in the
+            -- underlying ring are used. If we were only dealing with ℕ, we
+            -- might look for its constructors: however, we want to deal with
+            -- arbitrary types which implement AlmostCommutativeRing. If the
+            -- Term type contained type information we might be able to
+            -- recognize it there, but it doesn't.
+            --
+            -- We're in luck, though, because all other cases in the following
+            -- function *are* recognizable. As a result, the "catch-all" case
+            -- will just assume that it has a constant expression.
+            E : Term → Term
+            E (def (quote _+_) xs) = E⟨ quote _⊕_ ⟩₂ xs
+            E (def (quote _*_) xs) = E⟨ quote _⊗_ ⟩₂ xs
+            E (def (quote _^_) xs) = E⟨^⟩ xs
+            E (def (quote -_) xs) = E⟨ quote ⊝_ ⟩₁ xs
+            E (def nm xs) = if +′ ⇓≟ nm then E⟨ quote _⊕_ ⟩₂ xs else
+                            if *′ ⇓≟ nm then E⟨ quote _⊗_ ⟩₂ xs else
+                            if ^′ ⇓≟ nm then E⟨^⟩ xs else
+                            if -′ ⇓≟ nm then E⟨ quote ⊝_ ⟩₁ xs else
+                            Κ′ (def nm xs)
+            E v@(var x _) = fromMaybe (Κ′ v) (Ι′ x)
+            E t = Κ′ t
+
+        callSolver : Vec String numVars → Term → Term → List (Arg Type)
+        callSolver nms lhs rhs =
+            2 ⋯⟅∷⟆ ring ⟨∷⟩ ℕ′ numVars ⟨∷⟩
+            vlams nms (quote _⊜_ ⟨ def ⟩ 2 ⋯⟅∷⟆ ring ⟨∷⟩ ℕ′ numVars ⟨∷⟩ E lhs ⟨∷⟩ E rhs ⟨∷⟩ []) ⟨∷⟩
+            hlams nms (quote refl ⟨ def ⟩ 2 ⋯⟅∷⟆ ring ⟨∷⟩ 1 ⋯⟅∷⟆ []) ⟨∷⟩
             []
-        where
-        varExpr : ℕ → Maybe Term
-        varExpr i = Maybe.map (λ x → quote Ι ⟨ con ⟩ E⟅∷⟆ finTerm x ⟨∷⟩ []) (member i t)
+          where
+          Ι′ : ℕ → Maybe Term
+          Ι′ i = if i < numVars then just (var i []) else nothing
+          open ToExpr Ι′
 
-        open ToExpr varExpr
-        ρ : Term
-        ρ = curriedTerm t
+        constructSoln : Table → Term → Term → Term
+        constructSoln t lhs rhs =
+            quote trans ⟨ def ⟩ 2 ⋯⟅∷⟆ ring ⟨∷⟩ 3 ⋯⟅∷⟆
+              (quote sym ⟨ def ⟩ 2 ⋯⟅∷⟆ ring ⟨∷⟩ 2 ⋯⟅∷⟆
+                  (quote Ops.correct ⟨ def ⟩ 2 ⋯⟅∷⟆ ring ⟨∷⟩ 1 ⋯⟅∷⟆ E lhs ⟨∷⟩ ρ ⟨∷⟩ []) ⟨∷⟩ [])
+              ⟨∷⟩
+              (quote Ops.correct ⟨ def ⟩ 2 ⋯⟅∷⟆ ring ⟨∷⟩ 1 ⋯⟅∷⟆ E rhs ⟨∷⟩ ρ ⟨∷⟩ []) ⟨∷⟩
+              []
+          where
+          Ι′ : ℕ → Maybe Term
+          Ι′ i = Maybe.map (λ x → quote Ι ⟨ con ⟩ E⟅∷⟆ Fin′ x ⟨∷⟩ []) (member i t)
 
-    toSoln : Term → TC Term
-    toSoln t′ = go 0 id t′
-      where
-      go : ℕ → (List String → List String) → Term → TC Term
-      go i k (def f (            lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = pure $ def (quote solve′) $ callSolver i (k []) lhs rhs
-      go i k (def f (    _ ∷ _ ∷ lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = pure $ def (quote solve′) $ callSolver i (k []) lhs rhs
-      go i k (def f (_ ∷ _ ∷ _ ∷ lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = pure $ def (quote solve′) $ callSolver i (k []) lhs rhs
-      go i k (pi a (abs s x)) = go (suc i) (k ∘ (s ∷_)) x
-      go i k t = typeError (strErr "Malformed call to solve." ∷
-                            strErr "Expected target type to be like: ∀ x y → x + y ≈ y + x." ∷
-                            strErr "Instead: " ∷
-                            termErr t′ ∷
-                            [])
-
-
-    toSoln′ : Term  → Term → TC Term
-    toSoln′ t′ xs′ = go [] t′ xs′
-      where
-      go′ : Table → Term → TC Term
-      go′ i (def f (            lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = pure $ constructSoln (List.length i) i lhs rhs
-      go′ i (def f (_ ∷ _ ∷     lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = pure $ constructSoln (List.length i) i lhs rhs
-      go′ i (def f (_ ∷ _ ∷ _ ∷ lhs ⟨∷⟩ rhs ⟨∷⟩ [])) = pure $ constructSoln (List.length i) i lhs rhs
-      go′ _ _ = typeError (strErr "Malformed call to solveOver." ∷
-                          strErr "Target type should be an equality like x + y ≈ y + x." ∷
-                          strErr "Instead: " ∷
-                          termErr xs′ ∷
-                          [])
-
-      go : Table → Term → Term → TC Term
-      go t (con (quote List._∷_) (_ ∷ _ ∷ var i [] ⟨∷⟩ xs ⟨∷⟩ _)) ys = go (insert i t) xs ys
-      go t (con (quote List.List.[]) _) xs = go′ t xs
-      go i k t = typeError (strErr "Malformed call to solveOver." ∷
-                            strErr "First argument should be a list of free variables." ∷
-                            strErr "Instead: " ∷
-                            termErr t′ ∷
-                            [])
+          open ToExpr Ι′
+          ρ : Term
+          ρ = curriedTerm t
 open Internal
 
 -- This is the main macro you'll probably be using. Call it like this:
@@ -200,13 +162,20 @@ open Internal
 -- example implementations in Polynomial.Solver.Ring.AlmostCommutativeRing.Instances).
 macro
   solve : Name → Term → TC ⊤
-  solve rng′ hole = do
-    rng ← checkRing (def rng′ [])
+  solve ring hole = do
+    ring′ ← def ring [] ∈Ring
     commitTC
-    nms ← getRingNames rng
-    soln ← inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ toSoln rng nms
-    commitTC
-    unify hole soln
+    let open OverRing ring′
+    nms ← ring⇓
+    hole′ ← inferType hole >>= reduce
+    let i , k , xs = underPi hole′
+    just (lhs ∷ rhs ∷ []) ← pure (getArgs 2 xs)
+      where nothing → typeError (strErr "Malformed call to solve." ∷
+                                 strErr "Expected target type to be like: ∀ x y → x + y ≈ y + x." ∷
+                                 strErr "Instead: " ∷
+                                 termErr hole′ ∷
+                                 [])
+    unify hole (quote solve-fn ⟨ def ⟩ callSolver nms i k lhs rhs)
 
 -- Use this macro when you want to solve something *under* a lambda. For example:
 -- say you have a long proof, and you just want the solver to deal with an
@@ -229,12 +198,24 @@ macro
 
 macro
   solveOver : Term → Name → Term → TC ⊤
-  solveOver i′ rng′ hole = do
-    rng ← checkRing (def rng′ [])
+  solveOver i ring hole = do
+    ring′ ← def ring [] ∈Ring
     commitTC
-    nms ← getRingNames rng
-    i ← listType rng i′
+    let open OverRing ring′
+    nms ← ring⇓
+    i′ ← i ∈List⟨Carrier⟩
     commitTC
-    soln ← inferType hole ⟨ bindTC ⟩ reduce ⟨ bindTC ⟩ toSoln′ rng nms i
-    commitTC
-    unify hole soln
+    hole′ ← inferType hole >>= reduce
+    just vars′ ← pure (vars i′)
+      where nothing → typeError (strErr "Malformed call to solveOver." ∷
+                                 strErr "First argument should be a list of free variables." ∷
+                                 strErr "Instead: " ∷
+                                 termErr i′ ∷
+                                 [])
+    just (lhs ∷ rhs ∷ []) ← pure (getArgs 2 hole′)
+      where nothing → typeError (strErr "Malformed call to solveOver." ∷
+                                 strErr "First argument should be a list of free variables." ∷
+                                 strErr "Instead: " ∷
+                                 termErr hole′ ∷
+                                 [])
+    unify hole (constructSoln nms (List.length vars′) vars′ lhs rhs)
