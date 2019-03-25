@@ -89,6 +89,7 @@ open import Data.List as List using (List; _∷_; [])                           
 open import Function                                                          --         ██║  ██║  ██║
 open import Relation.Binary.PropositionalEquality as ≡ using (subst; _≡_)     --         ██║  ██║  ██║
 open import Data.Bool as Bool using (Bool; true; false)                       --         ██║  ██║  ██║
+open import Data.Unit using (⊤; tt)                                           --         ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║
 --------------------------------------------------------------------------------         ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║
@@ -248,9 +249,9 @@ module OldSolver where                                                        --
   open import Data.Nat.Solver using (module +-*-Solver)                       --         ██║  ██║  ██║
   open +-*-Solver                                                             --         ██║  ██║  ██║
                                                                               --     ██╗ ██║  ██║  ██║
-  lemma : ∀ x y → x + y * 1 + 3 ≡ 2 + 1 + y + x                               --   ████║ ██║  ██║  ██║
-  lemma = +-*-Solver.solve 2                                                  -- ██████████║  ██║  ██║
-    (λ x y → x :+ y :* con 1 :+ con 3 := con 2 :+ con 1 :+ y :+ x) ≡.refl     --   ████╔═██║  ██║  ██║
+--  lemma : ∀ x y → x + y * 1 + 3 ≡ 2 + 1 + y + x                               --   ████║ ██║  ██║  ██║
+--  lemma = +-*-Solver.solve 2                                                  -- ██████████║  ██║  ██║
+--    (λ x y → x :+ y :* con 1 :+ con 3 := con 2 :+ con 1 :+ y :+ x) ≡.refl     --   ████╔═██║  ██║  ██║
 --                                                                            --     ██║ ██║  ██║  ██║
 --------------------------------------------------------------------------------     ╚═╝ ██║  ██║  ██║
 --                                                                            --         ██║  ██║  ██║

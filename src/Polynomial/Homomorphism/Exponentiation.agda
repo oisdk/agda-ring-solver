@@ -16,7 +16,6 @@ open import Data.Vec      using (Vec)
 
 import Data.Nat.Properties as ℕ-Prop
 import Relation.Binary.PropositionalEquality as ≡
-import Relation.Binary.PropositionalEquality.TrustMe as TrustMe
 
 open Homomorphism homo
 open import Polynomial.Homomorphism.Lemmas homo
