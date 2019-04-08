@@ -28,7 +28,7 @@ module Eval {r₁ r₂ r₃} (homo : Homomorphism r₁ r₂ r₃) where
 
   ⟦_⟧ : ∀ {n} → Expr Raw.Carrier n → Vec Carrier n → Carrier
   ⟦ Κ x ⟧ ρ = ⟦ x ⟧ᵣ
-  ⟦ Ι x ⟧ ρ = Vec.lookup ρ x
+  ⟦ Ι x ⟧ ρ = Vec.lookup x ρ
   ⟦ x ⊕ y ⟧ ρ = ⟦ x ⟧ ρ + ⟦ y ⟧ ρ
   ⟦ x ⊗ y ⟧ ρ = ⟦ x ⟧ ρ * ⟦ y ⟧ ρ
   ⟦ ⊝ x ⟧ ρ = - ⟦ x ⟧ ρ

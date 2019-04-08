@@ -244,7 +244,7 @@ trans-join-hom i≤j-1 j≤n (Σ x) = trans-join-coeffs-hom i≤j-1 j≤n x
 drop-1⇒lookup : ∀ {n}
               → (i : Fin n)
               → (ρs : Vec Carrier n)
-              → proj₁ (drop-1 (Fin⇒≤ i) ρs) ≡ Vec.lookup ρs i
+              → proj₁ (drop-1 (Fin⇒≤ i) ρs) ≡ Vec.lookup i ρs
 drop-1⇒lookup Fin.zero (ρ ∷ ρs) = ≡.refl
 drop-1⇒lookup (Fin.suc i) (ρ ∷ ρs) = drop-1⇒lookup i ρs
 

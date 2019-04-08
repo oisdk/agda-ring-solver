@@ -3,10 +3,10 @@
 module Data.String.Printf where
 
 open import Data.List using (List; []; _∷_; foldr)
-open import Data.String hiding (show; _≟_)
+open import Data.String hiding (show)
 open import Data.Nat hiding (_≟_)
 open import Data.Char using (Char)
-open import Data.Char.Properties using (_≟_)
+open import Data.Char.Unsafe using (_≟_)
 import Level
 open import Relation.Nullary
 

@@ -22,7 +22,7 @@ open import Relation.Nullary
 open import Function
 open import Level using (_⊔_)
 open import Algebra.FunctionProperties
-open import Data.String.Properties renaming (_==_ to eqBoolString)
+open import Data.String.Unsafe renaming (_==_ to eqBoolString)
 open import Data.Maybe
 open import Data.Nat using (ℕ)
 
