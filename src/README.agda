@@ -14,6 +14,30 @@
 -- |                         ██║██║ ╚████║    ██║  ██║╚██████╔╝██████╔╝██║  ██║                         |
 -- |                         ╚═╝╚═╝  ╚═══╝    ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝                         |
 -- ------------------------------------------------------------------------------------------------------
+--
+--                                        Donnacha Oisín Kidney
+--                                            17 April 2019
+--
+-- Compiled with Agda version 2.6.0, and standard library commit 09ebff3a4724891d8805eced1d48ecda7908d914
+
+-- This contains the worked-through source code for:
+--
+--     "Automatically And Efficiently Illustrating Polynomial Equalities in Agda"
+--
+--     We present a new library which automates the construction of equivalence
+--     proofs between polynomials over commutative rings and semirings in the
+--     programming language Agda. It is asymptotically faster than Agda's existing
+--     solver. We use Agda's reflection machinery to provide a simple interface to
+--     the solver, and demonstrate an interesting use of the constructed relations:
+--     step-by-step solutions.
+--
+-- Which is (at time of writing) a work-in-progress.
+--
+-- This code is available on github:
+--     https://github.com/oisdk/agda-ring-solver
+--
+-- As is the paper:
+--     https://github.com/oisdk/agda-ring-solver-report
 
 module README where
 
