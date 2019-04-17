@@ -14,10 +14,6 @@
 --
 -- * Avoiding of identities (like *1 or +0) with specialised data
 --  structures.
---
--- Check out the relevent sections in the paper for the details:
---     https://github.com/oisdk/agda-ring-solver-report/blob/master/report.pdf
-
 open import Polynomial.Parameters
 
 module Polynomial.NormalForm

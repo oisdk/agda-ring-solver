@@ -4,6 +4,7 @@ module Polynomial.Simple.AlmostCommutativeRing.Instances where
 
 open import Polynomial.Simple.AlmostCommutativeRing
 open import Level using (0ℓ)
+open import Agda.Builtin.Reflection
 
 module Nat where
   open import Data.Nat using (zero; suc)
@@ -19,7 +20,6 @@ module Nat where
 
   module Reflection where
     open import Polynomial.Simple.Reflection using (solveOver-macro)
-    open import Reflection using (Term; TC)
     open import Data.Unit using (⊤)
 
     macro
@@ -41,7 +41,6 @@ module Int where
 
   module Reflection where
     open import Polynomial.Simple.Reflection using (solveOver-macro)
-    open import Reflection using (Term; TC)
     open import Data.Unit using (⊤)
 
     macro

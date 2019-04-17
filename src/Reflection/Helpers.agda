@@ -3,7 +3,6 @@
 module Reflection.Helpers where
 
 open import Agda.Builtin.Reflection
-open import Reflection
 open import Function
 open import Data.List as List using (List; _∷_; [])
 open import Data.Nat as ℕ using (ℕ; suc; zero)

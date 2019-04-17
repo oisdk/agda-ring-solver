@@ -36,5 +36,5 @@ instance
 open import Data.String using (String)
 instance
   eqString : HasEqBool String
-  _==_ ⦃ eqString ⦄ = Data.String.Unsafe._==_
-    where import Data.String.Unsafe
+  _==_ ⦃ eqString ⦄ = Data.String._==_
+    where import Data.String

@@ -2,8 +2,7 @@
 
 module Polynomial.Simple.Reflection where
 
-open import Reflection
-open import Agda.Builtin.Reflection using (primQNameEquality; commitTC; reduce)
+open import Agda.Builtin.Reflection
 open import Reflection.Helpers
 
 open import Polynomial.Simple.Solver renaming (solve to solve-fn)
