@@ -5,8 +5,7 @@ module Data.String.Printf where
 open import Data.List using (List; []; _∷_; foldr)
 open import Data.String hiding (show)
 open import Data.Nat hiding (_≟_)
-open import Data.Char using (Char)
-open import Data.Char.Unsafe using (_≟_)
+open import Data.Char as Char using (Char)
 import Level
 open import Relation.Nullary
 
@@ -36,7 +35,7 @@ module Internal where
   toFormat fs ('%' ∷ x ∷ xs) = go fs x xs where
     go : List FormatUnit → Char → List Char → List Formatter
     go [] x xs = chr x ∷ toFormat fs xs
-    go (f ∷ fs) x xs with marker f ≟ x
+    go (f ∷ fs) x xs with marker f Char.≟ x
     go (f ∷ _ ) x xs | yes p = cnv _ (conv f) ∷ toFormat fs xs
     go (f ∷ fs) x xs | no ¬p = go fs x xs
   toFormat fs (x ∷ xs) = chr x ∷ toFormat fs xs

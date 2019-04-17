@@ -41,7 +41,7 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
 
   ⟦_⟧ : ∀ {n} → Expr Carrier n → Vec Carrier n → Carrier
   ⟦ Κ x ⟧ ρ = x
-  ⟦ Ι x ⟧ ρ = lookup x ρ
+  ⟦ Ι x ⟧ ρ = lookup ρ x
   ⟦ x ⊕ y ⟧ ρ = ⟦ x ⟧ ρ + ⟦ y ⟧ ρ
   ⟦ x ⊗ y ⟧ ρ = ⟦ x ⟧ ρ * ⟦ y ⟧ ρ
   ⟦ ⊝ x ⟧ ρ = - ⟦ x ⟧ ρ

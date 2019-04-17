@@ -28,7 +28,7 @@ open import Polynomial.Exponentiation rawRing
       → ⟦ κ x ⟧ Ρ ≈ ⟦ x ⟧ᵣ
 κ-hom x _ = refl
 
-ι-hom : ∀ {n} → (i : Fin n) → (Ρ : Vec Carrier n) → ⟦ ι i ⟧ Ρ ≈ Vec.lookup i Ρ
+ι-hom : ∀ {n} → (i : Fin n) → (Ρ : Vec Carrier n) → ⟦ ι i ⟧ Ρ ≈ Vec.lookup Ρ i
 ι-hom i Ρ′ =
   let (ρ , Ρ) = drop-1 (Fin⇒≤ i) Ρ′
   in
@@ -43,5 +43,5 @@ open import Polynomial.Exponentiation rawRing
   ≈⟨ *-identityʳ ρ ⟩
     ρ
   ≡⟨ drop-1⇒lookup i Ρ′ ⟩
-    Vec.lookup i Ρ′
+    Vec.lookup Ρ′ i
   ∎
