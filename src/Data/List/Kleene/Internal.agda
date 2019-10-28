@@ -1,6 +1,6 @@
 {-# OPTIONS --without-K --safe #-}
 
-module Data.List.Kleene where
+module Data.List.Kleene.Internal where
 
 -- This module provides a different definition of lists based on the kleene
 -- star and plus.

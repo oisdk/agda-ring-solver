@@ -74,7 +74,7 @@ normalise (O x) = go x
   go (⊝ x) | C x₁ = C (- x₁)
   go (⊝ x) | O x₁ = O (⊝ x₁)
 
-open import Data.List.Kleene
+open import Data.List.Kleene.Internal
 open import Data.Product
 open import Data.Nat
 

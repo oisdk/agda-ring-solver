@@ -21,7 +21,7 @@ open import Data.Empty       using (⊥)
 open import Data.Unit        using (⊤)
 open import Data.Nat         using (ℕ; suc; zero)
 open import Data.Bool        using (T)
-open import Data.List.Kleene public
+open import Data.List.Kleene.Internal public
 
 infixl 6 _Δ_
 record PowInd {c} (C : Set c) : Set c where
