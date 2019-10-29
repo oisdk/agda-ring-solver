@@ -100,10 +100,6 @@ module Internal where
             E⟨^⟩ (x ∷ xs) = E⟨^⟩ xs
             E⟨^⟩ _ = unknown
 
-            ETop : List (Arg Term) → Term
-            ETop (x ⟨∷⟩ []) = E x
-            ETop _ = unknown
-
             -- When trying to figure out the shape of an expression, one of
             -- the difficult tasks is recognizing where constants in the
             -- underlying ring are used. If we were only dealing with ℕ, we
@@ -125,6 +121,7 @@ module Internal where
                             if ^′ ⇓≟ nm then E⟨^⟩ xs else
                             if -′ ⇓≟ nm then E⟨ quote ⊝_ ⟩₁ xs else
                             Κ′ (def nm xs)
+            E (con (quote ℕ.suc) (x ⟨∷⟩ [])) = quote _⊕_ ⟨ con ⟩ E⟅∷⟆ Κ′ (ℕ′ (ℕ.suc ℕ.zero)) ⟨∷⟩ E x ⟨∷⟩ []
             E v@(var x _) = fromMaybe (Κ′ v) (Ι′ x)
             E t = Κ′ t
 
@@ -178,7 +175,7 @@ macro
                                  strErr "Instead: " ∷
                                  termErr hole′ ∷
                                  [])
-    unify hole (quote solve-fn ⟨ def ⟩ callSolver nms i k lhs rhs) <|> typeError (termErr hole′ ∷ [])
+    unify hole (quote solve-fn ⟨ def ⟩ callSolver nms i k lhs rhs)
 
 -- Use this macro when you want to solve something *under* a lambda. For example:
 -- say you have a long proof, and you just want the solver to deal with an
