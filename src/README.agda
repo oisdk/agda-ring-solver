@@ -18,7 +18,7 @@
 --                                        Donnacha Oisín Kidney
 --                                            17 April 2019
 --
--- Compiled with Agda version 2.6.0, and standard library commit 09ebff3a4724891d8805eced1d48ecda7908d914
+-- Compiled with Agda version 2.6.1, and standard library commit 84d7962cfd90379a6d1d5ef2cdd9d3ae411ee603
 
 -- This contains the worked-through source code for:
 --
@@ -105,7 +105,7 @@ open import Polynomial.Simple.Reflection                                      --
 open import Data.List as List using (List; _∷_; [])                           --         ██║  ██║
 open import Function                                                          --         ██║  ██║
 open import Relation.Binary.PropositionalEquality as ≡ using (subst; _≡_)     --         ██║  ██║
-open import Data.Bool as Bool using (Bool; true; false)                       --         ██║  ██║
+open import Data.Bool as Bool using (Bool; true; false; if_then_else_)        --         ██║  ██║
 open import Data.Unit using (⊤; tt)                                           --         ██║  ██║
 --                                                                            --         ██║  ██║
 --------------------------------------------------------------------------------         ██║  ██║
@@ -208,15 +208,15 @@ module NatExamples where                                                      --
                                                                               --         ██║  ██║
    open Nat.Reflection                                                        --         ██║  ██║
                                                                               --         ██║  ██║
-   _∪_ : ∀ {n m} → Tree n → Tree m → Tree (n + m)                             --         ██║  ██║
-   leaf ∪ ys = ys                                                             --         ██║  ██║
-   node {a} {b} x xl xr ∪ leaf =                                              --         ██║  ██║
-     node x xl xr ⇒ ∀⟨ a ∷ b ∷ [] ⟩                                           --     ██╗ ██║  ██║
-   node {a} {b} x xl xr ∪ node {c} {d} y yl yr with x ≤ y                     --   ████║ ██║  ██║
-   ... | true  = node x (node y yl yr ∪ xr) xl                                -- ██████████║  ██║
-                   ⇒ ∀⟨ a ∷ b ∷ c ∷ d ∷ [] ⟩                                  --   ████╔═██║  ██║
-   ... | false = node y (node x xl xr ∪ yr) yl                                --     ██║ ██║  ██║
-                   ⇒ ∀⟨ a ∷ b ∷ c ∷ d ∷ [] ⟩                                  --     ╚═╝ ██║  ██║
+-- _∪_ : ∀ {n m} → Tree n → Tree m → Tree (n + m)                             --         ██║  ██║
+-- leaf ∪ ys = ys                                                             --         ██║  ██║
+-- node {a} {b} x xl xr ∪ leaf =                                              --         ██║  ██║
+--   node x xl xr ⇒ ∀⟨ a ∷ b ∷ [] ⟩                                           --     ██╗ ██║  ██║
+-- node {a} {b} x xl xr ∪ node {c} {d} y yl yr = if x ≤ y                     --   ████║ ██║  ██║
+--          then node x (node y yl yr ∪ xr) xl                                -- ██████████║  ██║
+--                 ⇒ ∀⟨ a ∷ b ∷ c ∷ d ∷ [] ⟩                                  --   ████╔═██║  ██║
+--          else (node y (node x xl xr ∪ yr) yl                               --     ██║ ██║  ██║
+--                 ⇒ ∀⟨ a ∷ b ∷ c ∷ d ∷ [] ⟩)                                 --     ╚═╝ ██║  ██║
 --                                                                            --         ██║  ██║
 --------------------------------------------------------------------------------         ██║  ██║
 --                                                                            --         ██║  ██║
@@ -385,3 +385,35 @@ module TracedExamples where                                                   --
 --       as y + x. This is what lets us check that two expressions are equal.
 --       The implementation here is *sparse*, also, which is why it's faster
 --       than the old implementation.
+--
+--       Want to learn more? Then this is the place for you:
+import Polynomial.NormalForm
+--
+-- * Prove it!
+--       The type of proofs we need are *homomorphisms*. They basically mean
+--       that the operations on the normal form correspond to the operations
+--       on expressions. Also, we don't use propositional equality: we use
+--       any equivalence relation the user supplies.
+--
+--       Don't believe me? Check it out:
+import Polynomial.Homomorphism
+--
+-- * How do I use it?
+--       Copy the examples above! For the full solver, check out:
+import Polynomial.Solver
+--
+-- * Wait! Don't!
+--       The "full" solver lets you use different types for the coefficient
+--       and carrier. You probably don't want that, unless you need the extra
+--       efficiency. You'll want the *simple* solver:
+import Polynomial.Simple.Solver
+--
+-- * Is that all?
+--       No! As it happens, even the simple solver is complicated to use.
+--       You'll *actually* want to use the reflection-based interface:
+import Polynomial.Simple.Reflection
+--
+-- * And what about the step-by-step stuff?
+--       That all uses the same underlying solver as the other stuff, with a
+--       special *relation*. You can check that out here:
+import Relation.Traced

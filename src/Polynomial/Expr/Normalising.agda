@@ -79,28 +79,28 @@ open import Data.Product
 open import Data.Nat
 
 data Flat : Set r where
-  sum : Flat ⁺ → Flat
-  prd : (Flat × ℕ) ⁺ → Flat
+  sum : Flat + → Flat
+  prd : (Flat × ℕ) + → Flat
   neg : Flat → Flat
   V′ : String → Flat
   K′ : Carrier → Flat
 
 mutual
-  _==F⋆_ : Flat ⋆ → Flat ⋆ → Bool
-  [] ==F⋆ [] = true
-  [] ==F⋆ [ x₁ ] = false
-  [ x₁ ] ==F⋆ [] = false
-  [ x & xs ] ==F⋆ [ y & ys ] = x ==F y ∧ xs ==F⋆ ys
+  _==F*_ : Flat * → Flat * → Bool
+  [] ==F* [] = true
+  [] ==F* (∹ x₁) = false
+  (∹ x₁) ==F* [] = false
+  (∹ x & xs) ==F* (∹ y & ys) = x ==F y ∧ xs ==F* ys
 
-  _==F×⋆_ : (Flat × ℕ) ⋆ → (Flat × ℕ) ⋆ → Bool
-  [] ==F×⋆ [] = true
-  [] ==F×⋆ [ x₁ ] = false
-  [ x₁ ] ==F×⋆ [] = false
-  [ (x , i) & xs ] ==F×⋆ [ (y , j) & ys ] = i == j ∧ x ==F y ∧ xs ==F×⋆ ys
+  _==F×*_ : (Flat × ℕ) * → (Flat × ℕ) * → Bool
+  [] ==F×* [] = true
+  [] ==F×* (∹ x₁) = false
+  (∹ x₁) ==F×* [] = false
+  (∹ (x , i) & xs) ==F×* (∹ (y , j) & ys) = i == j ∧ x ==F y ∧ xs ==F×* ys
 
   _==F_ : Flat → Flat → Bool
-  _==F_ (sum (x & xs)) (sum (y & ys)) = x ==F y ∧ xs ==F⋆ ys
-  _==F_ (prd ((x , i) & xs)) (prd ((y , j) & ys)) = i == j ∧ x ==F y ∧ xs ==F×⋆ ys
+  _==F_ (sum (x & xs)) (sum (y & ys)) = x ==F y ∧ xs ==F* ys
+  _==F_ (prd ((x , i) & xs)) (prd ((y , j) & ys)) = i == j ∧ x ==F y ∧ xs ==F×* ys
   _==F_ (neg xs) (neg ys) = xs ==F ys
   _==F_ (V′ x)   (V′ y)   = x == y
   _==F_ (K′ x)   (K′ y)   = x == y
@@ -110,25 +110,25 @@ instance
   eqFlat : HasEqBool Flat
   _==_ ⦃ eqFlat ⦄ = _==F_
 
-prodCons : Flat → (Flat × ℕ) ⋆ → (Flat × ℕ) ⁺
+prodCons : Flat → (Flat × ℕ) * → (Flat × ℕ) +
 prodCons x [] = (x , 0) & []
-prodCons x [ (y , n) & xs ] with x == y
-prodCons x xs@([ (y , n) & ys ]) | false = (x , 0) & xs
-prodCons x [ (y , n) & xs ] | true = (y , suc n) & xs
+prodCons x (∹ (y , n) & xs ) with x == y
+prodCons x xs@((∹ (y , n) & ys )) | false = (x , 0) & xs
+prodCons x (∹ (y , n) & xs ) | true = (y , suc n) & xs
 
 flatten : Open → Flat
 flatten (V x) = V′ x
 flatten (K x) = K′ x
-flatten (x ⊕ y) = sum (x ⊕⋆ [ y ⊕⋆ [] ])
+flatten (x ⊕ y) = sum (x ⊕* (∹ y ⊕* [] ))
   where
-  _⊕⋆_ : Open → Flat ⋆ → Flat ⁺
-  (x ⊕ y) ⊕⋆ xs = x ⊕⋆ [ y ⊕⋆ xs ]
-  x ⊕⋆ xs = flatten x & xs
-flatten (x ⊗ y) = prd (x ⊗⋆ [ y ⊗⋆ [] ])
+  _⊕*_ : Open → Flat * → Flat +
+  (x ⊕ y) ⊕* xs = x ⊕* (∹ y ⊕* xs )
+  x ⊕* xs = flatten x & xs
+flatten (x ⊗ y) = prd (x ⊗* (∹ y ⊗* [] ))
   where
-  _⊗⋆_ : Open → (Flat × ℕ) ⋆ → (Flat × ℕ) ⁺
-  (x ⊗ y) ⊗⋆ xs = x ⊗⋆ [ y ⊗⋆ xs ]
-  x ⊗⋆ xs = prodCons (flatten x) xs
+  _⊗*_ : Open → (Flat × ℕ) * → (Flat × ℕ) +
+  (x ⊗ y) ⊗* xs = x ⊗* (∹ y ⊗* xs )
+  x ⊗* xs = prodCons (flatten x) xs
 flatten (⊝ x) = neg (flatten x)
 
 ⟨_⟩ₑ : Expr → String
@@ -150,12 +150,12 @@ flatten (⊝ x) = neg (flatten x)
   gop (x , zero) = go mul x
   gop (x , suc i) xs = go neg′ x (' ' ∷ '^' ∷ ' ' ∷ Data.String.toList (Data.Nat.Show.show (suc (suc i))) List.++ (' ' ∷ xs))
 
-  f-+ : List Char → Flat ⋆ → List Char
-  f-+ xs [ x & zs ] = ' ' ∷ '+' ∷ ' ' ∷ go add x (f-+ xs zs)
+  f-+ : List Char → Flat * → List Char
+  f-+ xs (∹ x & zs ) = ' ' ∷ '+' ∷ ' ' ∷ go add x (f-+ xs zs)
   f-+ xs [] = xs
 
-  f-× : List Char → (Flat × ℕ) ⋆ → List Char
-  f-× xs [ x & zs ] = ' ' ∷ '*' ∷ ' ' ∷ gop x (f-× xs zs)
+  f-× : List Char → (Flat × ℕ) * → List Char
+  f-× xs (∹ x & zs ) = ' ' ∷ '*' ∷ ' ' ∷ gop x (f-× xs zs)
   f-× xs [] = xs
 
   go _ (V′ x) xs = Data.String.toList x List.++ xs

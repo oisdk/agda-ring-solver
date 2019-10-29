@@ -63,7 +63,7 @@ mutual
   ⊠-Κ-inj-hom : ∀ {n}
               → (a : Acc _<′_ n)
               → (x : Raw.Carrier)
-              → (xs : Coeff n ⁺)
+              → (xs : Coeff n +)
               → ∀ ρ
               → Σ?⟦ ⊠-Κ-inj a x xs ⟧ ρ ≈ ⟦ x ⟧ᵣ * Σ⟦ xs ⟧ ρ
   ⊠-Κ-inj-hom {n} a x xs (ρ , Ρ) =
@@ -81,7 +81,7 @@ mutual
 
   ⊠-Σ-hom : ∀ {i n}
           → (a : Acc _<′_ n)
-          → (xs : Coeff i ⁺)
+          → (xs : Coeff i +)
           → (i<n : i <′ n)
           → (ys : Poly n)
           → ∀ ρ
@@ -101,7 +101,7 @@ mutual
   ⊠-Σ-inj-hom : ∀ {i k}
               → (a : Acc _<′_ k)
               → (i<k : i <′ k)
-              → (xs : Coeff i ⁺)
+              → (xs : Coeff i +)
               → (ys : Poly k)
               → ∀ ρ
               → ⟦ ⊠-Σ-inj a i<k xs ys ⟧ ρ ≈ Σ⟦ xs ⟧ (drop-1 i<k ρ) * ⟦ ys ⟧ ρ
@@ -122,8 +122,8 @@ mutual
               → {i<n : i <′ n}
               → {j<n : j <′ n}
               → (ord : InjectionOrdering i<n j<n)
-              → (xs : Coeff i ⁺)
-              → (ys : Coeff j ⁺)
+              → (xs : Coeff i +)
+              → (ys : Coeff j +)
               → (Ρ : Vec Carrier n)
               → ⟦ ⊠-match a ord xs ys ⟧ Ρ
               ≈ Σ⟦ xs ⟧ (drop-1 i<n Ρ) * Σ⟦ ys ⟧ (drop-1 j<n Ρ)
@@ -178,12 +178,12 @@ mutual
 
   ⊠-coeffs-hom : ∀ {n}
                → (a : Acc _<′_ n)
-               → (xs : Coeff n ⁺)
-               → (ys : Coeff n ⁺)
+               → (xs : Coeff n +)
+               → (ys : Coeff n +)
                → Π[ ⦇ Σ?⟦ ⊠-coeffs a xs ys ⟧ ≈ ⦇ Σ⟦ xs ⟧ * Σ⟦ ys ⟧ ⦈ ⦈ ]
   ⊠-coeffs-hom a xs (y ≠0 Δ j & []) (ρ , Ρ) =
     begin
-      Σ?⟦ poly-map (⊠-step′ a y) xs ⍓⋆ j ⟧ (ρ , Ρ)
+      Σ?⟦ poly-map (⊠-step′ a y) xs ⍓* j ⟧ (ρ , Ρ)
     ≈⟨ sym (pow′-hom j (poly-map (⊠-step′ a y) xs) ρ Ρ) ⟩
       Σ?⟦ poly-map (⊠-step′ a y) xs ⟧ (ρ , Ρ) *⟨ ρ ⟩^ j
     ≈⟨ pow-mul-cong (poly-mapR ρ Ρ (⊠-step′ a y) (⟦ y ⟧ Ρ *_) (*-cong refl) reassoc (distribˡ _) (λ z → ⊠-step′-hom a y z Ρ) (zeroʳ _) xs) ρ j ⟩
@@ -197,13 +197,13 @@ mutual
     ≈⟨ *≫ sym (pow-opt _ ρ j) ⟩
       Σ⟦ xs ⟧ (ρ , Ρ) * (⟦ y ⟧ Ρ *⟨ ρ ⟩^ j)
     ∎
-  ⊠-coeffs-hom a xs (y ≠0 Δ j & [ ys ]) (ρ , Ρ) =
+  ⊠-coeffs-hom a xs (y ≠0 Δ j & (∹ ys)) (ρ , Ρ) =
     let xs′ = Σ⟦ xs ⟧ (ρ , Ρ)
         y′  = ⟦ y ⟧ Ρ
         ys′ = Σ⟦ ys ⟧ (ρ , Ρ)
     in
     begin
-      Σ?⟦ para (⊠-cons a y ys) xs ⍓⋆ j ⟧ (ρ , Ρ)
+      Σ?⟦ para (⊠-cons a y ys) xs ⍓* j ⟧ (ρ , Ρ)
     ≈⟨ sym (pow′-hom j (para (⊠-cons a y ys) xs) ρ Ρ) ⟨ trans ⟩ pow-opt _ ρ j ⟩
       ρ ^ j * Σ?⟦ para (⊠-cons a y ys) xs ⟧ (ρ , Ρ)
     ≈⟨ *≫ ⊠-cons-hom a y ys xs ρ Ρ ⟩
@@ -215,14 +215,14 @@ mutual
   ⊠-cons-hom : ∀ {n}
              → (a : Acc _<′_ n)
              → (y : Poly n)
-             → (ys : Coeff n ⁺)
-             → (xs : Coeff n ⁺)
+             → (ys : Coeff n +)
+             → (xs : Coeff n +)
              → (ρ : Carrier)
              → (Ρ : Vec Carrier n)
              → Σ?⟦ para (⊠-cons a y ys) xs ⟧ (ρ , Ρ)
              ≈ Σ⟦ xs ⟧ (ρ , Ρ) * (ρ * Σ⟦ ys ⟧ (ρ , Ρ) + ⟦ y ⟧ Ρ)
   -- ⊠-cons-hom a y [] xs ρ Ρ = {!!}
-  ⊠-cons-hom a y ys xs ρ Ρ = poly-foldR ρ Ρ (⊠-cons a y ys) (_* (ρ * Σ⟦ ys ⟧ (ρ , Ρ) + ⟦ y ⟧ Ρ)) (flip *-cong refl) (λ x y → sym (*-assoc x y _)) step (zeroˡ _) xs
+  ⊠-cons-hom a y ys xs ρ Ρ = poly-foldR ρ Ρ (⊠-cons a y ys) (flip _*_ (ρ * Σ⟦ ys ⟧ (ρ , Ρ) + ⟦ y ⟧ Ρ)) (flip *-cong refl) (λ x y → sym (*-assoc x y _)) step (zeroˡ _) xs
     where
     step = λ { (z Π j≤n) {ys₁} zs ys≋zs →
       let x′  = ⟦ z Π j≤n ⟧ Ρ

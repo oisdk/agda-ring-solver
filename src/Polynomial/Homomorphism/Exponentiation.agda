@@ -38,7 +38,7 @@ pow-eval-hom x (suc i) = (*-homo _ x) ⟨ trans ⟩ (≪* pow-eval-hom x i)
 
 ⊡-+1-hom : ∀ {n} → (xs : Poly n) → (i : ℕ) → ∀ ρ → ⟦ xs ⊡ i +1 ⟧ ρ ≈ ⟦ xs ⟧ ρ RawPow.^ i +1
 ⊡-+1-hom (Κ x  Π i≤n) i ρ = pow-eval-hom x i
-⊡-+1-hom xs@(Σ (_ & [ _ ]) Π i≤n) i ρ = ⊡-mult-hom i xs ρ
+⊡-+1-hom xs@(Σ (_ & ∹ _) Π i≤n) i ρ = ⊡-mult-hom i xs ρ
 ⊡-+1-hom (Σ (x ≠0 Δ j & []) Π i≤n) i ρ =
   begin
     ⟦ x ⊡ i +1 Δ (j ℕ.+ i ℕ.* j) ∷↓ [] Π↓ i≤n ⟧ ρ

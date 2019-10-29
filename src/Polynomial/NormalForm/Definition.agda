@@ -47,7 +47,7 @@ mutual
 
   data FlatPoly : ℕ → Set a where
     Κ : Carrier → FlatPoly zero
-    Σ : ∀ {n} → (xs : Coeff n ⁺) → .{xn : Norm xs} → FlatPoly (suc n)
+    Σ : ∀ {n} → (xs : Coeff n +) → .{xn : Norm xs} → FlatPoly (suc n)
 
   -- A list of coefficients, paired with the exponent *gap* from the
   -- preceding coefficient. In other words, to represent the
@@ -87,9 +87,9 @@ mutual
   -- This predicate is used to ensure that all polynomials are in
   -- normal form: if a particular level is constant, than it can
   -- be collapsed into the level below it.
-  Norm : ∀ {i} → Coeff i ⁺ → Set
-  Norm (_ Δ zero  & [])    = ⊥
-  Norm (_ Δ zero  & [ _ ]) = ⊤
-  Norm (_ Δ suc _ & _)     = ⊤
+  Norm : ∀ {i} → Coeff i + → Set
+  Norm (_ Δ zero  & [])  = ⊥
+  Norm (_ Δ zero  & ∹ _) = ⊤
+  Norm (_ Δ suc _ & _)   = ⊤
 open NonZero public
 open Poly public

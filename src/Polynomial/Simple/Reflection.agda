@@ -100,6 +100,10 @@ module Internal where
             E⟨^⟩ (x ∷ xs) = E⟨^⟩ xs
             E⟨^⟩ _ = unknown
 
+            ETop : List (Arg Term) → Term
+            ETop (x ⟨∷⟩ []) = E x
+            ETop _ = unknown
+
             -- When trying to figure out the shape of an expression, one of
             -- the difficult tasks is recognizing where constants in the
             -- underlying ring are used. If we were only dealing with ℕ, we
@@ -174,7 +178,7 @@ macro
                                  strErr "Instead: " ∷
                                  termErr hole′ ∷
                                  [])
-    unify hole (quote solve-fn ⟨ def ⟩ callSolver nms i k lhs rhs)
+    unify hole (quote solve-fn ⟨ def ⟩ callSolver nms i k lhs rhs) <|> typeError (termErr hole′ ∷ [])
 
 -- Use this macro when you want to solve something *under* a lambda. For example:
 -- say you have a long proof, and you just want the solver to deal with an
