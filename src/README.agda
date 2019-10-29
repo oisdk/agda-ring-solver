@@ -83,7 +83,7 @@ module README where
 -- different numeric types in the same file.                                  --         ██║  ██║
                                                                               --         ██║  ██║
 open import Agda.Builtin.FromNat                                              --         ██║  ██║
-open import Data.Nat using (ℕ)                                                --         ██║  ██║
+open import Data.Nat using (ℕ; suc)                                           --         ██║  ██║
 open import Data.Integer using (ℤ)                                            --         ██║  ██║
                                                                               --         ██║  ██║
 instance                                                                      --         ██║  ██║
@@ -173,7 +173,10 @@ module NatExamples where                                                      --
   -- for rings!)                                                              -- ██████████║  ██║
   lemma₁ : ∀ x y → x + y * 1 + 3 ≈ 2 + 1 + y + x                              --   ████╔═██║  ██║
   lemma₁ = solve Nat.ring                                                     --     ██║ ██║  ██║
---                                                                            --     ╚═╝ ██║  ██║
+                                                                              --     ╚═╝ ██║  ██║
+  lemma₂ : ∀ x y → x + y * 1 + 3 ≈ 2 + suc y + x                              --         ██║  ██║
+  lemma₂ = solve Nat.ring                                                     --         ██║  ██║
+--                                                                            --         ██║  ██║
 --------------------------------------------------------------------------------         ██║  ██║
 --                                                                            --         ██║  ██║
 --          #####  #     # #######  #####  #    # ### #     #  #####          --         ██║  ██║
