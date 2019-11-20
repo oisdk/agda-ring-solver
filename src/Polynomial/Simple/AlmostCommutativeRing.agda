@@ -57,9 +57,11 @@ record AlmostCommutativeRing c ℓ : Set (suc (c ⊔ ℓ)) where
                ; semiring
                )
 
-  rawRing : RawRing _
+  rawRing : RawRing _ _
   rawRing = record
-    { _+_ = _+_
+    { Carrier = Carrier
+    ; _≈_ = _≈_
+    ; _+_ = _+_
     ; _*_ = _*_
     ; -_  = -_
     ; 0#  = 0#
@@ -117,9 +119,9 @@ flipped rng = record
   } where open AlmostCommutativeRing rng
 
 record _-Raw-AlmostCommutative⟶_
-         {r₁ r₂ r₃}
-         (From : RawRing r₁)
-         (To : AlmostCommutativeRing r₂ r₃) : Set (r₁ ⊔ r₂ ⊔ r₃) where
+         {c r₁ r₂ r₃}
+         (From : RawRing c r₁)
+         (To : AlmostCommutativeRing r₂ r₃) : Set (c ⊔ r₁ ⊔ r₂ ⊔ r₃) where
   private
     module F = RawRing From
     module T = AlmostCommutativeRing To
@@ -148,8 +150,8 @@ record _-Raw-AlmostCommutative⟶_
 -- A homomorphism induces a notion of equivalence on the raw ring.
 
 Induced-equivalence :
-  ∀ {c₁ c₂ ℓ} {Coeff : RawRing c₁} {R : AlmostCommutativeRing c₂ ℓ} →
-  Coeff -Raw-AlmostCommutative⟶ R → Rel (RawRing.Carrier Coeff) ℓ
+  ∀ {c₁ c₂ ℓ₁ ℓ₂} {Coeff : RawRing c₁ ℓ₁} {R : AlmostCommutativeRing c₂ ℓ₂} →
+  Coeff -Raw-AlmostCommutative⟶ R → Rel (RawRing.Carrier Coeff) ℓ₂
 Induced-equivalence {R = R} morphism a b = ⟦ a ⟧ ≈ ⟦ b ⟧
   where
   open AlmostCommutativeRing R

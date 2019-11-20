@@ -9,8 +9,8 @@
 open import Polynomial.Parameters
 
 module Polynomial.NormalForm.Definition
-  {a}
-  (coeffs : RawCoeff a)
+  {a ℓ}
+  (coeffs : RawCoeff a ℓ)
   where
 
 open import Polynomial.NormalForm.InjectionIndex

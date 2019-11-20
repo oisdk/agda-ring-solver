@@ -3,8 +3,8 @@
 open import Polynomial.Parameters
 
 module Polynomial.NormalForm.Construction
-  {a}
-  (coeffs : RawCoeff a)
+  {a ℓ}
+  (coeffs : RawCoeff a ℓ)
   where
 
 open import Relation.Nullary         using (Dec; yes; no)

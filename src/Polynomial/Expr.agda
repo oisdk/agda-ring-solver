@@ -20,7 +20,7 @@ data Expr  {ℓ} (A : Set ℓ) (n : ℕ) : Set ℓ where
 
 open import Polynomial.Parameters
 
-module Eval {r₁ r₂ r₃} (homo : Homomorphism r₁ r₂ r₃) where
+module Eval {c r₁ r₂ r₃} (homo : Homomorphism c r₁ r₂ r₃) where
   open Homomorphism homo
   open import Polynomial.Exponentiation rawRing
 

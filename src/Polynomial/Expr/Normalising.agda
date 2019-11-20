@@ -11,8 +11,8 @@ open import EqBool
 open import Data.Bool
 
 module Polynomial.Expr.Normalising
-  {r}
-  (ring : RawRing r)
+  {c ℓ}
+  (ring : RawRing c ℓ)
   (show : RawRing.Carrier ring → String)
   ⦃ _ : HasEqBool (RawRing.Carrier ring) ⦄
   where
@@ -22,7 +22,7 @@ open RawRing ring
 -- An expressions which contains some free variables.
 infixl 6 _⊕_
 infixl 7 _⊗_
-data Open : Set r where
+data Open : Set c where
   V : String → Open
   K : Carrier → Open
   _⊕_ : Open → Open → Open
@@ -42,7 +42,7 @@ instance
   _==_ ⦃ eqOpen ⦄ = _==O_
 
 -- An expression which might not have any free variables
-data Expr : Set r where
+data Expr : Set c where
   C : Carrier → Expr
   O : Open → Expr
 
@@ -78,7 +78,7 @@ open import Data.List.Kleene
 open import Data.Product
 open import Data.Nat
 
-data Flat : Set r where
+data Flat : Set c where
   sum : Flat + → Flat
   prd : (Flat × ℕ) + → Flat
   neg : Flat → Flat

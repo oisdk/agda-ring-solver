@@ -3,8 +3,8 @@
 open import Polynomial.Parameters
 
 module Polynomial.Homomorphism.Negation
-  {r₁ r₂ r₃}
-  (homo : Homomorphism r₁ r₂ r₃)
+  {c r₁ r₂ r₃}
+  (homo : Homomorphism c r₁ r₂ r₃)
   where
 
 open import Data.Product          using (_,_)

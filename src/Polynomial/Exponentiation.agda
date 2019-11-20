@@ -25,7 +25,7 @@
 
 open import Algebra
 
-module Polynomial.Exponentiation {ℓ} (ring : RawRing ℓ) where
+module Polynomial.Exponentiation {c ℓ} (ring : RawRing c ℓ) where
 
 open import Data.Nat as ℕ using (ℕ; suc; zero)
 

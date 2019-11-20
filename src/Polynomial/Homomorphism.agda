@@ -6,8 +6,8 @@ open import Polynomial.Parameters
 -- defined on polynomials and those on the underlying ring.
 
 module Polynomial.Homomorphism
-  {r₁ r₂ r₃}
-  (homo : Homomorphism r₁ r₂ r₃)
+  {c r₁ r₂ r₃}
+  (homo : Homomorphism c r₁ r₂ r₃)
   where
 
 -- The lemmas are the general-purpose proofs we reuse in each other section
