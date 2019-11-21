@@ -4,8 +4,8 @@ open import Polynomial.Parameters
 open import Algebra
 
 module Polynomial.NormalForm.Operations
-  {a}
-  (coeffs : RawCoeff a)
+  {a ℓ}
+  (coeffs : RawCoeff a ℓ)
   where
 
 open import Polynomial.Exponentiation (RawCoeff.coeffs coeffs)

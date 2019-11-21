@@ -21,7 +21,7 @@ module Ops {ℓ₁ ℓ₂} (ring : AlmostCommutativeRing ℓ₁ ℓ₂) where
   zero-homo x _ | just p = p
   zero-homo x () | nothing
 
-  homo : Homomorphism ℓ₁ ℓ₁ ℓ₂
+  homo : Homomorphism ℓ₁ ℓ₂ ℓ₁ ℓ₂
   homo = record
     { coeffs = record
       { coeffs = AlmostCommutativeRing.rawRing ring

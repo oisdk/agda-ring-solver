@@ -17,18 +17,18 @@ open import Data.Bool using (Bool; T)
 --  * A (decidable) predicate on "zeroeness"
 --
 -- It's used for defining the operations on the horner normal form.
-record RawCoeff ℓ : Set (suc ℓ) where
+record RawCoeff c ℓ : Set (suc (c ⊔ ℓ)) where
   field
-    coeffs  : RawRing ℓ
+    coeffs  : RawRing c ℓ
     Zero-C  : RawRing.Carrier coeffs → Bool
 
   open RawRing coeffs public
 
 -- This record stores the full information we need for converting
 -- to the final ring.
-record Homomorphism ℓ₁ ℓ₂ ℓ₃ : Set (suc (ℓ₁ ⊔ ℓ₂ ⊔ ℓ₃)) where
+record Homomorphism c ℓ₁ ℓ₂ ℓ₃ : Set (suc (c ⊔ ℓ₁ ⊔ ℓ₂ ⊔ ℓ₃)) where
   field
-    coeffs : RawCoeff ℓ₁
+    coeffs : RawCoeff c ℓ₁
   module Raw = RawCoeff coeffs
   field
     ring     : AlmostCommutativeRing ℓ₂ ℓ₃
